@@ -1,0 +1,41 @@
+{
+  "routes": [
+    {
+      "path": "/",
+      "src": "src/pages/Home.tsx"
+    },
+    {
+      "path": "/properties",
+      "src": "src/pages/Properties.tsx"
+    },
+    {
+      "path": "/property-details",
+      "src": "src/pages/PropertyDetails.tsx"
+    },
+    {
+      "path": "/login",
+      "src": "src/pages/Login.tsx"
+    },
+    {
+      "path": "/register",
+      "src": "src/pages/Register.tsx"
+    },
+    {
+      "path": "/owner-dashboard",
+      "src": "src/pages/OwnerDashboard.tsx"
+    },
+    {
+      "path": "/admin-dashboard",
+      "src": "src/pages/AdminDashboard.tsx"
+    },
+    {
+      "path": "/favorites",
+      "src": "src/pages/Favorites.tsx"
+    }
+  ],
+  "components": [
+    {"name": "Navbar", "src": "src/components/Navbar.tsx"},
+    {"name": "PropertyCard", "src": "src/components/PropertyCard.tsx"},
+    {"name": "StatCard", "src": "src/components/StatCard.tsx"}
+  ]
+}

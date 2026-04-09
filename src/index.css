@@ -1,0 +1,81 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: var(--fontSans);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --shadow-x: var(--shadow-x);
+  --shadow-y: var(--shadow-y);
+  --shadow-blur: var(--shadow-blur);
+  --shadow-spread: var(--shadow-spread);
+  --shadow-color: var(--shadow-color);
+}
+
+:root {
+  --fontSans: "Inter", sans-serif;
+  --background: rgb(249, 250, 251);
+  --foreground: rgb(31, 41, 55);
+  --card: rgb(255, 255, 255);
+  --card-foreground: rgb(31, 41, 55);
+  --popover: rgb(255, 255, 255);
+  --popover-foreground: rgb(31, 41, 55);
+  --primary: rgb(37, 99, 235);
+  --primary-foreground: rgb(255, 255, 255);
+  --secondary: rgb(243, 244, 246);
+  --secondary-foreground: rgb(31, 41, 55);
+  --muted: rgb(243, 244, 246);
+  --muted-foreground: rgb(107, 114, 128);
+  --accent: rgb(219, 234, 254);
+  --accent-foreground: rgb(30, 58, 138);
+  --destructive: rgb(239, 68, 68);
+  --destructive-foreground: rgb(255, 255, 255);
+  --border: rgb(229, 231, 235);
+  --input: rgb(209, 213, 219);
+  --ring: rgb(59, 130, 246);
+  --radius: 0.75rem;
+  
+  --shadow-x: 0px;
+  --shadow-y: 4px;
+  --shadow-blur: 20px;
+  --shadow-spread: -2px;
+  --shadow-opacity: 1;
+  --shadow-color: rgba(0, 0, 0, 0.08);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+}
+
+@layer utilities {
+  .shadow-custom {
+    box-shadow: var(--shadow-x) var(--shadow-y) var(--shadow-blur) var(--shadow-spread) var(--shadow-color);
+  }
+}
