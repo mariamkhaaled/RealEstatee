@@ -11,6 +11,7 @@ import Register from "@/pages/Register";
 import OwnerDashboard from "@/pages/OwnerDashboard";
 import AdminDashboard from "@/pages/AdminDashboard";
 import Favorites from "@/pages/Favorites";
+import AddPropertyPage from "./pages/AddPropertyPage";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/owner-dashboard" element={<OwnerDashboard />} />
+             <Route path="/owner/add-property" element={<AddPropertyPage />} />
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/favorites" element={<Favorites />} />
           </Routes>

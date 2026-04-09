@@ -3,8 +3,10 @@ import StatCard from '@/components/StatCard';
 import { Building, Eye, Heart, Plus, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useNavigate } from 'react-router-dom';
 
 const OwnerDashboard: React.FC = () => {
+  const navigate = useNavigate();
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
@@ -12,8 +14,9 @@ const OwnerDashboard: React.FC = () => {
           <h1 className="text-2xl font-bold text-foreground">Owner Dashboard</h1>
           <p className="text-muted-foreground">Manage your properties and track performance.</p>
         </div>
-        <Button>
-          <Plus className="mr-2" size={18} /> Add Property
+         <Button onClick={() => navigate('/owner/add-property')}>
+          <Plus className="mr-2" size={18} />
+          Add Property
         </Button>
       </div>
 
