@@ -7,6 +7,35 @@ import { useNavigate } from 'react-router-dom';
 
 const OwnerDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const bookings = [
+    {
+      id: 1,
+      property: "Modern Seaside Villa",
+      location: "Miami, FL",
+      price: "$1,250,000",
+      bookedBy: "John Smith",
+      status: "Closed",
+      date: "2026-04-10"
+    },
+    {
+      id: 2,
+      property: "Luxury Downtown Apartment",
+      location: "New York, NY",
+      price: "$980,000",
+      bookedBy: "Sarah Johnson",
+      status: "Closed",
+      date: "2026-04-09"
+    },
+    {
+      id: 3,
+      property: "Mountain View House",
+      location: "Denver, CO",
+      price: "$720,000",
+      bookedBy: "Ahmed Ali",
+      status: "Closed",
+      date: "2026-04-08"
+    }
+  ];
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
@@ -26,10 +55,12 @@ const OwnerDashboard: React.FC = () => {
         <StatCard title="Saved by Users" value="384" icon={Heart} trend="5%" />
       </div>
 
-      <div className="bg-card rounded-xl shadow-custom border border-border overflow-hidden">
+      {/* My Properties */}
+      <div className="bg-card rounded-xl shadow-custom border border-border overflow-hidden mb-8">
         <div className="p-6 border-b border-border">
           <h2 className="text-lg font-bold text-foreground">My Properties</h2>
         </div>
+
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="bg-secondary text-muted-foreground font-medium border-b border-border">
@@ -47,7 +78,11 @@ const OwnerDashboard: React.FC = () => {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded bg-secondary overflow-hidden flex-shrink-0">
-                        <img src={`https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=100&q=80`} className="w-full h-full object-cover" alt="prop" />
+                        <img
+                          src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=100&q=80"
+                          className="w-full h-full object-cover"
+                          alt="prop"
+                        />
                       </div>
                       <div>
                         <p className="font-semibold text-foreground">Modern Seaside Villa</p>
@@ -56,7 +91,9 @@ const OwnerDashboard: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Active</Badge>
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                      Active
+                    </Badge>
                   </td>
                   <td className="px-6 py-4 font-medium text-foreground">$1,250,000</td>
                   <td className="px-6 py-4 text-muted-foreground">1,204</td>
@@ -64,6 +101,59 @@ const OwnerDashboard: React.FC = () => {
                     <Button variant="ghost" size="icon">
                       <MoreVertical size={18} className="text-muted-foreground" />
                     </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Bookings Table */}
+      <div className="bg-card rounded-xl shadow-custom border border-border overflow-hidden">
+        <div className="p-6 border-b border-border">
+          <h2 className="text-lg font-bold text-foreground">Bookings & Requests</h2>
+          <p className="text-sm text-muted-foreground">Pending reservations for your properties</p>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-secondary text-muted-foreground font-medium border-b border-border">
+              <tr>
+                <th className="px-6 py-4">Property</th>
+                <th className="px-6 py-4">Booked By</th>
+                <th className="px-6 py-4">Date</th>
+                <th className="px-6 py-4">Price</th>
+                <th className="px-6 py-4">Status</th>
+              </tr>
+            </thead>
+
+            <tbody className="divide-y divide-border">
+              {bookings.map((b) => (
+                <tr key={b.id} className="hover:bg-muted/50 transition-colors">
+                  <td className="px-6 py-4">
+                    <div>
+                      <p className="font-semibold text-foreground">{b.property}</p>
+                      <p className="text-xs text-muted-foreground">{b.location}</p>
+                    </div>
+                  </td>
+
+                  <td className="px-6 py-4 text-foreground font-medium">
+                    {b.bookedBy}
+                  </td>
+
+                  <td className="px-6 py-4 text-muted-foreground">
+                    {b.date}
+                  </td>
+
+                  <td className="px-6 py-4 font-medium text-foreground">
+                    {b.price}
+                  </td>
+
+                  <td className="px-6 py-4">
+                    <Badge className="bg-red-50 text-red-700 border-red-200">
+                      {b.status}
+                    </Badge>
                   </td>
                 </tr>
               ))}
