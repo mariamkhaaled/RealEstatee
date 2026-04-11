@@ -1,32 +1,36 @@
+require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
+const propertyRouter = require('./routes/propertyRoutes');
 
 const app = express();
-const PORT = 5000;
-const cors = require('cors');
+
+// 1. GLOBAL MIDDLEWARES
 app.use(cors());
 app.use(express.json());
 
-let properties = [];
+app.use('/api/properties', propertyRouter);
 
-app.get('/test', (req, res) => {
-  res.send('API is working');
+
+// 2. ROUTES (We will add more here later)
+app.get('/', (req, res) => {
+    res.status(200).json({
+        status: 'success',
+        message: 'Real Estate API is live and healthy.'
+    });
 });
 
-app.get('/properties', (req, res) => {
-  res.json(properties);
+// 3. GLOBAL ERROR HANDLER
+app.use((err, req, res, next) => {
+    const statusCode = err.statusCode || 500;
+    res.status(statusCode).json({
+        status: 'error',
+        message: err.message || 'Internal Server Error'
+    });
 });
 
-app.post('/properties', (req, res) => {
-  const newProperty = {
-    id: Date.now(),
-    ...req.body
-  };
-
-  properties.push(newProperty);
-
-  res.status(201).json(newProperty);
-});
-
+// 4. SERVER START
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+    console.log(`Server is running on http://localhost:${PORT}`);
 });
