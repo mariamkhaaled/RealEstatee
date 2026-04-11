@@ -42,6 +42,8 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ onClose, onSave }) 
 
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [imageError, setImageError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -85,27 +87,75 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ onClose, onSave }) 
     setImageError('');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError('');
 
-    const newProperty = {
-      ...formData,
-      id: Date.now(),
-      status: 'Active',
-      views: 0,
+    if (
+      !formData.title.trim() ||
+      !formData.price.trim() ||
+      !formData.location.trim() ||
+      !formData.type.trim() ||
+      !formData.purpose.trim() ||
+      !formData.description.trim()
+    ) {
+      setSubmitError('Please fill all required fields.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const payload = {
+      property: {
+        title: formData.title,
+        description: formData.description,
+        type: formData.type,
+        bedrooms: formData.bedrooms ? Number(formData.bedrooms) : 0,
+        bathrooms: formData.bathrooms ? Number(formData.bathrooms) : 0,
+        area: formData.area ? Number(formData.area) : 0,
+      },
+      location: {
+        city: formData.location,
+        address: formData.address,
+      },
+      listing: {
+        price: Number(formData.price),
+        purpose: formData.purpose,
+        status: 'Active',
+        views: 0,
+      },
+      images: previewUrls,
       features: formData.features
         .split(',')
         .map((item) => item.trim())
         .filter(Boolean),
-      images: previewUrls,
-      image: previewUrls[0] || '',
     };
 
-    const existingProperties = JSON.parse(localStorage.getItem('properties') || '[]');
-    localStorage.setItem('properties', JSON.stringify([...existingProperties, newProperty]));
+    try {
+      const res = await fetch('http://localhost:5000/properties', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
 
-    if (onSave) onSave();
-    onClose();
+      if (!res.ok) {
+        throw new Error(`Request failed with status ${res.status}`);
+      }
+
+      const data = await res.json();
+      console.log('Saved:', data);
+      alert('Listing saved successfully');
+
+      if (onSave) onSave();
+      onClose();
+    } catch (error) {
+      console.error('Error saving listing:', error);
+      setSubmitError('Failed to save listing. Check backend and try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -117,7 +167,7 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ onClose, onSave }) 
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} noValidate className="space-y-6">
         <div>
           <div className="flex items-center justify-between mb-3 gap-3">
             <label className="block text-sm font-medium">Upload Images</label>
@@ -340,9 +390,15 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ onClose, onSave }) 
           </p>
         </div>
 
+        {submitError && (
+          <p className="text-sm text-red-500">{submitError}</p>
+        )}
+
         <div className="flex gap-3 pt-2">
-          <Button type="submit">Save Property</Button>
-          <Button type="button" variant="outline" onClick={onClose}>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Saving...' : 'Save Property'}
+          </Button>
+          <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>
         </div>
