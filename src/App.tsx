@@ -28,7 +28,6 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/owner-dashboard" element={<OwnerDashboard />} />
-             <Route path="/owner/add-property" element={<AddPropertyPage />} />
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/favorites" element={<Favorites />} />
           </Routes>
