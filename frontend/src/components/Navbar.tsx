@@ -2,10 +2,14 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Heart, User, LogIn, LayoutDashboard, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') || '{}') : null;
+  const userPhoto = user?.photo || null;
+  const initials = user ? `${user.firstName?.charAt(0) || 'U'}${user.lastName?.charAt(0) || ''}`.toUpperCase() : 'U';
   const isLoggedIn = Boolean(localStorage.getItem('token'));
 
   const isActive = (path: string) => location.pathname === path;
@@ -54,8 +58,15 @@ const Navbar: React.FC = () => {
             </div>
             {isLoggedIn ? (
               <>
-                <Link to="/profile" className={`text-sm font-medium transition-colors ${isActive('/profile') ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
-                  Profile
+                <Link to="/profile" className={`flex items-center gap-3 rounded-full border border-border bg-secondary/80 px-3 py-2 text-sm font-medium transition-colors ${isActive('/profile') ? 'border-primary text-primary' : 'text-muted-foreground hover:border-primary hover:text-primary'}`}>
+                  <Avatar className="h-8 w-8 rounded-full bg-background">
+                    {userPhoto ? (
+                      <AvatarImage src={userPhoto} alt={`${user.firstName} ${user.lastName}`} />
+                    ) : (
+                      <AvatarFallback className="text-foreground">{initials}</AvatarFallback>
+                    )}
+                  </Avatar>
+                  <span className="hidden sm:inline">Profile</span>
                 </Link>
                 <Button onClick={handleLogout} variant="ghost" size="sm" className="hidden sm:flex">
                   <LogOut className="mr-2" size={16} />
