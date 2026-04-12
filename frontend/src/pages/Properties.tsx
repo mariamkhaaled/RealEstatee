@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import PropertyCard from '@/components/PropertyCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -146,7 +146,7 @@ const MOCK_PROPERTIES: Property[] = [
 ];
 
 // -------------------- COMPONENT --------------------
-const Properties: React.FC = () => {
+const Properties = () => {
   const [search, setSearch] = useState('');
   const [purpose, setPurpose] = useState('Any Status');
   const [type, setType] = useState('All Types');

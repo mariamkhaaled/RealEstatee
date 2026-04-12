@@ -1,4 +1,3 @@
-import React from 'react';
 import { MapPin, Bed, Bath, Square, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Property } from '@/types';
@@ -9,7 +8,7 @@ interface PropertyCardProps {
   isFavorite?: boolean;
 }
 
-const PropertyCard: React.FC<PropertyCardProps> = ({ property, isFavorite = false }) => {
+const PropertyCard = ({ property, isFavorite = false }: PropertyCardProps) => {
   return (
     <div data-cmp="PropertyCard" className="bg-card rounded-xl overflow-hidden shadow-custom border border-border group transition-all duration-300 hover:-translate-y-1">
       <div className="relative aspect-[4/3] overflow-hidden">
