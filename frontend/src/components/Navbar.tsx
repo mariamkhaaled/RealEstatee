@@ -1,12 +1,20 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Home, Heart, User, LogIn, LayoutDashboard } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Home, Heart, User, LogIn, LayoutDashboard, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const isLoggedIn = Boolean(localStorage.getItem('token'));
 
   const isActive = (path: string) => location.pathname === path;
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login');
+  };
 
   return (
     <nav data-cmp="Navbar" className="bg-card border-b border-border sticky top-0 z-50 shadow-sm">
@@ -44,19 +52,32 @@ const Navbar: React.FC = () => {
                 <LayoutDashboard size={14} /> <span>Admin</span>
               </Link>
             </div>
-            
-            <Link to="/login">
-              <Button variant="ghost" size="sm" className="hidden sm:flex">
-                <LogIn className="mr-2" size={16} />
-                Sign In
-              </Button>
-            </Link>
-            <Link to="/register">
-              <Button size="sm">
-                <User className="mr-2" size={16} />
-                Register
-              </Button>
-            </Link>
+            {isLoggedIn ? (
+              <>
+                <Link to="/profile" className={`text-sm font-medium transition-colors ${isActive('/profile') ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
+                  Profile
+                </Link>
+                <Button onClick={handleLogout} variant="ghost" size="sm" className="hidden sm:flex">
+                  <LogOut className="mr-2" size={16} />
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="ghost" size="sm" className="hidden sm:flex">
+                    <LogIn className="mr-2" size={16} />
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button size="sm">
+                    <User className="mr-2" size={16} />
+                    Register
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

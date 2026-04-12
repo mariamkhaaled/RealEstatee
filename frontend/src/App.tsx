@@ -8,6 +8,7 @@ import Properties from "@/pages/Properties";
 import PropertyDetails from "@/pages/PropertyDetails";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
+import Profile from "@/pages/Profile";
 import OwnerDashboard from "@/pages/OwnerDashboard";
 import AdminDashboard from "@/pages/AdminDashboard";
 import Favorites from "@/pages/Favorites";
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/property-details" element={<PropertyDetails />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/owner-dashboard" element={<OwnerDashboard />} />
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/favorites" element={<Favorites />} />
