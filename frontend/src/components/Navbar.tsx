@@ -1,15 +1,23 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Heart, User, LogIn, LayoutDashboard, LogOut } from 'lucide-react';
+import { Home, Heart, User, LogIn, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') || '{}') : null;
+
+  const user = localStorage.getItem('user')
+    ? JSON.parse(localStorage.getItem('user') || '{}')
+    : null;
+
   const userPhoto = user?.photo || null;
-  const initials = user ? `${user.firstName?.charAt(0) || 'U'}${user.lastName?.charAt(0) || ''}`.toUpperCase() : 'U';
+
+  const initials = user
+    ? `${user.firstName?.charAt(0) || 'U'}${user.lastName?.charAt(0) || ''}`.toUpperCase()
+    : 'U';
+
   const isLoggedIn = Boolean(localStorage.getItem('token'));
 
   const isActive = (path: string) => location.pathname === path;
@@ -21,9 +29,10 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav data-cmp="Navbar" className="bg-card border-b border-border sticky top-0 z-50 shadow-sm">
+    <nav className="bg-card border-b border-border sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
+
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
@@ -34,56 +43,73 @@ const Navbar: React.FC = () => {
 
           {/* Main Links */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className={`text-sm font-medium transition-colors ${isActive('/') ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
+            <Link to="/" className={`text-sm font-medium ${isActive('/') ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
               Home
             </Link>
-            <Link to="/properties" className={`text-sm font-medium transition-colors ${isActive('/properties') ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
+
+            <Link to="/properties" className={`text-sm font-medium ${isActive('/properties') ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
               Properties
             </Link>
-            <Link to="/favorites" className={`text-sm font-medium transition-colors flex items-center space-x-1 ${isActive('/favorites') ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
+
+            <Link to="/favorites" className={`text-sm font-medium flex items-center gap-1 ${isActive('/favorites') ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
               <Heart size={16} />
-              <span>Favorites</span>
+              Favorites
             </Link>
           </div>
 
-          {/* Auth & Dashboards (Simulated Role Access) */}
+          {/* Right Side */}
           <div className="flex items-center space-x-3">
-            <div className="hidden lg:flex items-center space-x-3 mr-4 border-r border-border pr-4">
-              <Link to="/owner-dashboard" className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1">
-                <LayoutDashboard size={14} /> <span>Owner</span>
-              </Link>
-              <Link to="/admin-dashboard" className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1">
-                <LayoutDashboard size={14} /> <span>Admin</span>
-              </Link>
-            </div>
+
+            {/* 👇 Role INFO ONLY (no navigation links) */}
+            {isLoggedIn && (
+              <div className="hidden lg:flex flex-col items-end mr-3 pr-3 border-r border-border">
+                <span className="text-xs text-muted-foreground">Logged in as</span>
+                <span className="text-sm font-semibold text-foreground capitalize">
+                  {user?.role || 'user'}
+                </span>
+              </div>
+            )}
+
             {isLoggedIn ? (
               <>
-                <Link to="/profile" className={`flex items-center gap-3 rounded-full border border-border bg-secondary/80 px-3 py-2 text-sm font-medium transition-colors ${isActive('/profile') ? 'border-primary text-primary' : 'text-muted-foreground hover:border-primary hover:text-primary'}`}>
-                  <Avatar className="h-8 w-8 rounded-full bg-background">
+                {/* Profile */}
+                <Link
+                  to="/profile"
+                  className={`flex items-center gap-3 rounded-full border border-border bg-secondary/80 px-3 py-2 text-sm font-medium ${
+                    isActive('/profile')
+                      ? 'border-primary text-primary'
+                      : 'text-muted-foreground hover:border-primary hover:text-primary'
+                  }`}
+                >
+                  <Avatar className="h-8 w-8">
                     {userPhoto ? (
-                      <AvatarImage src={userPhoto} alt={`${user.firstName} ${user.lastName}`} />
+                      <AvatarImage src={userPhoto} />
                     ) : (
-                      <AvatarFallback className="text-foreground">{initials}</AvatarFallback>
+                      <AvatarFallback>{initials}</AvatarFallback>
                     )}
                   </Avatar>
+
                   <span className="hidden sm:inline">Profile</span>
                 </Link>
+
+                {/* Logout */}
                 <Button onClick={handleLogout} variant="ghost" size="sm" className="hidden sm:flex">
-                  <LogOut className="mr-2" size={16} />
+                  <LogOut size={16} className="mr-2" />
                   Logout
                 </Button>
               </>
             ) : (
               <>
                 <Link to="/login">
-                  <Button variant="ghost" size="sm" className="hidden sm:flex">
-                    <LogIn className="mr-2" size={16} />
+                  <Button variant="ghost" size="sm">
+                    <LogIn size={16} className="mr-2" />
                     Sign In
                   </Button>
                 </Link>
+
                 <Link to="/register">
                   <Button size="sm">
-                    <User className="mr-2" size={16} />
+                    <User size={16} className="mr-2" />
                     Register
                   </Button>
                 </Link>

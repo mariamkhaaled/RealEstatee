@@ -3,12 +3,18 @@ import StatCard from '@/components/StatCard';
 import { Building, Eye, Heart, Plus, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  Dialog,
-  DialogContent,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import AddPropertyModal from './AddPropertyPage';
+import { Navigate } from 'react-router-dom';
+
 const OwnerDashboard: React.FC = () => {
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+  // 🔐 حماية الصفحة (Owner only)
+  if (!user || user.role !== 'owner') {
+    return <Navigate to="/" replace />;
+  }
+
   const [openAddModal, setOpenAddModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
   const [openRequestModal, setOpenRequestModal] = useState(false);
@@ -55,10 +61,22 @@ const OwnerDashboard: React.FC = () => {
   return (
     <>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        {/* Header */}
         <div className="flex justify-between items-center mb-8">
+
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Owner Dashboard</h1>
-            <p className="text-muted-foreground">Manage your properties and track performance.</p>
+            <h1 className="text-2xl font-bold text-foreground">
+              Owner Dashboard
+            </h1>
+            <p className="text-muted-foreground">
+              Manage your properties and track performance.
+            </p>
+
+            {/* 👇 role display (info only) */}
+            <p className="text-sm text-muted-foreground mt-1">
+              Logged in as: <span className="font-semibold">Owner</span>
+            </p>
           </div>
 
           <Button onClick={() => setOpenAddModal(true)}>
@@ -67,19 +85,25 @@ const OwnerDashboard: React.FC = () => {
           </Button>
         </div>
 
+        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <StatCard title="Active Listings" value="12" icon={Building} trend="2" />
           <StatCard title="Total Views" value="4,821" icon={Eye} trend="12%" />
           <StatCard title="Saved by Users" value="384" icon={Heart} trend="5%" />
         </div>
 
+        {/* Listings table */}
         <div className="bg-card rounded-xl shadow-custom border border-border overflow-hidden mb-8">
+
           <div className="p-6 border-b border-border">
-            <h2 className="text-lg font-bold text-foreground">My Listings</h2>
+            <h2 className="text-lg font-bold text-foreground">
+              My Listings
+            </h2>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
+
               <thead className="bg-secondary text-muted-foreground font-medium border-b border-border">
                 <tr>
                   <th className="px-6 py-4">Property</th>
@@ -90,9 +114,11 @@ const OwnerDashboard: React.FC = () => {
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
+
               <tbody className="divide-y divide-border">
                 {[1, 2, 3, 4].map((i) => (
                   <tr key={i} className="hover:bg-muted/50 transition-colors">
+
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded bg-secondary overflow-hidden flex-shrink-0">
@@ -102,35 +128,50 @@ const OwnerDashboard: React.FC = () => {
                             alt="prop"
                           />
                         </div>
+
                         <div>
-                          <p className="font-semibold text-foreground">Modern Seaside Villa</p>
-                          <p className="text-xs text-muted-foreground">Miami, FL</p>
+                          <p className="font-semibold text-foreground">
+                            Modern Seaside Villa
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Miami, FL
+                          </p>
                         </div>
                       </div>
                     </td>
+
                     <td className="px-6 py-4 text-foreground">Sale</td>
                     <td className="px-6 py-4 font-medium text-foreground">$1,250,000</td>
+
                     <td className="px-6 py-4">
-                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                      <Badge className="bg-green-50 text-green-700 border-green-200">
                         Active
                       </Badge>
                     </td>
+
                     <td className="px-6 py-4 text-muted-foreground">1,204</td>
+
                     <td className="px-6 py-4 text-right">
                       <Button variant="ghost" size="icon">
-                        <MoreVertical size={18} className="text-muted-foreground" />
+                        <MoreVertical size={18} />
                       </Button>
                     </td>
+
                   </tr>
                 ))}
               </tbody>
+
             </table>
           </div>
         </div>
 
+        {/* Requests */}
         <div className="bg-card rounded-xl shadow-custom border border-border overflow-hidden">
+
           <div className="p-6 border-b border-border">
-            <h2 className="text-lg font-bold text-foreground">Listing Requests</h2>
+            <h2 className="text-lg font-bold text-foreground">
+              Listing Requests
+            </h2>
             <p className="text-sm text-muted-foreground">
               Review incoming requests for your active listings.
             </p>
@@ -138,6 +179,7 @@ const OwnerDashboard: React.FC = () => {
 
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
+
               <thead className="bg-secondary text-muted-foreground font-medium border-b border-border">
                 <tr>
                   <th className="px-6 py-4">Listing</th>
@@ -153,37 +195,32 @@ const OwnerDashboard: React.FC = () => {
               <tbody className="divide-y divide-border">
                 {requests.map((b) => (
                   <tr key={b.id} className="hover:bg-muted/50 transition-colors">
+
                     <td className="px-6 py-4">
-                      <div>
-                        <p className="font-semibold text-foreground">{b.property}</p>
-                        <p className="text-xs text-muted-foreground">{b.location}</p>
-                      </div>
+                      <p className="font-semibold text-foreground">{b.property}</p>
+                      <p className="text-xs text-muted-foreground">{b.location}</p>
                     </td>
 
                     <td className="px-6 py-4">
-                      <div>
-                        <p className="font-medium text-foreground">{b.bookedBy}</p>
-                        <p className="text-xs text-muted-foreground">{b.email}</p>
-                        <p className="text-xs text-muted-foreground">{b.phone}</p>
-                      </div>
+                      <p className="font-medium">{b.bookedBy}</p>
+                      <p className="text-xs text-muted-foreground">{b.email}</p>
                     </td>
 
-                    <td className="px-6 py-4 text-muted-foreground max-w-[260px]">
-                      <p className="truncate">{b.message}</p>
+                    <td className="px-6 py-4 text-muted-foreground max-w-[260px] truncate">
+                      {b.message}
                     </td>
 
                     <td className="px-6 py-4 text-muted-foreground">{b.date}</td>
-
-                    <td className="px-6 py-4 font-medium text-foreground">{b.price}</td>
+                    <td className="px-6 py-4 font-medium">{b.price}</td>
 
                     <td className="px-6 py-4">
                       <Badge
                         className={
                           b.status === 'Pending'
-                            ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                            ? 'bg-yellow-50 text-yellow-700'
                             : b.status === 'Accepted'
-                              ? 'bg-green-50 text-green-700 border-green-200'
-                              : 'bg-red-50 text-red-700 border-red-200'
+                              ? 'bg-green-50 text-green-700'
+                              : 'bg-red-50 text-red-700'
                         }
                       >
                         {b.status}
@@ -192,6 +229,7 @@ const OwnerDashboard: React.FC = () => {
 
                     <td className="px-6 py-4">
                       <div className="flex justify-end gap-2">
+
                         <Button
                           size="sm"
                           variant="outline"
@@ -202,154 +240,35 @@ const OwnerDashboard: React.FC = () => {
                         >
                           View
                         </Button>
-                        <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">
+
+                        <Button size="sm" className="bg-green-600 text-white">
                           Accept
                         </Button>
+
                         <Button size="sm" variant="destructive">
                           Reject
                         </Button>
+
                       </div>
                     </td>
+
                   </tr>
                 ))}
               </tbody>
+
             </table>
           </div>
         </div>
 
       </div>
 
+      {/* Modals (زي ما هي) */}
       <Dialog open={openAddModal} onOpenChange={setOpenAddModal}>
-        <DialogContent
-          className="bg-background fixed top-[50%] left-[50%] z-50 grid w-[95vw] max-w-6xl max-h-[90vh] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-2xl border p-6 shadow-lg duration-200 overflow-hidden rounded-2xl p-6 sm:p-8"
-          showCloseButton
-        >
+        <DialogContent className="bg-background fixed top-[50%] left-[50%] z-50 w-[95vw] max-w-6xl max-h-[90vh] translate-x-[-50%] translate-y-[-50%]">
           <AddPropertyModal onClose={() => setOpenAddModal(false)} />
         </DialogContent>
       </Dialog>
-      <Dialog open={openRequestModal} onOpenChange={setOpenRequestModal}>
-        <DialogContent className="w-[60vw] max-w-md max-h-[85vh] overflow-y-auto rounded-2xl p-0">
-          {selectedRequest && (
-            <div className="bg-background">
 
-              {/* Header */}
-              <div className="p-6 border-b border-border bg-muted/30">
-                <h2 className="text-xl font-bold text-foreground">
-                  Request Details
-                </h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Review this request before taking action
-                </p>
-              </div>
-
-              <div className="p-6 space-y-6">
-
-                {/* Listing Card */}
-                <div className="rounded-xl border border-border p-4 bg-card shadow-sm">
-                  <p className="text-xs text-muted-foreground mb-1">Listing</p>
-                  <p className="font-semibold text-foreground text-base">
-                    {selectedRequest.property}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {selectedRequest.location}
-                  </p>
-                </div>
-
-                {/* User Info */}
-                <div className="rounded-xl border border-border p-4 bg-card shadow-sm">
-                  <p className="text-sm font-semibold text-foreground mb-3">
-                    Requester Info
-                  </p>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-
-                    <div>
-                      <p className="text-muted-foreground text-xs mb-1">Name</p>
-                      <p className="font-medium">{selectedRequest.bookedBy}</p>
-                    </div>
-
-                    <div>
-                      <p className="text-muted-foreground text-xs mb-1">Email</p>
-                      <p className="font-medium">{selectedRequest.email}</p>
-                    </div>
-
-                    <div>
-                      <p className="text-muted-foreground text-xs mb-1">Phone</p>
-                      <a
-                        href={`tel:${selectedRequest.phone}`}
-                        className="font-medium text-primary hover:underline"
-                      >
-                        {selectedRequest.phone}
-                      </a>
-                    </div>
-
-                    <div>
-                      <p className="text-muted-foreground text-xs mb-1">Date</p>
-                      <p className="font-medium">{selectedRequest.date}</p>
-                    </div>
-
-                  </div>
-                </div>
-
-                {/* Price + Status */}
-                <div className="flex items-center justify-between rounded-xl border border-border p-4 bg-card shadow-sm">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Offered Price</p>
-                    <p className="text-lg font-bold text-foreground">
-                      {selectedRequest.price}
-                    </p>
-                  </div>
-
-                  <Badge
-                    className={
-                      selectedRequest.status === 'Pending'
-                        ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
-                        : selectedRequest.status === 'Accepted'
-                          ? 'bg-green-50 text-green-700 border-green-200'
-                          : 'bg-red-50 text-red-700 border-red-200'
-                    }
-                  >
-                    {selectedRequest.status}
-                  </Badge>
-                </div>
-
-                {/* Message */}
-                <div>
-                  <p className="text-sm font-semibold text-foreground mb-2">
-                    Message
-                  </p>
-                  <div className="rounded-xl border border-border bg-muted/30 p-4 text-sm text-foreground leading-relaxed">
-                    {selectedRequest.message}
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex justify-between items-center pt-4 border-t border-border">
-
-                  <Button
-                    variant="outline"
-                    onClick={() => setOpenRequestModal(false)}
-                  >
-                    Close
-                  </Button>
-
-                  <div className="flex gap-3">
-                    <Button className="bg-green-600 hover:bg-green-700 text-white px-5">
-                      Accept
-                    </Button>
-
-                    <Button variant="destructive" className="px-5">
-                      Reject
-                    </Button>
-                  </div>
-
-                </div>
-
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </>
   );
 };

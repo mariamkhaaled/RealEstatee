@@ -4,14 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Home } from "lucide-react";
 
-interface User {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  role: string;
-}
-
 const Login: React.FC = () => {
   const navigate = useNavigate();
 
@@ -19,40 +11,47 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+ const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError("");
 
-    const cleanEmail = email.trim().toLowerCase();
-    const cleanPassword = password.trim();
+  try {
+    const res = await fetch("http://localhost:5000/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: email.trim().toLowerCase(),
+        password: password.trim(),
+      }),
+    });
 
-    if (!cleanEmail || !cleanPassword) {
-      setError("Please fill all fields");
+    const data = await res.json();
+
+    if (!res.ok) {
+      setError(data.message || "Login failed");
       return;
     }
 
-    const users: User[] = JSON.parse(
-      localStorage.getItem("users") || "[]"
-    );
+    // 🔥 IMPORTANT FIX
+    const user = data.data; 
 
-    const user = users.find(
-      (u) =>
-        u.email === cleanEmail &&
-        u.password === cleanPassword
-    );
-
-    if (!user) {
-      setError("Invalid email or password");
-      return;
-    }
-
-    // set session
-    localStorage.setItem("token", "fake-token");
-    localStorage.setItem("email", cleanEmail);
+    localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(user));
 
-    navigate("/profile");
-  };
+    if (user.role === "admin") {
+      navigate("/admin-dashboard");
+    } else if (user.role === "owner") {
+      navigate("/owner-dashboard");
+    } else {
+      navigate("/profile");
+    }
+
+  } catch (err) {
+    setError("Server error");
+  }
+};
 
   return (
     <div className="min-h-[calc(100vh-64px)] flex items-center justify-center py-12 px-4">
@@ -74,20 +73,14 @@ const Login: React.FC = () => {
             type="email"
             placeholder="you@example.com"
             value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              setError("");
-            }}
+            onChange={(e) => setEmail(e.target.value)}
           />
 
           <Input
             type="password"
             placeholder="••••••••"
             value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              setError("");
-            }}
+            onChange={(e) => setPassword(e.target.value)}
           />
 
           {error && <p className="text-red-500 text-sm">{error}</p>}

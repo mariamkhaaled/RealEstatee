@@ -1,9 +1,9 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ShieldCheck, Heart, Home, LogOut, Eye } from "lucide-react";
+import { ShieldCheck, Heart, Home, LogOut, Eye, User } from "lucide-react";
 
 interface UserData {
   firstName: string;
@@ -16,6 +16,7 @@ interface UserData {
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<UserData | null>(() => {
     if (typeof window === "undefined") return null;
     const storedUser = localStorage.getItem("user");
@@ -40,6 +41,41 @@ const Profile: React.FC = () => {
     }
   });
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Fetch profile data from API on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          setLoading(false);
+          return;
+        }
+
+        const res = await fetch("http://localhost:5000/api/auth/profile", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.status === "success") {
+            setUser(data.data as UserData);
+            localStorage.setItem("user", JSON.stringify(data.data));
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching profile:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

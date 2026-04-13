@@ -4,74 +4,52 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Home } from "lucide-react";
 
-interface User {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  role: string;
-}
-
 const Register: React.FC = () => {
   const navigate = useNavigate();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState("Customer");
+  const [role, setRole] = useState("owner");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-
-    const cleanEmail = email.trim().toLowerCase();
-
-    if (!firstName || !lastName || !cleanEmail || !password || !confirmPassword) {
-      setError("Please fill all fields");
-      return;
-    }
-
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
-      return;
-    }
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
     }
 
-    const existingUsers: User[] = JSON.parse(
-      localStorage.getItem("users") || "[]"
-    );
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          full_name: `${firstName} ${lastName}`,
+          email: email.trim().toLowerCase(),
+          password,
+          phone: "0000000000",
+          role,
+        }),
+      });
 
-    const userExists = existingUsers.find(
-      (u) => u.email === cleanEmail
-    );
+      const data = await res.json();
 
-    if (userExists) {
-      setError("Email already registered");
-      return;
+      if (!res.ok) {
+        setError(data.message || "Signup failed");
+        return;
+      }
+
+      navigate("/login");
+    } catch (err) {
+      setError("Server error");
     }
-
-    const newUser: User = {
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      email: cleanEmail,
-      password,
-      role,
-    };
-
-    existingUsers.push(newUser);
-
-    localStorage.setItem("users", JSON.stringify(existingUsers));
-    localStorage.setItem("token", "fake-token");
-    localStorage.setItem("user", JSON.stringify(newUser));
-
-    navigate("/profile");
   };
 
   return (
@@ -94,19 +72,13 @@ const Register: React.FC = () => {
             <Input
               placeholder="First Name"
               value={firstName}
-              onChange={(e) => {
-                setFirstName(e.target.value);
-                setError("");
-              }}
+              onChange={(e) => setFirstName(e.target.value)}
             />
 
             <Input
               placeholder="Last Name"
               value={lastName}
-              onChange={(e) => {
-                setLastName(e.target.value);
-                setError("");
-              }}
+              onChange={(e) => setLastName(e.target.value)}
             />
           </div>
 
@@ -114,10 +86,7 @@ const Register: React.FC = () => {
             type="email"
             placeholder="you@example.com"
             value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              setError("");
-            }}
+            onChange={(e) => setEmail(e.target.value)}
           />
 
           <select
@@ -125,28 +94,22 @@ const Register: React.FC = () => {
             value={role}
             onChange={(e) => setRole(e.target.value)}
           >
-            <option value="Customer">Customer</option>
-            <option value="Owner">Owner</option>
+            <option value="owner">Owner</option>
+            <option value="admin">Admin</option>
           </select>
 
           <Input
             type="password"
             placeholder="Password"
             value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              setError("");
-            }}
+            onChange={(e) => setPassword(e.target.value)}
           />
 
           <Input
             type="password"
             placeholder="Confirm Password"
             value={confirmPassword}
-            onChange={(e) => {
-              setConfirmPassword(e.target.value);
-              setError("");
-            }}
+            onChange={(e) => setConfirmPassword(e.target.value)}
           />
 
           {error && <p className="text-red-500 text-sm">{error}</p>}
