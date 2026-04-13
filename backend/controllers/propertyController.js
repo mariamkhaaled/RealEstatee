@@ -6,7 +6,6 @@ exports.getAllProperties = async (req, res, next) => {
 
         res.status(200).json({
             status: 'success',
-            results: properties.length,
             data: { properties }
         });
     } catch (err) {
@@ -16,7 +15,22 @@ exports.getAllProperties = async (req, res, next) => {
 
 exports.createProperty = async (req, res, next) => {
     try {
-        const propertyId = await Property.create(req.body);
+        const imagePaths = (req.files || []).map(
+            (file) => `/uploads/${file.filename}`
+        );
+
+        const parsedData = {
+            owner_id: Number(req.body.owner_id),
+            property: JSON.parse(req.body.property),
+            location: JSON.parse(req.body.location),
+            listing: JSON.parse(req.body.listing),
+            feature_ids: req.body.feature_ids
+                ? JSON.parse(req.body.feature_ids)
+                : [],
+            images: imagePaths
+        };
+
+        const propertyId = await Property.create(parsedData);
 
         res.status(201).json({
             status: 'success',
