@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Heart, User, LogIn, LogOut } from 'lucide-react';
+import { Home, Heart, User, LogIn, LogOut, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
@@ -55,6 +55,21 @@ const Navbar: React.FC = () => {
               <Heart size={16} />
               Favorites
             </Link>
+
+            {/* Dashboard Links - Conditional Based on Role */}
+            {isLoggedIn && user?.role === 'owner' && (
+              <Link to="/owner-dashboard" className={`text-sm font-medium flex items-center gap-1 ${isActive('/owner-dashboard') ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
+                <LayoutDashboard size={16} />
+                My Dashboard
+              </Link>
+            )}
+
+            {isLoggedIn && user?.role === 'admin' && (
+              <Link to="/admin-dashboard" className={`text-sm font-medium flex items-center gap-1 ${isActive('/admin-dashboard') ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
+                <LayoutDashboard size={16} />
+                Admin Dashboard
+              </Link>
+            )}
           </div>
 
           {/* Right Side */}

@@ -1,7 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "@/components/Navbar";
-
+import Footer from "@/components/Footer";
+import ProtectedRoute from "@/components/ProtectedRoute";
 // Pages
 import Home from "@/pages/Home";
 import Properties from "@/pages/Properties";
