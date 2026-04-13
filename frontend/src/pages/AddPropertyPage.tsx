@@ -87,6 +87,25 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ onClose, onSave }) 
     setImageError('');
   };
 
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      price: '',
+      location: '',
+      address: '',
+      type: '',
+      purpose: '',
+      bedrooms: '',
+      bathrooms: '',
+      area: '',
+      description: '',
+      features: '',
+    });
+    setPreviewUrls([]);
+    setImageError('');
+    setSubmitError('');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError('');
@@ -106,6 +125,7 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ onClose, onSave }) 
     setIsSubmitting(true);
 
     const payload = {
+      owner_id: 1,
       property: {
         title: formData.title,
         description: formData.description,
@@ -132,7 +152,7 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ onClose, onSave }) 
     };
 
     try {
-      const res = await fetch('http://localhost:5000/properties', {
+      const res = await fetch('http://localhost:5000/api/properties', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -140,19 +160,26 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ onClose, onSave }) 
         body: JSON.stringify(payload),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        throw new Error(`Request failed with status ${res.status}`);
+        throw new Error(data.message || `Request failed with status ${res.status}`);
       }
 
-      const data = await res.json();
       console.log('Saved:', data);
-      alert('Listing saved successfully');
+      alert('Property saved successfully');
+
+      resetForm();
 
       if (onSave) onSave();
       onClose();
     } catch (error) {
-      console.error('Error saving listing:', error);
-      setSubmitError('Failed to save listing. Check backend and try again.');
+      console.error('Error saving property:', error);
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : 'Failed to save property. Check backend and try again.'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -274,7 +301,7 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ onClose, onSave }) 
               name="location"
               value={formData.location}
               onChange={handleChange}
-              placeholder="Miami, FL"
+              placeholder="Alexandria"
               className="w-full rounded-lg border border-border bg-background px-4 py-3 outline-none focus:ring-2 focus:ring-primary"
               required
             />
@@ -287,7 +314,7 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ onClose, onSave }) 
               name="address"
               value={formData.address}
               onChange={handleChange}
-              placeholder="123 Ocean Drive, Miami, FL 33139"
+              placeholder="North Coast - Marina 5"
               className="w-full rounded-lg border border-border bg-background px-4 py-3 outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -398,7 +425,13 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ onClose, onSave }) 
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Saving...' : 'Save Property'}
           </Button>
-          <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting}
+          >
             Cancel
           </Button>
         </div>

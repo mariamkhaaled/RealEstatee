@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const propertyRouter = require('./routes/propertyRoutes');
-
+require('./config/db');
 const app = express();
 
 // 1. GLOBAL MIDDLEWARES
