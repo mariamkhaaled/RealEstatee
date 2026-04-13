@@ -1,15 +1,12 @@
 require('dotenv').config();
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
-
-// ROUTES
 const propertyRouter = require('./routes/propertyRoutes');
-const authRoutes = require('./routes/auth.routes');
-
-// DB
 require('./config/db');
 
 const app = express();
+
 
 // ================= MIDDLEWARES =================
 app.use(cors());
@@ -17,15 +14,16 @@ app.use(express.json());
 
 // ================= ROUTES =================
 app.use('/api/properties', propertyRouter);
-app.use('/api/auth', authRoutes);
 
-// ================= HOME ROUTE =================
+
+// 2. ROUTES (We will add more here later)
 app.get('/', (req, res) => {
     res.status(200).json({
         status: 'success',
         message: 'Real Estate API is live and healthy.'
     });
 });
+
 
 // ================= GLOBAL ERROR HANDLER =================
 app.use((err, req, res, next) => {

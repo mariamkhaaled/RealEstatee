@@ -37,16 +37,16 @@ class Property {
                 property,
                 location,
                 listing,
-                owner_id = 1
+                images = [],
+                feature_ids = [],
+                owner_id
             } = data;
 
-            const propertySql = `
+            const [propertyResult] = await connection.execute(`
                 INSERT INTO properties
                 (owner_id, title, description, property_type, bedrooms, bathrooms, area)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
-            `;
-
-            const [propertyResult] = await connection.execute(propertySql, [
+            `, [
                 owner_id,
                 property.title,
                 property.description,
@@ -58,31 +58,45 @@ class Property {
 
             const propertyId = propertyResult.insertId;
 
-            const locationSql = `
+            await connection.execute(`
                 INSERT INTO property_locations
                 (property_id, city, address)
                 VALUES (?, ?, ?)
-            `;
-
-            await connection.execute(locationSql, [
+            `, [
                 propertyId,
                 location.city,
                 location.address || null
             ]);
 
-            const listingSql = `
+            await connection.execute(`
                 INSERT INTO listings
                 (property_id, purpose, price, status, views)
                 VALUES (?, ?, ?, ?, ?)
-            `;
-
-            await connection.execute(listingSql, [
+            `, [
                 propertyId,
                 listing.purpose,
                 listing.price,
                 listing.status || 'Active',
                 listing.views || 0
             ]);
+
+            if (Array.isArray(images) && images.length > 0) {
+                for (let i = 0; i < images.length; i++) {
+                    await connection.execute(`
+                        INSERT INTO property_images (property_id, image_url, is_primary)
+                        VALUES (?, ?, ?)
+                    `, [propertyId, images[i], i === 0]);
+                }
+            }
+
+            if (Array.isArray(feature_ids) && feature_ids.length > 0) {
+                for (const featureId of feature_ids) {
+                    await connection.execute(`
+                        INSERT INTO property_features (property_id, feature_id)
+                        VALUES (?, ?)
+                    `, [propertyId, featureId]);
+                }
+            }
 
             await connection.commit();
             return propertyId;
