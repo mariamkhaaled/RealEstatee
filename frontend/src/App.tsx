@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 // Import all 8 static pages
 import Home from "@/pages/Home";
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/favorites" element={<Favorites />} />
           </Routes>
         </div>
+        <Footer />
       </div>
     </BrowserRouter>
   </QueryClientProvider>
