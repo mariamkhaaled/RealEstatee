@@ -6,6 +6,8 @@ const cors = require('cors');
 const propertyRouter = require('./routes/propertyRoutes');
 const featureRouter = require('./routes/featureRoutes');
 const authRouter = require('./routes/auth.routes');
+const otpRoutes = require("./routes/otp.routes");
+const userRoutes = require("./routes/user.routes");
 
 require('./config/db');
 const app = express();
@@ -18,6 +20,8 @@ app.use(express.json());
 app.use('/api/properties', propertyRouter);
 app.use('/api/features', featureRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/otp', otpRoutes);
+app.use('/api/user', userRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // 2. ROUTES (We will add more here later)

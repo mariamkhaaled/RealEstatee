@@ -3,7 +3,16 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ShieldCheck, Heart, Home, LogOut, Eye, User } from "lucide-react";
+import {
+  ShieldCheck,
+  Heart,
+  Home,
+  LogOut,
+  Eye,
+  User,
+  ArrowLeft,
+} from "lucide-react";
+import ChangePassword from "@/components/ChangePassword";
 
 interface UserData {
   firstName: string;
@@ -17,6 +26,7 @@ interface UserData {
 const Profile: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [showChangePassword, setShowChangePassword] = useState(false);
   const [user, setUser] = useState<UserData | null>(() => {
     if (typeof window === "undefined") return null;
     const storedUser = localStorage.getItem("user");
@@ -55,7 +65,7 @@ const Profile: React.FC = () => {
         const res = await fetch("http://localhost:5000/api/auth/profile", {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         });
@@ -131,7 +141,19 @@ const Profile: React.FC = () => {
     );
   }
 
-  const initials = `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase();
+  const initials =
+    `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase();
+
+  // Show Change Password component
+  if (showChangePassword) {
+    return (
+      <div className="min-h-[calc(100vh-64px)] bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <ChangePassword onBack={() => setShowChangePassword(false)} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[calc(100vh-64px)] bg-background">
@@ -183,6 +205,12 @@ const Profile: React.FC = () => {
                 <Button variant="outline" className="w-full" onClick={handleChoosePhoto}>
                   Change photo
                 </Button>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setShowChangePassword(true)}
+                > Change password
+                </Button>
                 <Button variant="secondary" className="w-full" onClick={handleLogout}>
                   Log out
                 </Button>
@@ -194,15 +222,20 @@ const Profile: React.FC = () => {
             <div className="rounded-3xl border border-border bg-card p-6 shadow-custom">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">Welcome back</p>
-                  <h2 className="mt-2 text-3xl font-semibold text-foreground">Hi, {user.firstName}.</h2>
+                  <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">
+                    Welcome back
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold text-foreground">
+                    Hi, {user.firstName}.
+                  </h2>
                 </div>
                 <Link to="/properties">
                   <Button variant="outline">Browse Properties</Button>
                 </Link>
               </div>
               <p className="mt-4 text-sm text-muted-foreground">
-                Manage your profile, saved favorites, and property activity in one place.
+                Manage your profile, saved favorites, and property activity in
+                one place.
               </p>
 
               <div className="mt-8 grid gap-4 sm:grid-cols-3">
@@ -211,12 +244,19 @@ const Profile: React.FC = () => {
                   { label: "Viewed", value: "12", icon: Eye },
                   { label: "Listings", value: "3", icon: Home },
                 ].map((item) => (
-                  <div key={item.label} className="rounded-3xl border border-border bg-secondary/70 p-5 text-center">
+                  <div
+                    key={item.label}
+                    className="rounded-3xl border border-border bg-secondary/70 p-5 text-center"
+                  >
                     <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                       <item.icon size={20} />
                     </div>
-                    <p className="text-3xl font-semibold text-foreground">{item.value}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{item.label}</p>
+                    <p className="text-3xl font-semibold text-foreground">
+                      {item.value}
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {item.label}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -225,42 +265,74 @@ const Profile: React.FC = () => {
             <div className="rounded-3xl border border-border bg-card p-6 shadow-custom">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">Account details</p>
-                  <h3 className="mt-2 text-xl font-semibold text-foreground">Profile information</h3>
+                  <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">
+                    Account details
+                  </p>
+                  <h3 className="mt-2 text-xl font-semibold text-foreground">
+                    Profile information
+                  </h3>
                 </div>
-                <Badge className="rounded-full bg-secondary px-3 py-1 text-sm text-foreground">Secure</Badge>
+                <Badge className="rounded-full bg-secondary px-3 py-1 text-sm text-foreground">
+                  Secure
+                </Badge>
               </div>
 
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
                 <div className="rounded-3xl border border-border bg-background p-5">
-                  <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">First name</p>
-                  <p className="mt-2 text-lg font-medium text-foreground">{user.firstName}</p>
+                  <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                    First name
+                  </p>
+                  <p className="mt-2 text-lg font-medium text-foreground">
+                    {user.firstName}
+                  </p>
                 </div>
                 <div className="rounded-3xl border border-border bg-background p-5">
-                  <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Last name</p>
-                  <p className="mt-2 text-lg font-medium text-foreground">{user.lastName}</p>
+                  <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                    Last name
+                  </p>
+                  <p className="mt-2 text-lg font-medium text-foreground">
+                    {user.lastName}
+                  </p>
                 </div>
                 <div className="rounded-3xl border border-border bg-background p-5">
-                  <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Email</p>
-                  <p className="mt-2 text-lg font-medium text-foreground">{user.email}</p>
+                  <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                    Email
+                  </p>
+                  <p className="mt-2 text-lg font-medium text-foreground">
+                    {user.email}
+                  </p>
                 </div>
                 <div className="rounded-3xl border border-border bg-background p-5">
-                  <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Role</p>
-                  <p className="mt-2 text-lg font-medium text-foreground">{user.role}</p>
+                  <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                    Role
+                  </p>
+                  <p className="mt-2 text-lg font-medium text-foreground">
+                    {user.role}
+                  </p>
                 </div>
               </div>
             </div>
 
             <div className="rounded-3xl border border-border bg-card p-6 shadow-custom">
               <div className="flex items-center justify-between gap-4">
-                <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">Quick access</p>
-                <Badge className="rounded-full bg-primary text-primary-foreground text-sm">Fast</Badge>
+                <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">
+                  Quick access
+                </p>
+                <Badge className="rounded-full bg-primary text-primary-foreground text-sm">
+                  Fast
+                </Badge>
               </div>
               <div className="mt-6 grid gap-3">
-                <Link to="/favorites" className="rounded-2xl border border-border bg-secondary p-4 text-sm text-foreground transition hover:bg-secondary/90">
+                <Link
+                  to="/favorites"
+                  className="rounded-2xl border border-border bg-secondary p-4 text-sm text-foreground transition hover:bg-secondary/90"
+                >
                   View saved favorites
                 </Link>
-                <Link to="/properties" className="rounded-2xl border border-border bg-secondary p-4 text-sm text-foreground transition hover:bg-secondary/90">
+                <Link
+                  to="/properties"
+                  className="rounded-2xl border border-border bg-secondary p-4 text-sm text-foreground transition hover:bg-secondary/90"
+                >
                   Explore new listings
                 </Link>
               </div>
@@ -268,7 +340,13 @@ const Profile: React.FC = () => {
           </section>
         </div>
       </div>
-      <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handlePhotoChange}
+      />
     </div>
   );
 };

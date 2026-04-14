@@ -91,6 +91,15 @@ const Login: React.FC = () => {
         </form>
 
         <div className="mt-6 text-center text-sm">
+          <Link
+            to="/reset-password"
+            className="text-primary hover:underline font-medium"
+          >
+            Forgot Password?
+          </Link>
+        </div>
+
+        <div className="mt-4 text-center text-sm">
           Don't have an account?{" "}
           <Link to="/register" className="text-primary hover:underline">
             Register

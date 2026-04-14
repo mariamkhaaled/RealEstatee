@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/auth.model");
+const { sendOTP } = require("../services/emailService");
 
 
 // =======================
@@ -18,6 +19,9 @@ exports.signup = async (req, res, next) => {
         message: "Email already exists",
       });
     }
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+
 
     const hashed = await bcrypt.hash(password, 10);
 
@@ -26,8 +30,13 @@ exports.signup = async (req, res, next) => {
       email: email.toLowerCase().trim(),
       password_hash: hashed,
       phone,
-      role: role || "owner", // 🔥 مهم: خليها owner أو user حسب مشروعك
+      role: role || "owner",
+      is_verified: 0,
+      otp_code: otp,         
+      token_expires: otpExpires
     });
+
+    await sendOTP(email.toLowerCase().trim(), otp);
 
     res.status(201).json({
       status: "success",
@@ -64,6 +73,13 @@ exports.login = async (req, res, next) => {
 
     const user = users[0];
 
+    if (user.is_verified === 0) {
+      return res.status(403).json({ 
+        status: "fail", 
+        message: "Please verify your email before logging in." 
+      });
+    }
+    
     const isMatch = await bcrypt.compare(password, user.password_hash);
 
     if (!isMatch) {

@@ -9,6 +9,7 @@ import Properties from "@/pages/Properties";
 import PropertyDetails from "@/pages/PropertyDetails";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
+import ResetPassword from "@/pages/ResetPassword";
 import Profile from "@/pages/Profile";
 import OwnerDashboard from "@/pages/OwnerDashboard";
 import AdminDashboard from "@/pages/AdminDashboard";
@@ -24,13 +25,13 @@ const App = () => (
 
         <div className="flex-1">
           <Routes>
-
             {/* Public Routes */}
             <Route path="/" element={<Home />} />
             <Route path="/properties" element={<Properties />} />
             <Route path="/property-details" element={<PropertyDetails />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
             {/* Protected Routes */}
             <Route
@@ -61,7 +62,6 @@ const App = () => (
             />
 
             <Route path="/favorites" element={<Favorites />} />
-
           </Routes>
         </div>
         <Footer />

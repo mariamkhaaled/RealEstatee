@@ -1,7 +1,7 @@
+-- Active: 1776112129252@@127.0.0.1@3306@real_estate
 DROP DATABASE IF EXISTS real_estate;
 CREATE DATABASE real_estate;
 USE real_estate;
-
 
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -10,6 +10,9 @@ CREATE TABLE users (
     password_hash VARCHAR(255) NOT NULL,
     phone VARCHAR(20),
     role ENUM('owner', 'customer', 'admin') NOT NULL,
+    is_verified TINYINT(1) DEFAULT 0,
+    otp_code VARCHAR(10) DEFAULT NULL, 
+    token_expires TIMESTAMP NULL DEFAULT NULL, 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -111,5 +114,5 @@ CREATE TABLE favorites (
         FOREIGN KEY (property_id) REFERENCES properties(property_id)
         ON DELETE CASCADE
 );
-INSERT INTO users (full_name, email, password_hash, phone, role)
-VALUES ('Test Owner', 'owner@test.com', '123456', '01000000000', 'owner');
+INSERT INTO users (full_name, email, password_hash, phone, role, is_verified)
+VALUES ('Test Owner', 'owner@test.com', '123456', '01000000000', 'owner', 0);
