@@ -114,5 +114,26 @@ CREATE TABLE favorites (
         FOREIGN KEY (property_id) REFERENCES properties(property_id)
         ON DELETE CASCADE
 );
+
+-- create messages table
+CREATE TABLE messages (
+    message_id INT AUTO_INCREMENT PRIMARY KEY,
+    sender_id INT NOT NULL,
+    receiver_id INT NOT NULL,
+    content TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    inquiry_id INT NOT NULL,
+    CONSTRAINT fk_message_sender
+        FOREIGN KEY (sender_id) REFERENCES users(user_id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_message_receiver
+        FOREIGN KEY (receiver_id) REFERENCES users(user_id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_message_inquiry
+    FOREIGN KEY (inquiry_id) REFERENCES real_estate_inquiries(id)
+    ON DELETE CASCADE
+);
+
 INSERT INTO users (full_name, email, password_hash, phone, role, is_verified)
 VALUES ('Test Owner', 'owner@test.com', '123456', '01000000000', 'owner', 0);
