@@ -3,9 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Home } from "lucide-react";
+import { useFavorites } from "@/context/FavoritesContext";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const { pendingFavoriteId, addPendingFavorite, loadFavorites } = useFavorites();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,13 +36,19 @@ const Login: React.FC = () => {
       return;
     }
 
-    // 🔥 IMPORTANT FIX
-    const user = data.data; 
+    const user = data.data;
 
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(user));
 
-    if (user.role === "admin") {
+    // Load favorites into context immediately after login
+    await loadFavorites();
+
+    // إذا كان هناك عقار معلق، أضفه للمفضلات
+    if (pendingFavoriteId) {
+      await addPendingFavorite();
+      navigate("/favorites");
+    } else if (user.role === "admin") {
       navigate("/admin-dashboard");
     } else if (user.role === "owner") {
       navigate("/owner-dashboard");

@@ -6,6 +6,7 @@ import OTPVerification from "@/components/OTPVerification";
 import { Button } from "@/components/ui/button";
 import { verifyOTP, resendOTP } from "@/api";
 import { Mail, ArrowLeft, RotateCw } from "lucide-react";
+import { useFavorites } from "@/context/FavoritesContext";
 
 interface VerifyOTPProps {
   email: string;
@@ -14,6 +15,7 @@ interface VerifyOTPProps {
 
 const VerifyOTP: React.FC<VerifyOTPProps> = ({ email, onBack }) => {
   const navigate = useNavigate();
+  const { pendingFavoriteId, addPendingFavorite } = useFavorites();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,15 +53,21 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({ email, onBack }) => {
         localStorage.setItem("user", JSON.stringify(response.data));
 
         // Small delay for UX smoothness
-        setTimeout(() => {
-          // Redirect based on user role
-          const role = response.data?.role;
-          if (role === "admin") {
-            navigate("/admin-dashboard");
-          } else if (role === "owner") {
-            navigate("/owner-dashboard");
+        setTimeout(async () => {
+          // إذا كان هناك عقار معلق، أضفه للمفضلات
+          if (pendingFavoriteId) {
+            await addPendingFavorite();
+            navigate("/favorites");
           } else {
-            navigate("/home");
+            // Redirect based on user role
+            const role = response.data?.role;
+            if (role === "admin") {
+              navigate("/admin-dashboard");
+            } else if (role === "owner") {
+              navigate("/owner-dashboard");
+            } else {
+              navigate("/home");
+            }
           }
         }, 500);
       }

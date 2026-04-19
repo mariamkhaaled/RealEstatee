@@ -13,6 +13,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import ChangePassword from "@/components/ChangePassword";
+import { useFavorites } from "@/context/FavoritesContext";
 
 interface UserData {
   firstName: string;
@@ -111,9 +112,12 @@ const Profile: React.FC = () => {
     fileInputRef.current?.click();
   };
 
+  const { clearFavorites } = useFavorites();
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    clearFavorites();
     navigate("/login");
   };
 

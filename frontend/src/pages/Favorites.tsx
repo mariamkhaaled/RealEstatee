@@ -1,24 +1,29 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import PropertyCard from "@/components/PropertyCard";
 import { Property } from "@/types";
+import { useFavorites } from "@/context/FavoritesContext";
 
 const Favorites: React.FC = () => {
-  const [favorites, setFavorites] = useState<Property[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const navigate = useNavigate();
+  const { favoriteIds, loading } = useFavorites();
+  const [properties, setProperties] = useState<Property[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const fetchFavorites = async () => {
+    const token = localStorage.getItem("token");
+
+    // إذا لم يكن المستخدم مسجل دخول، توجيهه للتسجيل
+    if (!token) {
+      setProperties([]);
+      navigate("/login");
+      return;
+    }
+
+    const fetchFavoriteProperties = async () => {
       try {
-        setLoading(true);
-
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-          setError("User not authenticated");
-          setLoading(false);
-          return;
-        }
+        setIsLoading(true);
 
         const res = await fetch("http://localhost:5000/api/favorites", {
           method: "GET",
@@ -33,24 +38,31 @@ const Favorites: React.FC = () => {
         }
 
         const data = await res.json();
-
         console.log("favorites:", data);
 
-        // لو الـ backend بيرجع object فيه array
-        setFavorites(data.favorites || data || []);
-
-      } catch (error: any) {
+        // معالجة الاستجابة من الـ backend
+        const favoritesList = data.favorites || data || [];
+        setProperties(Array.isArray(favoritesList) ? favoritesList : []);
+      } catch (error) {
         console.log(error);
-        setError(error.message || "Something went wrong");
+        setError(error instanceof Error ? error.message : "Something went wrong");
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
-    fetchFavorites();
-  }, []);
+    // جلب البيانات عند تحديث favoriteIds أو عند التحقق من التوثيق
+    if (!loading) {
+      fetchFavoriteProperties();
+    }
+  }, [loading, favoriteIds, navigate]);
 
-  if (loading) {
+  // حذف العقار من القائمة المحلية عند حذفه من المفضلات
+  const handleRemoveFavorite = (propertyId: string) => {
+    setProperties((prev) => prev.filter((p) => p.id !== propertyId));
+  };
+
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center h-[60vh]">
         Loading...
@@ -78,16 +90,17 @@ const Favorites: React.FC = () => {
         </p>
       </div>
 
-      {favorites.length === 0 ? (
+      {properties.length === 0 ? (
         <p className="text-center text-muted-foreground mt-10">
-          No favorites yet 💔
+          No favorites yet
         </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {favorites.map((property) => (
+          {properties.map((property) => (
             <PropertyCard
               key={property.id}
               property={property}
+              onFavoriteToggle={handleRemoveFavorite}
             />
           ))}
         </div>

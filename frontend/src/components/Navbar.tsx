@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Heart, User, LogIn, LogOut, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useFavorites } from '@/context/FavoritesContext';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
@@ -18,6 +19,7 @@ const Navbar: React.FC = () => {
     ? `${user.firstName?.charAt(0) || 'U'}${user.lastName?.charAt(0) || ''}`.toUpperCase()
     : 'U';
 
+  const { clearFavorites } = useFavorites();
   const isLoggedIn = Boolean(localStorage.getItem('token'));
 
   const isActive = (path: string) => location.pathname === path;
@@ -25,6 +27,7 @@ const Navbar: React.FC = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    clearFavorites();
     navigate('/login');
   };
 

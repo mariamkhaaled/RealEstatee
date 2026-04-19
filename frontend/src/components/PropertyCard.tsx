@@ -1,23 +1,40 @@
 import { useState } from "react";
 import { MapPin, Bed, Bath, Square, Heart } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Property } from "@/types";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
+import { useFavorites } from "@/context/FavoritesContext";
 
 interface PropertyCardProps {
   property: Property;
-  isFavorite?: boolean;
   onFavoriteToggle?: (propertyId: string) => void;
 }
 
-const PropertyCard = ({ property, isFavorite = false, onFavoriteToggle }: PropertyCardProps) => {
-  const [fav, setFav] = useState(isFavorite);
+const PropertyCard = ({ property, onFavoriteToggle }: PropertyCardProps) => {
+  const { isFavorite, addFavorite, removeFavorite, setPendingFavoriteId } = useFavorites();
   const [loading, setLoading] = useState(false);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const fav = isFavorite(property.id);
+  const navigate = useNavigate();
 
   const handleToggleFavorite = async () => {
     const token = localStorage.getItem("token");
 
-    if (!token) return;
+    if (!token) {
+      setPendingFavoriteId(property.id);
+      setShowAuthDialog(true);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -30,7 +47,8 @@ const PropertyCard = ({ property, isFavorite = false, onFavoriteToggle }: Proper
           },
         });
 
-        setFav(false);
+        removeFavorite(property.id);
+        // تنبيه الـ parent بأن العقار تم حذفه
         onFavoriteToggle?.(property.id);
       } else {
         await fetch("http://localhost:5000/api/favorites", {
@@ -44,7 +62,7 @@ const PropertyCard = ({ property, isFavorite = false, onFavoriteToggle }: Proper
           }),
         });
 
-        setFav(true);
+        addFavorite(property.id);
       }
     } catch (error) {
       console.log(error);
@@ -98,6 +116,34 @@ const PropertyCard = ({ property, isFavorite = false, onFavoriteToggle }: Proper
             className={fav ? "fill-destructive text-destructive" : ""}
           />
         </button>
+
+        <AlertDialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Sign in to save favorites</AlertDialogTitle>
+              <AlertDialogDescription>
+                You need to sign in before adding this property to your favorites list.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel
+                onClick={() => {
+                  setShowAuthDialog(false);
+                  setPendingFavoriteId(null);
+                }}
+              >
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  navigate("/login");
+                }}
+              >
+                Sign In
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
       <div className="p-5">
