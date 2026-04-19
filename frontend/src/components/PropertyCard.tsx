@@ -12,8 +12,14 @@ const PropertyCard = ({ property, isFavorite = false }: PropertyCardProps) => {
   return (
     <div data-cmp="PropertyCard" className="bg-card rounded-xl overflow-hidden shadow-custom border border-border group transition-all duration-300 hover:-translate-y-1">
       <div className="relative aspect-[4/3] overflow-hidden">
-        <img 
-          src={property.images[0]} 
+        <img
+          src={
+            property.images?.[0]
+              ? property.images[0].startsWith("http")
+                ? property.images[0]
+                : `http://localhost:5000${property.images[0]}`
+              : "https://via.placeholder.com/400x300?text=No+Image"
+          }
           alt={property.title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
@@ -38,7 +44,7 @@ const PropertyCard = ({ property, isFavorite = false }: PropertyCardProps) => {
             {property.purpose === 'Rent' && <span className="text-sm text-muted-foreground font-normal">/mo</span>}
           </span>
         </div>
-        
+
         <div className="flex items-center text-muted-foreground mb-4">
           <MapPin size={16} className="mr-1 flex-shrink-0" />
           <span className="text-sm truncate">{property.location}</span>
@@ -59,8 +65,10 @@ const PropertyCard = ({ property, isFavorite = false }: PropertyCardProps) => {
           </div>
         </div>
 
-        <Link to="/property-details" className="block w-full text-center py-2.5 mt-2 bg-secondary text-secondary-foreground rounded-lg text-sm font-medium hover:bg-primary hover:text-primary-foreground transition-colors">
-          View Details
+         <Link
+          to={`/property-details/${property.id}`}
+          className="block w-full text-center py-2.5 mt-2 bg-secondary text-secondary-foreground rounded-lg text-sm font-medium hover:bg-primary hover:text-primary-foreground transition-colors"
+        > View Details
         </Link>
       </div>
     </div>

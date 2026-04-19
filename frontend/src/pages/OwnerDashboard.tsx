@@ -14,56 +14,40 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import StatCard from "@/components/StatCard";
 import { getInquiries, type InquiryItem } from "@/api/inquiries";
-import {
-  getInquiryMessages,
-  sendMessage,
-  type MessageItem,
-} from "@/api/messages";
+import { getInquiryMessages, sendMessage, type MessageItem } from "@/api/messages";
 import { connectSocket } from "@/lib/socket";
-import AddPropertyModal from "@/pages/AddPropertyPage";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import AddPropertyModal from "./AddPropertyPage";
 
-const MOCK_PROPERTIES = [
-  {
-    id: 1,
-    title: "Modern Seaside Villa",
-    location: "Miami, FL",
-    purpose: "Sale",
-    price: "$1,250,000",
-    status: "Active",
-    views: "1,204",
-  },
-  {
-    id: 2,
-    title: "Luxury Downtown Apartment",
-    location: "New York, NY",
-    purpose: "Rent",
-    price: "$4,500/mo",
-    status: "Pending",
-    views: "864",
-  },
-  {
-    id: 3,
-    title: "Mountain View House",
-    location: "Denver, CO",
-    purpose: "Sale",
-    price: "$720,000",
-    status: "Active",
-    views: "592",
-  },
-];
+type PropertyType = {
+  property_id: number;
+  title: string;
+  description: string;
+  property_type: string;
+  bedrooms: number;
+  bathrooms: number;
+  area: number;
+  listing_id: number;
+  purpose: string;
+  price: string | number;
+  status: string;
+  views: number;
+  city: string;
+  address: string;
+  images: string[];
+  features: string[];
+};
 
 const OwnerDashboard = () => {
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("properties");
+
+  const [properties, setProperties] = useState<PropertyType[]>([]);
+  const [loadingProperties, setLoadingProperties] = useState(true);
+
   const [inquiries, setInquiries] = useState<InquiryItem[]>([]);
   const [selectedInquiry, setSelectedInquiry] = useState<InquiryItem | null>(null);
   const [messages, setMessages] = useState<MessageItem[]>([]);
@@ -71,6 +55,7 @@ const OwnerDashboard = () => {
   const [loadingInquiries, setLoadingInquiries] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sending, setSending] = useState(false);
+
   const [error, setError] = useState("");
   const [openAddModal, setOpenAddModal] = useState(false);
 
@@ -83,13 +68,44 @@ const OwnerDashboard = () => {
   }, []);
 
   const isOwner = Boolean(user && user.role === "owner");
+  const ownerId = user?.user_id || user?.id;
 
-  const getErrorMessage = (error: unknown, fallback: string) => {
-    if (error instanceof Error && error.message) {
-      return error.message;
+  const getErrorMessage = (err: unknown, fallback: string) => {
+    if (err instanceof Error && err.message) {
+      return err.message;
     }
     return fallback;
   };
+
+  const fetchOwnerProperties = async () => {
+    if (!ownerId) {
+      return;
+    }
+
+    try {
+      setLoadingProperties(true);
+      const res = await fetch(`http://localhost:5000/api/properties/owner/${ownerId}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to fetch properties");
+      }
+
+      setProperties(data?.data?.properties || []);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Failed to load properties"));
+    } finally {
+      setLoadingProperties(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isOwner || !ownerId) {
+      return;
+    }
+
+    fetchOwnerProperties();
+  }, [isOwner, ownerId]);
 
   useEffect(() => {
     const loadInquiries = async () => {
@@ -175,7 +191,7 @@ const OwnerDashboard = () => {
     }
 
     if (!selectedInquiry.customer_id) {
-      setError("This inquiry does not have a linked customer account.");
+      setError("This inquiry does not have a linked requester account.");
       return;
     }
 
@@ -223,8 +239,9 @@ const OwnerDashboard = () => {
       year: "numeric",
     });
 
-  const formatPrice = (price?: number) => {
-    if (typeof price !== "number") {
+  const formatPrice = (price?: number | string) => {
+    const normalized = Number(price);
+    if (!Number.isFinite(normalized)) {
       return "-";
     }
 
@@ -232,10 +249,24 @@ const OwnerDashboard = () => {
       style: "currency",
       currency: "USD",
       maximumFractionDigits: 0,
-    }).format(price);
+    }).format(normalized);
   };
 
-  const currentUserId = user?.id;
+  const getPropertyImage = (images: string[] = []) => {
+    const raw = images[0];
+    if (!raw) {
+      return "https://via.placeholder.com/100x100?text=No+Image";
+    }
+    if (raw.startsWith("http")) {
+      return raw;
+    }
+    return `http://localhost:5000${raw}`;
+  };
+
+  const currentUserId = Number(user?.id || user?.user_id || 0);
+  const activeListingsCount = properties.filter((p) => p.status === "Active").length;
+  const totalViews = properties.reduce((sum, p) => sum + Number(p.views || 0), 0);
+  const totalInquiries = inquiries.length;
 
   if (!isOwner) {
     return <Navigate to="/" replace />;
@@ -257,7 +288,9 @@ const OwnerDashboard = () => {
             <div className="space-y-4">
               <p className="text-xs uppercase tracking-[0.28em] text-slate-500">LuxeEstates</p>
               <div>
-                <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Management Center</h1>
+                <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+                  Management Center
+                </h1>
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
                   A quiet, polished workspace for your properties, inquiry requests, and real-time conversations.
                 </p>
@@ -292,9 +325,9 @@ const OwnerDashboard = () => {
         )}
 
         <section className="grid gap-4 sm:grid-cols-3">
-          <StatCard title="Active Listings" value="12" icon={Building} trend="2%" />
-          <StatCard title="Total Views" value="4,821" icon={Eye} trend="12%" />
-          <StatCard title="Saved by Users" value="384" icon={Heart} trend="5%" />
+          <StatCard title="Active Listings" value={String(activeListingsCount)} icon={Building} trend="0%" />
+          <StatCard title="Total Views" value={String(totalViews)} icon={Eye} trend="0%" />
+          <StatCard title="Total Inquiries" value={String(totalInquiries)} icon={Heart} trend="0%" />
         </section>
 
         <Card className="overflow-hidden border border-white/70 bg-white/75 shadow-[0_28px_90px_rgba(15,23,42,0.1)] backdrop-blur-xl">
@@ -309,51 +342,64 @@ const OwnerDashboard = () => {
                     Inquiry Requests
                   </TabsTrigger>
                 </TabsList>
-                <p className="text-xs uppercase tracking-[0.22em] text-slate-400">
-                  Minimal workspace
-                </p>
+                <p className="text-xs uppercase tracking-[0.22em] text-slate-400">Minimal workspace</p>
               </div>
 
               <TabsContent value="properties" className="pt-2">
                 <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                      <thead className="border-b border-slate-200 bg-gradient-to-r from-[#f8f6f2] via-white to-[#f4f7fb] text-slate-500">
-                        <tr>
-                          <th className="px-6 py-4 font-medium uppercase tracking-[0.16em]">Property</th>
-                          <th className="px-6 py-4 font-medium uppercase tracking-[0.16em]">Purpose</th>
-                          <th className="px-6 py-4 font-medium uppercase tracking-[0.16em]">Price</th>
-                          <th className="px-6 py-4 font-medium uppercase tracking-[0.16em]">Status</th>
-                          <th className="px-6 py-4 font-medium uppercase tracking-[0.16em]">Views</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200 bg-white">
-                        {MOCK_PROPERTIES.map((property) => (
-                          <tr key={property.id} className="transition duration-200 hover:bg-slate-50/80 hover:shadow-sm">
-                            <td className="px-6 py-4">
-                              <div>
-                                <p className="font-medium text-slate-900">{property.title}</p>
-                                <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-500">{property.location}</p>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 text-slate-700">{property.purpose}</td>
-                            <td className="px-6 py-4 font-medium text-slate-900">{property.price}</td>
-                            <td className="px-6 py-4">
-                              <Badge
-                                className={
-                                  property.status === "Active"
-                                    ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
-                                    : "border border-amber-200 bg-amber-50 text-amber-700"
-                                }
-                              >
-                                {property.status}
-                              </Badge>
-                            </td>
-                            <td className="px-6 py-4 text-slate-700">{property.views}</td>
+                    {loadingProperties ? (
+                      <div className="px-6 py-8 text-sm text-slate-500">Loading properties...</div>
+                    ) : properties.length === 0 ? (
+                      <div className="px-6 py-8 text-sm text-slate-500">No properties found.</div>
+                    ) : (
+                      <table className="w-full text-left text-sm">
+                        <thead className="border-b border-slate-200 bg-gradient-to-r from-[#f8f6f2] via-white to-[#f4f7fb] text-slate-500">
+                          <tr>
+                            <th className="px-6 py-4 font-medium uppercase tracking-[0.16em]">Property</th>
+                            <th className="px-6 py-4 font-medium uppercase tracking-[0.16em]">Purpose</th>
+                            <th className="px-6 py-4 font-medium uppercase tracking-[0.16em]">Price</th>
+                            <th className="px-6 py-4 font-medium uppercase tracking-[0.16em]">Status</th>
+                            <th className="px-6 py-4 font-medium uppercase tracking-[0.16em]">Views</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 bg-white">
+                          {properties.map((property) => (
+                            <tr key={property.property_id} className="transition duration-200 hover:bg-slate-50/80 hover:shadow-sm">
+                              <td className="px-6 py-4">
+                                <div className="flex items-center gap-3">
+                                  <img
+                                    src={getPropertyImage(property.images)}
+                                    alt={property.title}
+                                    className="h-12 w-12 rounded-xl object-cover"
+                                  />
+                                  <div>
+                                    <p className="font-medium text-slate-900">{property.title}</p>
+                                    <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-500">
+                                      {property.city || "-"}, {property.address || "-"}
+                                    </p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 text-slate-700">{property.purpose}</td>
+                              <td className="px-6 py-4 font-medium text-slate-900">{formatPrice(property.price)}</td>
+                              <td className="px-6 py-4">
+                                <Badge
+                                  className={
+                                    property.status === "Active"
+                                      ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
+                                      : "border border-amber-200 bg-amber-50 text-amber-700"
+                                  }
+                                >
+                                  {property.status}
+                                </Badge>
+                              </td>
+                              <td className="px-6 py-4 text-slate-700">{property.views}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
                   </div>
                 </div>
               </TabsContent>
@@ -390,9 +436,10 @@ const OwnerDashboard = () => {
                           <tbody className="divide-y divide-slate-200 bg-white">
                             {inquiries.map((inquiry) => {
                               const isSelected = selectedInquiry?.inquiry_id === inquiry.inquiry_id;
-                              const snippet = inquiry.message.length > 55
-                                ? `${inquiry.message.slice(0, 55)}...`
-                                : inquiry.message;
+                              const snippet =
+                                inquiry.message.length > 55
+                                  ? `${inquiry.message.slice(0, 55)}...`
+                                  : inquiry.message;
 
                               return (
                                 <tr
@@ -472,9 +519,7 @@ const OwnerDashboard = () => {
                         <div className="border-b border-slate-200 bg-gradient-to-r from-[#f8f6f2] via-white to-[#f4f7fb] px-5 py-4">
                           <div className="flex items-center justify-between gap-3">
                             <div>
-                              <h2 className="text-lg font-semibold text-slate-900">
-                                {selectedInquiry.name}
-                              </h2>
+                              <h2 className="text-lg font-semibold text-slate-900">{selectedInquiry.name}</h2>
                               <p className="text-sm text-slate-500">{selectedInquiry.property_title}</p>
                             </div>
                             <Badge
@@ -483,7 +528,7 @@ const OwnerDashboard = () => {
                                   ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
                                   : selectedInquiry.status === "Rejected"
                                     ? "border border-rose-200 bg-rose-50 text-rose-700"
-                                  : "border border-amber-200 bg-amber-50 text-amber-700"
+                                    : "border border-amber-200 bg-amber-50 text-amber-700"
                               }
                             >
                               {selectedInquiry.status}
@@ -496,7 +541,7 @@ const OwnerDashboard = () => {
                             <p className="font-medium text-slate-900">Inquiry details</p>
                             <p className="mt-2">{selectedInquiry.message}</p>
                             <p className="mt-3 text-xs text-slate-400">
-                              {selectedInquiry.email} · {selectedInquiry.phone} · {formatDate(selectedInquiry.created_at)}
+                              {selectedInquiry.email} | {selectedInquiry.phone} | {formatDate(selectedInquiry.created_at)}
                             </p>
                           </div>
 
@@ -512,7 +557,7 @@ const OwnerDashboard = () => {
                           ) : (
                             <div className="space-y-3">
                               {messages.map((message) => {
-                                const isMine = Number(message.sender_id) === Number(currentUserId);
+                                const isMine = Number(message.sender_id) === currentUserId;
                                 return (
                                   <div
                                     key={message.message_id}
@@ -521,17 +566,13 @@ const OwnerDashboard = () => {
                                     <div
                                       className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
                                         isMine
-                                            ? "bg-slate-900 text-white shadow-[0_12px_30px_rgba(15,23,42,0.22)]"
-                                            : "bg-slate-100 text-slate-800 shadow-[0_12px_30px_rgba(15,23,42,0.08)]"
+                                          ? "bg-slate-900 text-white shadow-[0_12px_30px_rgba(15,23,42,0.22)]"
+                                          : "bg-slate-100 text-slate-800 shadow-[0_12px_30px_rgba(15,23,42,0.08)]"
                                       }`}
                                     >
                                       <p>{message.content}</p>
-                                      <p
-                                        className={`mt-2 text-[11px] ${
-                                          isMine ? "text-slate-300" : "text-slate-500"
-                                        }`}
-                                      >
-                                        {isMine ? "You" : message.sender_name || "Customer"}
+                                      <p className={`mt-2 text-[11px] ${isMine ? "text-slate-300" : "text-slate-500"}`}>
+                                        {isMine ? "You" : message.sender_name || "Requester"}
                                       </p>
                                     </div>
                                   </div>
@@ -556,12 +597,12 @@ const OwnerDashboard = () => {
                                 className="w-full rounded-2xl bg-slate-900 text-white shadow-[0_16px_35px_rgba(15,23,42,0.22)] transition-transform hover:-translate-y-0.5 hover:bg-slate-800"
                               >
                                 <Send className="mr-2 h-4 w-4" />
-                                {sending ? "Sending" : "Send message"}
+                                {sending ? "Sending..." : "Send message"}
                               </Button>
                             </div>
                           ) : (
                             <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                              This inquiry has no linked customer account, so live chat is read-only.
+                              This inquiry has no linked requester account, so chat is read-only.
                             </div>
                           )}
                         </div>
@@ -579,11 +620,12 @@ const OwnerDashboard = () => {
         </Card>
 
         <Dialog open={openAddModal} onOpenChange={setOpenAddModal}>
-          <DialogContent className="fixed top-[50%] left-[50%] z-50 w-[95vw] max-w-6xl max-h-[90vh] translate-x-[-50%] translate-y-[-50%] bg-white" showCloseButton>
+          <DialogContent className="fixed top-[50%] left-[50%] z-50 w-[95vw] max-w-6xl max-h-[90vh] translate-x-[-50%] translate-y-[-50%] bg-white">
             <AddPropertyModal
               onClose={() => setOpenAddModal(false)}
               onSave={() => {
                 setActiveTab("properties");
+                fetchOwnerProperties();
               }}
             />
           </DialogContent>
