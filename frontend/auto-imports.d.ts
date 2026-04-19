@@ -19,6 +19,7 @@ declare global {
   const Building: typeof import('lucide-react').Building
   const Calendar: typeof import('lucide-react').Calendar
   const Check: typeof import('lucide-react').Check
+  const CheckCircle2: typeof import('lucide-react').CheckCircle2
   const CheckIcon: typeof import('lucide-react').CheckIcon
   const ChevronDownIcon: typeof import('lucide-react').ChevronDownIcon
   const ChevronLeftIcon: typeof import('lucide-react').ChevronLeftIcon
@@ -61,6 +62,7 @@ declare global {
   const LogOut: typeof import('lucide-react').LogOut
   const Mail: typeof import('lucide-react').Mail
   const MapPin: typeof import('lucide-react').MapPin
+  const MessageSquare: typeof import('lucide-react').MessageSquare
   const MinusIcon: typeof import('lucide-react').MinusIcon
   const MoreHorizontal: typeof import('lucide-react').MoreHorizontal
   const MoreHorizontalIcon: typeof import('lucide-react').MoreHorizontalIcon
@@ -99,6 +101,7 @@ declare global {
   const Verified: typeof import('lucide-react').Verified
   const View: typeof import('lucide-react').View
   const X: typeof import('lucide-react').X
+  const XCircle: typeof import('lucide-react').XCircle
   const XIcon: typeof import('lucide-react').XIcon
   const cache: typeof import('react').cache
   const cacheSignal: typeof import('react').cacheSignal

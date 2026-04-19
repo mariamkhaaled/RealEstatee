@@ -131,8 +131,8 @@ CREATE TABLE messages (
         FOREIGN KEY (receiver_id) REFERENCES users(user_id)
         ON DELETE CASCADE,
     CONSTRAINT fk_message_inquiry
-    FOREIGN KEY (inquiry_id) REFERENCES real_estate_inquiries(id)
-    ON DELETE CASCADE
+    FOREIGN KEY (inquiry_id) REFERENCES inquiries(inquiry_id)
+        ON DELETE CASCADE
 );
 
 INSERT INTO users (full_name, email, password_hash, phone, role, is_verified)

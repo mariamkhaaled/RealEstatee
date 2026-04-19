@@ -21,3 +21,19 @@ export {
   type OTPResponse,
   type PasswordResetResponse,
 } from "./otp";
+
+// Inquiry APIs
+export {
+  getInquiries,
+  createInquiry,
+  type InquiryItem,
+  type CreateInquiryPayload,
+} from "./inquiries";
+
+// Message APIs
+export {
+  getInquiryMessages,
+  sendMessage,
+  type MessageItem,
+  type SendMessagePayload,
+} from "./messages";
