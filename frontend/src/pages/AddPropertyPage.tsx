@@ -54,6 +54,7 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ onClose, onSave }) 
   const [isLoadingFeatures, setIsLoadingFeatures] = useState(true);
   const [submitError, setSubmitError] = useState('');
 
+  
   useEffect(() => {
     const fetchFeatures = async () => {
       try {
@@ -158,6 +159,7 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ onClose, onSave }) 
     setSubmitError('');
   };
 
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError('');
@@ -176,75 +178,82 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ onClose, onSave }) 
 
     setIsSubmitting(true);
 
-    try {
-      const realOwnerId = 1; // غيريه للـ id الحقيقي الموجود عندك في users
+try {
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  const realOwnerId = user?.user_id || user?.id;
 
-      const payload = new FormData();
+  if (!realOwnerId) {
+    setSubmitError('No logged-in owner found.');
+    setIsSubmitting(false);
+    return;
+  }
 
-      payload.append('owner_id', String(realOwnerId));
+  const payload = new FormData();
 
-      payload.append(
-        'property',
-        JSON.stringify({
-          title: formData.title,
-          description: formData.description,
-          type: formData.type,
-          bedrooms: formData.bedrooms ? Number(formData.bedrooms) : 0,
-          bathrooms: formData.bathrooms ? Number(formData.bathrooms) : 0,
-          area: formData.area ? Number(formData.area) : 0,
-        })
-      );
+  payload.append('owner_id', String(realOwnerId));
 
-      payload.append(
-        'location',
-        JSON.stringify({
-          city: formData.location,
-          address: formData.address,
-        })
-      );
+  payload.append(
+    'property',
+    JSON.stringify({
+      title: formData.title,
+      description: formData.description,
+      type: formData.type,
+      bedrooms: formData.bedrooms ? Number(formData.bedrooms) : 0,
+      bathrooms: formData.bathrooms ? Number(formData.bathrooms) : 0,
+      area: formData.area ? Number(formData.area) : 0,
+    })
+  );
 
-      payload.append(
-        'listing',
-        JSON.stringify({
-          price: Number(formData.price),
-          purpose: formData.purpose,
-          status: 'Active',
-          views: 0,
-        })
-      );
+  payload.append(
+    'location',
+    JSON.stringify({
+      city: formData.location,
+      address: formData.address,
+    })
+  );
 
-      payload.append('feature_ids', JSON.stringify(selectedFeatures));
+  payload.append(
+    'listing',
+    JSON.stringify({
+      price: Number(formData.price),
+      purpose: formData.purpose,
+      status: 'Active',
+      views: 0,
+    })
+  );
 
-      selectedFiles.forEach((file) => {
-        payload.append('images', file);
-      });
+  payload.append('feature_ids', JSON.stringify(selectedFeatures));
 
-      const res = await fetch('http://localhost:5000/api/properties', {
-        method: 'POST',
-        body: payload,
-      });
+  selectedFiles.forEach((file) => {
+    payload.append('images', file);
+  });
 
-      const data = await res.json();
+  const res = await fetch('http://localhost:5000/api/properties', {
+    method: 'POST',
+    body: payload,
+  });
 
-      if (!res.ok) {
-        throw new Error(data.message || `Request failed with status ${res.status}`);
-      }
+  const data = await res.json();
 
-      alert('Property saved successfully');
-      resetForm();
+  if (!res.ok) {
+    throw new Error(data.message || `Request failed with status ${res.status}`);
+  }
 
-      if (onSave) onSave();
-      onClose();
-    } catch (error) {
-      console.error('Error saving property:', error);
-      setSubmitError(
-        error instanceof Error
-          ? error.message
-          : 'Failed to save property. Check backend and try again.'
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+  alert('Property saved successfully');
+  resetForm();
+
+  if (onSave) onSave();
+  onClose();
+} catch (error) {
+  console.error('Error saving property:', error);
+  setSubmitError(
+    error instanceof Error
+      ? error.message
+      : 'Failed to save property. Check backend and try again.'
+  );
+} finally {
+  setIsSubmitting(false);
+}
   };
 
   return (
