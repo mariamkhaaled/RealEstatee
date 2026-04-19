@@ -28,7 +28,7 @@ const App = () => (
             {/* Public Routes */}
             <Route path="/" element={<Home />} />
             <Route path="/properties" element={<Properties />} />
-            <Route path="/property-details" element={<PropertyDetails />} />
+            <Route path="/property-details/:id" element={<PropertyDetails />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/reset-password" element={<ResetPassword />} />

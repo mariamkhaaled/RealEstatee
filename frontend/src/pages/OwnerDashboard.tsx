@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import StatCard from '@/components/StatCard';
 import { Building, Eye, Heart, Plus, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,10 +7,28 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import AddPropertyModal from './AddPropertyPage';
 import { Navigate } from 'react-router-dom';
 
+type PropertyType = {
+  property_id: number;
+  title: string;
+  description: string;
+  property_type: string;
+  bedrooms: number;
+  bathrooms: number;
+  area: number;
+  listing_id: number;
+  purpose: string;
+  price: string | number;
+  status: string;
+  views: number;
+  city: string;
+  address: string;
+  images: string[];
+  features: string[];
+};
+
 const OwnerDashboard: React.FC = () => {
   const user = JSON.parse(localStorage.getItem('user') || 'null');
 
-  // 🔐 حماية الصفحة (Owner only)
   if (!user || user.role !== 'owner') {
     return <Navigate to="/" replace />;
   }
@@ -18,6 +36,42 @@ const OwnerDashboard: React.FC = () => {
   const [openAddModal, setOpenAddModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
   const [openRequestModal, setOpenRequestModal] = useState(false);
+
+  const [properties, setProperties] = useState<PropertyType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const ownerId = user?.user_id || user?.id;
+
+
+  const fetchOwnerProperties = async () => {
+    try {
+      setLoading(true);
+      setError('');
+
+      const res = await fetch(`http://localhost:5000/api/properties/owner/${ownerId}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to fetch properties');
+      }
+
+      setProperties(data.data.properties || []);
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
+  };
+    useEffect(() => {
+    if (!ownerId) return;
+    fetchOwnerProperties();
+  }, [ownerId]);
+
+   
+
+  const activeListingsCount = properties.length;
+  const totalViews = properties.reduce((sum, p) => sum + Number(p.views || 0), 0);
 
   const requests = [
     {
@@ -58,22 +112,17 @@ const OwnerDashboard: React.FC = () => {
     },
   ];
 
+
+
   return (
     <>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-        {/* Header */}
         <div className="flex justify-between items-center mb-8">
-
           <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              Owner Dashboard
-            </h1>
+            <h1 className="text-2xl font-bold text-foreground">Owner Dashboard</h1>
             <p className="text-muted-foreground">
               Manage your properties and track performance.
             </p>
-
-            {/* 👇 role display (info only) */}
             <p className="text-sm text-muted-foreground mt-1">
               Logged in as: <span className="font-semibold">Owner</span>
             </p>
@@ -85,87 +134,96 @@ const OwnerDashboard: React.FC = () => {
           </Button>
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <StatCard title="Active Listings" value="12" icon={Building} trend="2" />
-          <StatCard title="Total Views" value="4,821" icon={Eye} trend="12%" />
-          <StatCard title="Saved by Users" value="384" icon={Heart} trend="5%" />
+          <StatCard title="Active Listings" value={String(activeListingsCount)} icon={Building} trend="0" />
+          <StatCard title="Total Views" value={String(totalViews)} icon={Eye} trend="0%" />
+          <StatCard title="Saved by Users" value="0" icon={Heart} trend="0%" />
         </div>
 
-        {/* Listings table */}
         <div className="bg-card rounded-xl shadow-custom border border-border overflow-hidden mb-8">
-
           <div className="p-6 border-b border-border">
-            <h2 className="text-lg font-bold text-foreground">
-              My Listings
-            </h2>
+            <h2 className="text-lg font-bold text-foreground">My Listings</h2>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-
-              <thead className="bg-secondary text-muted-foreground font-medium border-b border-border">
-                <tr>
-                  <th className="px-6 py-4">Property</th>
-                  <th className="px-6 py-4">Purpose</th>
-                  <th className="px-6 py-4">Price</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4">Views</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
-                </tr>
-              </thead>
-
-              <tbody className="divide-y divide-border">
-                {[1, 2, 3, 4].map((i) => (
-                  <tr key={i} className="hover:bg-muted/50 transition-colors">
-
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded bg-secondary overflow-hidden flex-shrink-0">
-                          <img
-                            src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=100&q=80"
-                            className="w-full h-full object-cover"
-                            alt="prop"
-                          />
-                        </div>
-
-                        <div>
-                          <p className="font-semibold text-foreground">
-                            Modern Seaside Villa
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Miami, FL
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td className="px-6 py-4 text-foreground">Sale</td>
-                    <td className="px-6 py-4 font-medium text-foreground">$1,250,000</td>
-
-                    <td className="px-6 py-4">
-                      <Badge className="bg-green-50 text-green-700 border-green-200">
-                        Active
-                      </Badge>
-                    </td>
-
-                    <td className="px-6 py-4 text-muted-foreground">1,204</td>
-
-                    <td className="px-6 py-4 text-right">
-                      <Button variant="ghost" size="icon">
-                        <MoreVertical size={18} />
-                      </Button>
-                    </td>
-
+          {loading ? (
+            <div className="p-6 text-muted-foreground">Loading properties...</div>
+          ) : error ? (
+            <div className="p-6 text-red-500">{error}</div>
+          ) : properties.length === 0 ? (
+            <div className="p-10 text-center">
+              <p className="text-lg font-semibold text-foreground">No listings yet</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                You haven’t added any properties yet.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-secondary text-muted-foreground font-medium border-b border-border">
+                  <tr>
+                    <th className="px-6 py-4">Property</th>
+                    <th className="px-6 py-4">Purpose</th>
+                    <th className="px-6 py-4">Price</th>
+                    <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4">Views</th>
+                    <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
+                </thead>
 
-            </table>
-          </div>
+                <tbody className="divide-y divide-border">
+                  {properties.map((property) => (
+                    <tr key={property.property_id} className="hover:bg-muted/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded bg-secondary overflow-hidden flex-shrink-0">
+                            <img
+                              src={
+                                property.images?.[0]
+                                  ? property.images[0].startsWith("http")
+                                    ? property.images[0]
+                                    : `http://localhost:5000${property.images[0]}`
+                                  : "https://via.placeholder.com/100x100?text=No+Image"
+                              }
+                              className="w-full h-full object-cover"
+                              alt={property.title}
+                            />
+                          </div>
+
+                          <div>
+                            <p className="font-semibold text-foreground">{property.title}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {property.city}, {property.address}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="px-6 py-4 text-foreground">{property.purpose}</td>
+                      <td className="px-6 py-4 font-medium text-foreground">
+                        ${Number(property.price).toLocaleString()}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <Badge className="bg-green-50 text-green-700 border-green-200">
+                          {property.status}
+                        </Badge>
+                      </td>
+
+                      <td className="px-6 py-4 text-muted-foreground">{property.views}</td>
+
+                      <td className="px-6 py-4 text-right">
+                        <Button variant="ghost" size="icon">
+                          <MoreVertical size={18} />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
-        {/* Requests */}
         <div className="bg-card rounded-xl shadow-custom border border-border overflow-hidden">
 
           <div className="p-6 border-b border-border">
@@ -260,15 +318,17 @@ const OwnerDashboard: React.FC = () => {
           </div>
         </div>
 
+
       </div>
 
-      {/* Modals (زي ما هي) */}
       <Dialog open={openAddModal} onOpenChange={setOpenAddModal}>
         <DialogContent className="bg-background fixed top-[50%] left-[50%] z-50 w-[95vw] max-w-6xl max-h-[90vh] translate-x-[-50%] translate-y-[-50%]">
-          <AddPropertyModal onClose={() => setOpenAddModal(false)} />
+          <AddPropertyModal
+            onClose={() => setOpenAddModal(false)}
+            onSave={() => fetchOwnerProperties()}
+          />
         </DialogContent>
       </Dialog>
-
     </>
   );
 };

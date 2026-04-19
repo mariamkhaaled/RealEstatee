@@ -7,9 +7,10 @@ import { Badge } from "@/components/ui/badge";
 interface PropertyCardProps {
   property: Property;
   isFavorite?: boolean;
+  onFavoriteToggle?: (propertyId: string) => void;
 }
 
-const PropertyCard = ({ property, isFavorite = false }: PropertyCardProps) => {
+const PropertyCard = ({ property, isFavorite = false, onFavoriteToggle }: PropertyCardProps) => {
   const [fav, setFav] = useState(isFavorite);
   const [loading, setLoading] = useState(false);
 
@@ -21,21 +22,17 @@ const PropertyCard = ({ property, isFavorite = false }: PropertyCardProps) => {
     try {
       setLoading(true);
 
-      // لو already favorite → remove
       if (fav) {
-        await fetch(
-          `http://localhost:5000/api/favorites/${property.id}`,
-          {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        await fetch(`http://localhost:5000/api/favorites/${property.id}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         setFav(false);
+        onFavoriteToggle?.(property.id);
       } else {
-        // add favorite
         await fetch("http://localhost:5000/api/favorites", {
           method: "POST",
           headers: {
@@ -62,8 +59,14 @@ const PropertyCard = ({ property, isFavorite = false }: PropertyCardProps) => {
       className="bg-card rounded-xl overflow-hidden shadow-custom border border-border group transition-all duration-300 hover:-translate-y-1"
     >
       <div className="relative aspect-[4/3] overflow-hidden">
-        <img
-          src={property.images[0]}
+        <img 
+          src={
+            property.images?.[0]
+              ? property.images[0].startsWith("http")
+                ? property.images[0]
+                : `http://localhost:5000${property.images[0]}`
+              : "https://via.placeholder.com/400x300?text=No+Image"
+          }
           alt={property.title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
@@ -84,7 +87,7 @@ const PropertyCard = ({ property, isFavorite = false }: PropertyCardProps) => {
           </Badge>
         </div>
 
-        {/* ❤️ TOGGLE BUTTON (ONLY PART MODIFIED) */}
+        {/*TOGGLE BUTTON (ONLY PART MODIFIED) */}
         <button
           disabled={loading}
           onClick={handleToggleFavorite}
@@ -141,10 +144,8 @@ const PropertyCard = ({ property, isFavorite = false }: PropertyCardProps) => {
           </div>
         </div>
 
-        <Link
-          to="/property-details"
-          className="block w-full text-center py-2.5 mt-2 bg-secondary text-secondary-foreground rounded-lg text-sm font-medium hover:bg-primary hover:text-primary-foreground transition-colors"
-        >
+        <Link to={`/property-details/${property.id}`}
+          className="block w-full text-center py-2.5 mt-2 bg-secondary text-secondary-foreground rounded-lg text-sm font-medium hover:bg-primary hover:text-primary-foreground transition-colors">
           View Details
         </Link>
       </div>
