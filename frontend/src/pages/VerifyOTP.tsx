@@ -62,6 +62,7 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({ email, onBack }) => {
       if (response.token && response.data) {
         localStorage.setItem("token", response.token);
         localStorage.setItem("user", JSON.stringify(response.data));
+        window.dispatchEvent(new Event("user-updated"));
 
         // Small delay for UX smoothness
         setTimeout(async () => {

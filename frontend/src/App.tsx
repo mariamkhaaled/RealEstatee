@@ -45,7 +45,7 @@ const App = () => (
               <Route
                 path="/profile"
                 element={
-                  <ProtectedRoute allowedRoles={["user", "owner", "admin"]}>
+                  <ProtectedRoute allowedRoles={["customer", "owner", "admin"]}>
                     <Profile />
                   </ProtectedRoute>
                 }
@@ -72,7 +72,7 @@ const App = () => (
               <Route
                 path="/my-inquiries"
                 element={
-                  <ProtectedRoute allowedRoles={["owner", "customer", "user"]}>
+                  <ProtectedRoute allowedRoles={["owner", "customer"]}>
                     <MyInquiries />
                   </ProtectedRoute>
                 }
@@ -81,7 +81,7 @@ const App = () => (
               <Route
                 path="/favorites"
                 element={
-                  <ProtectedRoute allowedRoles={["user", "owner", "admin"]}>
+                  <ProtectedRoute allowedRoles={["customer", "owner", "admin"]}>
                     <Favorites />
                   </ProtectedRoute>
                 }

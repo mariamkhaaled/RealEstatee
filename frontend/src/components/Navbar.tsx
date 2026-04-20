@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Home,
@@ -18,23 +18,38 @@ import { useFavorites } from "@/context/FavoritesContext";
 
 type InquiryRef = { inquiry_id: number };
 
+const readStoredUser = () => {
+  try {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  } catch {
+    return null;
+  }
+};
+
 const Navbar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [unreadDashboard, setUnreadDashboard] = useState(0);
   const [unreadMyInquiries, setUnreadMyInquiries] = useState(0);
+  const [user, setUser] = useState(readStoredUser);
 
-  const user = useMemo(() => {
-    try {
-      return localStorage.getItem("user")
-        ? JSON.parse(localStorage.getItem("user") || "{}")
-        : null;
-    } catch {
-      return null;
-    }
+  useEffect(() => {
+    const syncUser = () => {
+      setUser(readStoredUser());
+    };
+
+    window.addEventListener("storage", syncUser);
+    window.addEventListener("user-updated", syncUser as EventListener);
+
+    return () => {
+      window.removeEventListener("storage", syncUser);
+      window.removeEventListener("user-updated", syncUser as EventListener);
+    };
   }, []);
 
   const userPhoto = user?.photo || null;
+  const normalizedRole = String(user?.role || "").toLowerCase();
 
   const initials = user
     ? `${user.firstName?.charAt(0) || "U"}${user.lastName?.charAt(0) || ""}`.toUpperCase()
@@ -43,9 +58,10 @@ const Navbar: React.FC = () => {
   const { clearFavorites } = useFavorites();
   const isLoggedIn = Boolean(localStorage.getItem("token"));
   const currentUserId = Number(user?.id || user?.user_id || 0);
-  const isOwner = user?.role === "owner";
-  const isCustomer = user?.role === "user";
-  const showMyInquiriesUnread = Boolean(isLoggedIn && isCustomer);
+  const isOwner = normalizedRole === "owner";
+  const isCustomer = normalizedRole === "customer" || normalizedRole === "user";
+  const isAdmin = normalizedRole === "admin";
+  const showMyInquiriesUnread = Boolean(isLoggedIn && !isAdmin);
   const showDashboardUnread = Boolean(isLoggedIn && isOwner);
 
   const isActive = (path: string) => location.pathname === path;
@@ -53,6 +69,7 @@ const Navbar: React.FC = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    window.dispatchEvent(new Event("user-updated"));
     clearFavorites();
     navigate("/login");
   };
@@ -61,7 +78,7 @@ const Navbar: React.FC = () => {
     let intervalId: ReturnType<typeof setInterval> | null = null;
 
     const loadUnread = async () => {
-      if (!isLoggedIn || user?.role === "admin") {
+      if (!isLoggedIn || isAdmin) {
         setUnreadDashboard(0);
         setUnreadMyInquiries(0);
         return;
@@ -71,9 +88,7 @@ const Navbar: React.FC = () => {
         const [countsResponse, ownerInquiriesResponse, myInquiriesResponse] =
           await Promise.all([
             getUnreadCounts(),
-            user?.role === "owner"
-              ? getInquiries()
-              : Promise.resolve({ data: [] as InquiryRef[] }),
+            getInquiries(),
             getMyInquiries(),
           ]);
 
@@ -87,6 +102,7 @@ const Navbar: React.FC = () => {
             Number(item.inquiry_id),
           ),
         );
+
         const myInquiryIds = new Set<number>(
           ((myInquiriesResponse.data || []) as InquiryRef[]).map((item) =>
             Number(item.inquiry_id),
@@ -100,7 +116,8 @@ const Navbar: React.FC = () => {
           if (isOwner && ownerInquiryIds.has(inquiryId)) {
             dashboardCount += count;
           }
-          if (isCustomer && myInquiryIds.has(inquiryId)) {
+
+          if ((isOwner || isCustomer) && myInquiryIds.has(inquiryId)) {
             myInquiriesCount += count;
           }
         });
@@ -126,10 +143,10 @@ const Navbar: React.FC = () => {
         clearInterval(intervalId);
       }
     };
-  }, [isLoggedIn, user?.role, location.pathname]);
+  }, [isLoggedIn, isAdmin, isCustomer, isOwner, location.pathname, user?.role]);
 
   useEffect(() => {
-    if (!isLoggedIn || user?.role === "admin") {
+    if (!isLoggedIn || isAdmin) {
       return;
     }
 
@@ -146,7 +163,7 @@ const Navbar: React.FC = () => {
     return () => {
       socket.off("new_message", onNewMessage);
     };
-  }, [isLoggedIn, user?.role, currentUserId]);
+  }, [isLoggedIn, isAdmin, currentUserId]);
 
   return (
     <nav className="bg-card border-b border-border sticky top-0 z-50 shadow-sm">
@@ -237,7 +254,7 @@ const Navbar: React.FC = () => {
                   Logged in as
                 </span>
                 <span className="text-sm font-semibold text-foreground capitalize">
-                  {user?.role || "user"}
+                  {normalizedRole || "customer"}
                 </span>
               </div>
             )}

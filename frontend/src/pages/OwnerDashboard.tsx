@@ -206,6 +206,38 @@ const OwnerDashboard = () => {
   }, [isOwner]);
 
   useEffect(() => {
+    if (!isOwner) {
+      return;
+    }
+
+    const syncInquiryPanel = async () => {
+      try {
+        const [inquiriesResponse, unreadResponse] = await Promise.all([
+          getInquiries(),
+          getUnreadCounts(),
+        ]);
+
+        setInquiries(inquiriesResponse.data || []);
+
+        const nextCounts: Record<number, number> = {};
+        (unreadResponse.data || []).forEach((row) => {
+          nextCounts[Number(row.inquiry_id)] = Number(row.unread_count) || 0;
+        });
+
+        setUnreadByInquiry(nextCounts);
+      } catch {
+        // Ignore background sync failures to keep dashboard responsive
+      }
+    };
+
+    window.addEventListener("unread-count-changed", syncInquiryPanel);
+
+    return () => {
+      window.removeEventListener("unread-count-changed", syncInquiryPanel);
+    };
+  }, [isOwner]);
+
+  useEffect(() => {
     const inquiryId = Number(searchParams.get("inquiryId"));
     if (!inquiryId || inquiries.length === 0) {
       return;
@@ -256,11 +288,15 @@ const OwnerDashboard = () => {
     currentSocket.emit("join", selectedInquiry.inquiry_id);
 
     const handleNewMessage = (message: MessageItem) => {
-      if (message.inquiry_id === selectedInquiry.inquiry_id) {
+      const inquiryId = Number(message.inquiry_id);
+      const isCurrentOpen = inquiryId === selectedInquiry.inquiry_id;
+      const isForCurrentUser = Number(message.receiver_id) === currentUserId;
+
+      if (isCurrentOpen) {
         setMessages((prev) => [...prev, message]);
         scrollChatToBottom();
 
-        if (Number(message.receiver_id) === currentUserId) {
+        if (isForCurrentUser) {
           markInquiryAsRead(selectedInquiry.inquiry_id).catch(() => {
             // Ignore background mark-read failures
           });
@@ -268,7 +304,17 @@ const OwnerDashboard = () => {
             ...prev,
             [selectedInquiry.inquiry_id]: 0,
           }));
+          window.dispatchEvent(new Event("unread-count-changed"));
         }
+        return;
+      }
+
+      if (isForCurrentUser) {
+        setUnreadByInquiry((prev) => ({
+          ...prev,
+          [inquiryId]: (prev[inquiryId] || 0) + 1,
+        }));
+        window.dispatchEvent(new Event("unread-count-changed"));
       }
     };
 
@@ -460,11 +506,12 @@ const OwnerDashboard = () => {
 
   const totalUnread = useMemo(
     () =>
-      Object.values(unreadByInquiry).reduce(
-        (sum, value) => sum + Number(value || 0),
+      inquiries.reduce(
+        (sum, inquiry) =>
+          sum + Number(unreadByInquiry[inquiry.inquiry_id] || 0),
         0,
       ),
-    [unreadByInquiry],
+    [inquiries, unreadByInquiry],
   );
 
   const activeListingsCount = properties.filter(

@@ -53,9 +53,14 @@ const Login: React.FC = () => {
 
       // 🔥 IMPORTANT FIX
       const user = data.data;
+      const normalizedUser = {
+        ...user,
+        role: String(user?.role || "").toLowerCase(),
+      };
 
       localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("user", JSON.stringify(normalizedUser));
+      window.dispatchEvent(new Event("user-updated"));
 
       // Load favorites into context immediately after login
       await loadFavorites();
@@ -67,9 +72,9 @@ const Login: React.FC = () => {
         return;
       }
 
-      if (user.role === "admin") {
+      if (normalizedUser.role === "admin") {
         navigate("/admin-dashboard");
-      } else if (user.role === "owner") {
+      } else if (normalizedUser.role === "owner") {
         navigate("/owner-dashboard");
       } else {
         navigate("/profile");

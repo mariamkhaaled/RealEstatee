@@ -8,12 +8,16 @@ type Props = {
 
 const ProtectedRoute: React.FC<Props> = ({ children, allowedRoles }) => {
   const user = JSON.parse(localStorage.getItem("user") || "null");
+  const normalizedRole = String(user?.role || "").toLowerCase();
+  const normalizedAllowedRoles = allowedRoles.map((role) =>
+    String(role).toLowerCase(),
+  );
 
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  if (!allowedRoles.includes(user.role)) {
+  if (!normalizedAllowedRoles.includes(normalizedRole)) {
     return <Navigate to="/" replace />;
   }
 

@@ -6,14 +6,16 @@
 // biome-ignore lint: disable
 export {}
 declare global {
-  const Activity: typeof import('react').Activity
+  const Activity: typeof import('lucide-react').Activity
   const AlertCircle: typeof import('lucide-react').AlertCircle
   const ArrowLeft: typeof import('lucide-react').ArrowLeft
   const ArrowRight: typeof import('lucide-react').ArrowRight
+  const ArrowUpRight: typeof import('lucide-react').ArrowUpRight
   const Award: typeof import('lucide-react').Award
   const Badge: typeof import('lucide-react').Badge
   const Bath: typeof import('lucide-react').Bath
   const Bed: typeof import('lucide-react').Bed
+  const Bell: typeof import('lucide-react').Bell
   const Box: typeof import('lucide-react').Box
   const Briefcase: typeof import('lucide-react').Briefcase
   const Building: typeof import('lucide-react').Building
@@ -85,6 +87,7 @@ declare global {
   const ShieldCheck: typeof import('lucide-react').ShieldCheck
   const Sidebar: typeof import('lucide-react').Sidebar
   const SlidersHorizontal: typeof import('lucide-react').SlidersHorizontal
+  const Sparkles: typeof import('lucide-react').Sparkles
   const Square: typeof import('lucide-react').Square
   const Suspense: typeof import('react').Suspense
   const Table: typeof import('lucide-react').Table

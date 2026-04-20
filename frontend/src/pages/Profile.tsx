@@ -74,8 +74,14 @@ const Profile: React.FC = () => {
         if (res.ok) {
           const data = await res.json();
           if (data.status === "success") {
-            setUser(data.data as UserData);
-            localStorage.setItem("user", JSON.stringify(data.data));
+            const normalizedUser = {
+              ...(data.data as UserData),
+              role: String((data.data as UserData)?.role || "").toLowerCase(),
+            };
+
+            setUser(normalizedUser);
+            localStorage.setItem("user", JSON.stringify(normalizedUser));
+            window.dispatchEvent(new Event("user-updated"));
           }
         }
       } catch (err) {
@@ -103,6 +109,7 @@ const Profile: React.FC = () => {
         const updatedUser = { ...user, photo: imageData };
         setUser(updatedUser);
         localStorage.setItem("user", JSON.stringify(updatedUser));
+        window.dispatchEvent(new Event("user-updated"));
       }
     };
     reader.readAsDataURL(file);
@@ -167,13 +174,20 @@ const Profile: React.FC = () => {
             <div className="flex flex-col items-center gap-5 text-center">
               <Avatar className="h-28 w-28 rounded-[32px] border border-border bg-secondary">
                 {photo ? (
-                  <AvatarImage src={photo} alt={`${user.firstName} ${user.lastName}`} />
+                  <AvatarImage
+                    src={photo}
+                    alt={`${user.firstName} ${user.lastName}`}
+                  />
                 ) : (
-                  <AvatarFallback className="text-foreground">{initials}</AvatarFallback>
+                  <AvatarFallback className="text-foreground">
+                    {initials}
+                  </AvatarFallback>
                 )}
               </Avatar>
               <div>
-                <p className="text-sm font-medium uppercase tracking-[0.2em] text-muted-foreground">Your profile</p>
+                <p className="text-sm font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                  Your profile
+                </p>
                 <h1 className="mt-3 text-3xl font-semibold text-foreground">
                   {user.firstName} {user.lastName}
                 </h1>
@@ -187,15 +201,23 @@ const Profile: React.FC = () => {
               <div className="rounded-3xl bg-secondary/80 p-5">
                 <p className="text-sm text-muted-foreground">Account status</p>
                 <div className="mt-3 flex items-center justify-between gap-4">
-                  <p className="text-lg font-semibold text-foreground">Active</p>
-                  <Badge className="rounded-full bg-green-50 text-green-700 border-green-200">Verified</Badge>
+                  <p className="text-lg font-semibold text-foreground">
+                    Active
+                  </p>
+                  <Badge className="rounded-full bg-green-50 text-green-700 border-green-200">
+                    Verified
+                  </Badge>
                 </div>
               </div>
 
               <div className="rounded-3xl border border-border bg-background p-5">
                 <p className="text-sm text-muted-foreground">Member since</p>
-                <p className="mt-2 text-lg font-semibold text-foreground">2026</p>
-                <p className="mt-3 text-sm text-muted-foreground">Profile data is stored locally in your browser.</p>
+                <p className="mt-2 text-lg font-semibold text-foreground">
+                  2026
+                </p>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Profile data is stored locally in your browser.
+                </p>
               </div>
 
               <div className="space-y-3">
@@ -206,16 +228,26 @@ const Profile: React.FC = () => {
                   className="hidden"
                   onChange={handlePhotoChange}
                 />
-                <Button variant="outline" className="w-full" onClick={handleChoosePhoto}>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleChoosePhoto}
+                >
                   Change photo
                 </Button>
                 <Button
                   variant="outline"
                   className="w-full"
                   onClick={() => setShowChangePassword(true)}
-                > Change password
+                >
+                  {" "}
+                  Change password
                 </Button>
-                <Button variant="secondary" className="w-full" onClick={handleLogout}>
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  onClick={handleLogout}
+                >
                   Log out
                 </Button>
               </div>
