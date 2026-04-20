@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "ignoreDeprecations": "5.0",
     "composite": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "ES2022",
@@ -21,13 +22,10 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": false,
 
-     /* Path aliases */
-    "baseUrl": ".",
+    /* Path aliases */
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     }
   },
-  "include": ["src","auto-imports.d.ts", "api"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "auto-imports.d.ts", "api"]
 }

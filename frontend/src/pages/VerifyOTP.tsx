@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import OTPVerification from "@/components/OTPVerification";
@@ -8,12 +8,15 @@ import { verifyOTP, resendOTP } from "@/api";
 import { Mail, ArrowLeft, RotateCw } from "lucide-react";
 
 interface VerifyOTPProps {
-  email: string;
+  email?: string;
   onBack?: () => void;
 }
 
 const VerifyOTP: React.FC<VerifyOTPProps> = ({ email, onBack }) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const queryEmail = searchParams.get("email") || "";
+  const targetEmail = (email || queryEmail).trim().toLowerCase();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,11 +39,19 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({ email, onBack }) => {
 
   // Handle OTP submission
   const handleOTPComplete = async (otpCode: string) => {
+    if (!targetEmail) {
+      const message =
+        "Missing email. Please login again to continue verification.";
+      setError(message);
+      toast.error(message);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      const response = await verifyOTP(email, otpCode);
+      const response = await verifyOTP(targetEmail, otpCode);
 
       // Show success message
       toast.success("Email verified! Logging you in...");
@@ -75,10 +86,17 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({ email, onBack }) => {
   // Handle resend OTP
   const handleResendOTP = async () => {
     if (!canResend || resendTimer > 0) return;
+    if (!targetEmail) {
+      const message =
+        "Missing email. Please login again to request a new code.";
+      setError(message);
+      toast.error(message);
+      return;
+    }
 
     setLoading(true);
     try {
-      await resendOTP(email);
+      await resendOTP(targetEmail);
       toast.success("OTP sent to your email!");
 
       // Start 60-second timer
@@ -112,7 +130,9 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({ email, onBack }) => {
           </h2>
           <p className="text-gray-500 text-sm leading-relaxed">
             We've sent a 6-digit code to{" "}
-            <span className="font-semibold text-gray-700">{email}</span>
+            <span className="font-semibold text-gray-700">
+              {targetEmail || "your email"}
+            </span>
             <br />
             Enter it below to complete your registration
           </p>
@@ -164,15 +184,19 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({ email, onBack }) => {
         </div>
 
         {/* Back Button */}
-        {onBack && (
-          <button
-            onClick={onBack}
-            className="w-full flex items-center justify-center gap-2 text-[#002347] hover:text-[#001a35] hover:bg-blue-50 py-3 rounded-lg transition-all duration-200 text-sm font-medium mt-6"
-          >
-            <ArrowLeft size={16} />
-            Back to Registration
-          </button>
-        )}
+        <button
+          onClick={() => {
+            if (onBack) {
+              onBack();
+              return;
+            }
+            navigate("/login");
+          }}
+          className="w-full flex items-center justify-center gap-2 text-[#002347] hover:text-[#001a35] hover:bg-blue-50 py-3 rounded-lg transition-all duration-200 text-sm font-medium mt-6"
+        >
+          <ArrowLeft size={16} />
+          {onBack ? "Back to Registration" : "Back to Login"}
+        </button>
       </div>
 
       {/* Loading overlay */}

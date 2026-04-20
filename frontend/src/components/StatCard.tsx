@@ -40,8 +40,8 @@ const StatCard: React.FC<StatCardProps> = ({
             </p>
           )}
         </div>
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white text-slate-900 shadow-sm transition-transform duration-300 group-hover:scale-105">
-          <Icon size={22} />
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-blue-200/40 bg-gradient-to-br from-blue-50 via-white to-blue-50/30 text-blue-600 shadow-[0_8px_20px_rgba(59,130,246,0.1)] transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_12px_30px_rgba(59,130,246,0.2)]">
+          <Icon size={24} />
         </div>
       </CardContent>
     </Card>

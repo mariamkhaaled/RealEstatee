@@ -25,9 +25,12 @@ export {
 // Inquiry APIs
 export {
   getInquiries,
+  getMyInquiries,
   createInquiry,
+  updateInquiryStatus,
   type InquiryItem,
   type CreateInquiryPayload,
+  type InquiryStatus,
 } from "./inquiries";
 
 // Message APIs

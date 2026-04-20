@@ -9,10 +9,12 @@ import Properties from "@/pages/Properties";
 import PropertyDetails from "@/pages/PropertyDetails";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
+import VerifyOTP from "@/pages/VerifyOTP";
 import ResetPassword from "@/pages/ResetPassword";
 import Profile from "@/pages/Profile";
 import OwnerDashboard from "@/pages/OwnerDashboard";
 import AdminDashboard from "@/pages/AdminDashboard";
+import MyInquiries from "@/pages/MyInquiries";
 import Favorites from "@/pages/Favorites";
 
 const queryClient = new QueryClient();
@@ -31,6 +33,7 @@ const App = () => (
             <Route path="/property-details/:id" element={<PropertyDetails />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/verify-email" element={<VerifyOTP />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
             {/* Protected Routes */}
@@ -57,6 +60,15 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
                   <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/my-inquiries"
+              element={
+                <ProtectedRoute allowedRoles={["owner", "customer", "user"]}>
+                  <MyInquiries />
                 </ProtectedRoute>
               }
             />
