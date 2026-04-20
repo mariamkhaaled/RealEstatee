@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getUnreadCounts } from "@/api/messages";
 import { connectSocket } from "@/lib/socket";
 import { getInquiries, getMyInquiries } from "@/api/inquiries";
+import { useFavorites } from "@/context/FavoritesContext";
 
 type InquiryRef = { inquiry_id: number };
 
@@ -39,6 +40,7 @@ const Navbar: React.FC = () => {
     ? `${user.firstName?.charAt(0) || "U"}${user.lastName?.charAt(0) || ""}`.toUpperCase()
     : "U";
 
+  const { clearFavorites } = useFavorites();
   const isLoggedIn = Boolean(localStorage.getItem("token"));
   const currentUserId = Number(user?.id || user?.user_id || 0);
   const showMyInquiriesUnread = Boolean(isLoggedIn && user?.role !== "admin");
@@ -48,6 +50,7 @@ const Navbar: React.FC = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    clearFavorites();
     navigate("/login");
   };
 

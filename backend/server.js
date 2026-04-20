@@ -10,10 +10,12 @@ const featureRouter = require("./routes/featureRoutes");
 const authRouter = require("./routes/auth.routes");
 const otpRoutes = require("./routes/otp.routes");
 const userRoutes = require("./routes/user.routes");
+const favoriteRouter = require("./routes/favoriteRoutes");
 const messageRoutes = require("./routes/message.routes");
 const inquiryRoutes = require("./routes/inquiry.routes");
 
 require("./config/db");
+
 const app = express();
 const server = http.createServer(app);
 
@@ -34,20 +36,27 @@ io.on("connection", (socket) => {
   });
 });
 
-// 1. GLOBAL MIDDLEWARES
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    credentials: true,
+  }),
+);
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use("/api/properties", propertyRouter);
 app.use("/api/features", featureRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/otp", otpRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/favorites", favoriteRouter);
 app.use("/api/messages", messageRoutes);
 app.use("/api/inquiries", inquiryRoutes);
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// 2. ROUTES (We will add more here later)
 app.get("/", (req, res) => {
   res.status(200).json({
     status: "success",
@@ -55,16 +64,21 @@ app.get("/", (req, res) => {
   });
 });
 
-// 3. GLOBAL ERROR HANDLER
+app.use((req, res) => {
+  res.status(404).json({
+    status: "error",
+    message: "Route not found",
+  });
+});
+
 app.use((err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
-  res.status(statusCode).json({
+  console.error("ERROR:", err);
+  res.status(err.statusCode || 500).json({
     status: "error",
     message: err.message || "Internal Server Error",
   });
 });
 
-// 4. SERVER START
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

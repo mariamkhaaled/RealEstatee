@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useFavorites } from "@/context/FavoritesContext";
 
 type ListingType = {
   property_id: number;
@@ -41,6 +42,11 @@ const PropertyDetails: React.FC = () => {
   const navigate = useNavigate();
   const [listing, setListing] = useState<ListingType | null>(null);
   const [loading, setLoading] = useState(true);
+  const [savingFavorite, setSavingFavorite] = useState(false);
+  
+  const { isFavorite, addFavorite, removeFavorite } = useFavorites();
+  const propertyId = id || '';
+  const isFav = isFavorite(propertyId);
 
   const [requestForm, setRequestForm] = useState({
     name: "",
@@ -51,6 +57,41 @@ const PropertyDetails: React.FC = () => {
 
   const [submitMessage, setSubmitMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleToggleFavorite = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      setSavingFavorite(true);
+
+      if (isFav) {
+        await fetch(`http://localhost:5000/api/favorites/${propertyId}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        removeFavorite(propertyId);
+      } else {
+        await fetch('http://localhost:5000/api/favorites', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            property_id: propertyId,
+          }),
+        });
+        addFavorite(propertyId);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setSavingFavorite(false);
+    }
+  };
 
   useEffect(() => {
     const rawUser = localStorage.getItem("user");
@@ -350,8 +391,17 @@ const PropertyDetails: React.FC = () => {
 
         <div className="space-y-6">
           <div className="flex gap-4">
-            <Button variant="outline" className="flex-1">
-              <Heart className="mr-2" size={18} /> Save
+            <Button 
+              variant={isFav ? "default" : "outline"} 
+              className="flex-1"
+              onClick={handleToggleFavorite}
+              disabled={savingFavorite}
+            >
+              <Heart 
+                className={`mr-2 ${isFav ? 'fill-current' : ''}`} 
+                size={18} 
+              /> 
+              {isFav ? 'Saved' : 'Save'}
             </Button>
             <Button variant="outline" className="flex-1">
               <Share2 className="mr-2" size={18} /> Share

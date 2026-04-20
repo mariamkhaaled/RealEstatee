@@ -3,9 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Home } from "lucide-react";
+import { useFavorites } from "@/context/FavoritesContext";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const { pendingFavoriteId, addPendingFavorite, loadFavorites } = useFavorites();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -53,6 +55,16 @@ const Login: React.FC = () => {
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(user));
+
+      // Load favorites into context immediately after login
+      await loadFavorites();
+
+      // If there is a pending favorite, add it and go to favorites
+      if (pendingFavoriteId) {
+        await addPendingFavorite();
+        navigate("/favorites");
+        return;
+      }
 
       if (user.role === "admin") {
         navigate("/admin-dashboard");
