@@ -19,9 +19,19 @@ require("./config/db");
 const app = express();
 const server = http.createServer(app);
 
+const corsOrigins = (process.env.CORS_ORIGINS || process.env.CLIENT_URL || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const allowedOrigins =
+  corsOrigins.length > 0
+    ? corsOrigins
+    : ["http://localhost:5173", "http://localhost:5174"];
+
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
   },
 });
@@ -34,11 +44,25 @@ io.on("connection", (socket) => {
       socket.join(`inquiry_${inquiryId}`);
     }
   });
+
+  socket.on("typing", (payload = {}) => {
+    const inquiryId = Number(payload.inquiryId);
+    if (!inquiryId) {
+      return;
+    }
+
+    socket.to(`inquiry_${inquiryId}`).emit("typing", {
+      inquiryId,
+      userId: Number(payload.userId) || 0,
+      userName: payload.userName || "User",
+      isTyping: Boolean(payload.isTyping),
+    });
+  });
 });
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: allowedOrigins,
     credentials: true,
   }),
 );

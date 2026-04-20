@@ -25,12 +25,15 @@ const MyInquiries = () => {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const [typingLabel, setTypingLabel] = useState("");
   const [unreadByInquiry, setUnreadByInquiry] = useState<
     Record<number, number>
   >({});
   const chatScrollRef = useRef<HTMLDivElement | null>(null);
   const messageInputRef = useRef<HTMLInputElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const isTypingRef = useRef(false);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const user = useMemo(() => {
     try {
@@ -42,6 +45,22 @@ const MyInquiries = () => {
 
   const isUser = Boolean(user && user.role !== "admin");
   const currentUserId = Number(user?.id || user?.user_id || 0);
+  const currentUserName =
+    user?.name || user?.full_name || user?.username || "Customer";
+
+  const emitTyping = (isTyping: boolean) => {
+    if (!selectedInquiry?.inquiry_id) {
+      return;
+    }
+
+    const socket = connectSocket();
+    socket.emit("typing", {
+      inquiryId: selectedInquiry.inquiry_id,
+      userId: currentUserId,
+      userName: currentUserName,
+      isTyping,
+    });
+  };
 
   useEffect(() => {
     const loadInquiries = async () => {
@@ -91,6 +110,7 @@ const MyInquiries = () => {
   useEffect(() => {
     if (!selectedInquiry) {
       setMessages([]);
+      setTypingLabel("");
       return;
     }
 
@@ -150,6 +170,7 @@ const MyInquiries = () => {
 
       if (isCurrentOpen) {
         setMessages((prev) => [...prev, message]);
+        setTypingLabel("");
       }
 
       if (isForCurrentUser) {
@@ -172,12 +193,73 @@ const MyInquiries = () => {
       }
     };
 
+    const handleTyping = (payload: {
+      inquiryId: number;
+      userId: number;
+      userName?: string;
+      isTyping: boolean;
+    }) => {
+      if (Number(payload.inquiryId) !== selectedInquiry?.inquiry_id) {
+        return;
+      }
+
+      if (Number(payload.userId) === currentUserId) {
+        return;
+      }
+
+      if (payload.isTyping) {
+        setTypingLabel("Typing");
+      } else {
+        setTypingLabel("");
+      }
+    };
+
+    const handleMessagesRead = (payload: {
+      inquiryId: number;
+      readerId: number;
+    }) => {
+      if (Number(payload.inquiryId) !== selectedInquiry?.inquiry_id) {
+        return;
+      }
+
+      setMessages((prev) =>
+        prev.map((message) => {
+          if (Number(message.receiver_id) !== Number(payload.readerId)) {
+            return message;
+          }
+
+          return {
+            ...message,
+            is_read: 1,
+          };
+        }),
+      );
+    };
+
     socket.on("new_message", handleNewMessage);
+    socket.on("typing", handleTyping);
+    socket.on("messages_read", handleMessagesRead);
 
     return () => {
       socket.off("new_message", handleNewMessage);
+      socket.off("typing", handleTyping);
+      socket.off("messages_read", handleMessagesRead);
     };
   }, [inquiries, isUser, selectedInquiry?.inquiry_id, currentUserId]);
+
+  useEffect(() => {
+    setTypingLabel("");
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+    }
+
+    if (isTypingRef.current) {
+      emitTyping(false);
+      isTypingRef.current = false;
+    }
+  }, [selectedInquiry?.inquiry_id]);
 
   useLayoutEffect(() => {
     if (!messagesEndRef.current) {
@@ -200,6 +282,17 @@ const MyInquiries = () => {
     try {
       setSending(true);
       setError("");
+
+      if (isTypingRef.current) {
+        emitTyping(false);
+        isTypingRef.current = false;
+      }
+
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+
       await sendMessage({
         inquiry_id: selectedInquiry.inquiry_id,
         receiver_id: Number(selectedInquiry.owner_id),
@@ -279,6 +372,16 @@ const MyInquiries = () => {
       ),
     [unreadByInquiry],
   );
+
+  const lastOutgoingMessageId = useMemo(() => {
+    for (let index = messages.length - 1; index >= 0; index -= 1) {
+      if (Number(messages[index].sender_id) === currentUserId) {
+        return messages[index].message_id;
+      }
+    }
+
+    return null;
+  }, [messages, currentUserId]);
 
   const selectedPropertyImage = useMemo(() => {
     if (!selectedInquiry) {
@@ -478,11 +581,24 @@ const MyInquiries = () => {
                     <div className="space-y-3">
                       {messages.map((msg) => {
                         const isMe = Number(msg.sender_id) === currentUserId;
+                        const isLastOutgoingMessage =
+                          isMe && msg.message_id === lastOutgoingMessageId;
                         const senderName = isMe
                           ? "You"
                           : msg.sender_name ||
                             selectedInquiry.owner_name ||
                             "Owner";
+                        const messageTime = new Date(
+                          msg.created_at,
+                        ).toLocaleTimeString("en-US", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        });
+                        const deliveryLabel = isLastOutgoingMessage
+                          ? Number(msg.is_read) === 1
+                            ? "Seen"
+                            : "Sent"
+                          : "";
 
                         return (
                           <div
@@ -498,6 +614,11 @@ const MyInquiries = () => {
                             <div
                               className={`flex max-w-[80%] flex-col ${isMe ? "items-end" : "items-start"}`}
                             >
+                              {!isMe && (
+                                <p className="mb-1.5 text-[12px] font-bold text-slate-700">
+                                  {senderName}
+                                </p>
+                              )}
                               <div
                                 className={`rounded-2xl border px-4 py-3 text-[14px] leading-relaxed ${
                                   isMe
@@ -505,23 +626,13 @@ const MyInquiries = () => {
                                     : "border-[#dbe4f3] bg-white text-slate-800 shadow-sm"
                                 }`}
                               >
-                                {!isMe && (
-                                  <p className="mb-1.5 text-[12px] font-bold text-slate-700">
-                                    {senderName}
-                                  </p>
-                                )}
                                 {msg.content}
                               </div>
                               <p
                                 className={`mt-1.5 text-[11px] ${isMe ? "text-slate-400" : "text-slate-500"}`}
                               >
-                                {new Date(msg.created_at).toLocaleTimeString(
-                                  "en-US",
-                                  {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  },
-                                )}
+                                {messageTime}
+                                {deliveryLabel ? ` | ${deliveryLabel}` : ""}
                               </p>
                             </div>
                           </div>
@@ -534,11 +645,49 @@ const MyInquiries = () => {
                 </div>
 
                 <footer className="sticky bottom-0 border-t border-[#E2E8F0] bg-[linear-gradient(180deg,#f8fbff_0%,#ffffff_100%)] px-4 py-3 md:px-5">
+                  {typingLabel && (
+                    <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[12px] font-medium text-slate-500">
+                      <span>{typingLabel}</span>
+                      <span className="h-1.5 w-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:-0.2s]" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:-0.1s]" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-slate-400 animate-bounce" />
+                    </div>
+                  )}
                   <div className="flex items-center gap-2 rounded-2xl border border-[#dbe4f3] bg-white p-2 shadow-sm">
                     <Input
                       ref={messageInputRef}
                       value={messageText}
-                      onChange={(e) => setMessageText(e.target.value)}
+                      onChange={(e) => {
+                        const nextValue = e.target.value;
+                        setMessageText(nextValue);
+
+                        const hasContent = nextValue.trim().length > 0;
+
+                        if (hasContent && !isTypingRef.current) {
+                          emitTyping(true);
+                          isTypingRef.current = true;
+                        }
+
+                        if (typingTimeoutRef.current) {
+                          clearTimeout(typingTimeoutRef.current);
+                          typingTimeoutRef.current = null;
+                        }
+
+                        if (!hasContent && isTypingRef.current) {
+                          emitTyping(false);
+                          isTypingRef.current = false;
+                          return;
+                        }
+
+                        if (hasContent) {
+                          typingTimeoutRef.current = setTimeout(() => {
+                            if (isTypingRef.current) {
+                              emitTyping(false);
+                              isTypingRef.current = false;
+                            }
+                          }, 1200);
+                        }
+                      }}
                       placeholder="Message..."
                       disabled={sending}
                       onKeyDown={(e) => {

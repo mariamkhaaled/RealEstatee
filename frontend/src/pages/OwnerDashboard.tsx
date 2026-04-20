@@ -29,7 +29,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChatAvatar } from "@/components/ChatAvatar";
 import {
   getInquiries,
   updateInquiryStatus,
@@ -81,6 +80,7 @@ const OwnerDashboard = () => {
   );
   const [messages, setMessages] = useState<MessageItem[]>([]);
   const [messageText, setMessageText] = useState("");
+  const [typingLabel, setTypingLabel] = useState("");
   const [loadingInquiries, setLoadingInquiries] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sending, setSending] = useState(false);
@@ -97,6 +97,8 @@ const OwnerDashboard = () => {
   >("All");
   const chatScrollRef = useRef<HTMLDivElement | null>(null);
   const messageInputRef = useRef<HTMLInputElement | null>(null);
+  const isTypingRef = useRef(false);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const scrollChatToBottom = () => {
     if (!chatScrollRef.current) {
@@ -122,6 +124,21 @@ const OwnerDashboard = () => {
   const isOwner = Boolean(user && user.role === "owner");
   const ownerId = user?.user_id || user?.id;
   const currentUserId = Number(user?.id || user?.user_id || 0);
+  const currentUserName = user?.name || user?.full_name || "Owner";
+
+  const emitTyping = (isTyping: boolean) => {
+    if (!selectedInquiry?.inquiry_id) {
+      return;
+    }
+
+    const socket = connectSocket();
+    socket.emit("typing", {
+      inquiryId: selectedInquiry.inquiry_id,
+      userId: currentUserId,
+      userName: currentUserName,
+      isTyping,
+    });
+  };
 
   const getErrorMessage = (err: unknown, fallback: string) => {
     if (err instanceof Error && err.message) {
@@ -253,6 +270,7 @@ const OwnerDashboard = () => {
   useEffect(() => {
     if (!selectedInquiry) {
       setMessages([]);
+      setTypingLabel("");
       return;
     }
 
@@ -294,6 +312,7 @@ const OwnerDashboard = () => {
 
       if (isCurrentOpen) {
         setMessages((prev) => [...prev, message]);
+        setTypingLabel("");
         scrollChatToBottom();
 
         if (isForCurrentUser) {
@@ -318,6 +337,49 @@ const OwnerDashboard = () => {
       }
     };
 
+    const handleTyping = (payload: {
+      inquiryId: number;
+      userId: number;
+      userName?: string;
+      isTyping: boolean;
+    }) => {
+      if (Number(payload.inquiryId) !== selectedInquiry.inquiry_id) {
+        return;
+      }
+
+      if (Number(payload.userId) === currentUserId) {
+        return;
+      }
+
+      if (payload.isTyping) {
+        setTypingLabel("Typing");
+      } else {
+        setTypingLabel("");
+      }
+    };
+
+    const handleMessagesRead = (payload: {
+      inquiryId: number;
+      readerId: number;
+    }) => {
+      if (Number(payload.inquiryId) !== selectedInquiry.inquiry_id) {
+        return;
+      }
+
+      setMessages((prev) =>
+        prev.map((message) => {
+          if (Number(message.receiver_id) !== Number(payload.readerId)) {
+            return message;
+          }
+
+          return {
+            ...message,
+            is_read: 1,
+          };
+        }),
+      );
+    };
+
     const handleInquiryStatusUpdated = (payload: {
       inquiry_id: number;
       status: InquiryItem["status"];
@@ -340,13 +402,31 @@ const OwnerDashboard = () => {
 
     currentSocket.on("new_message", handleNewMessage);
     currentSocket.on("inquiry_status_updated", handleInquiryStatusUpdated);
+    currentSocket.on("typing", handleTyping);
+    currentSocket.on("messages_read", handleMessagesRead);
 
     return () => {
       isActive = false;
       currentSocket.off("new_message", handleNewMessage);
       currentSocket.off("inquiry_status_updated", handleInquiryStatusUpdated);
+      currentSocket.off("typing", handleTyping);
+      currentSocket.off("messages_read", handleMessagesRead);
     };
   }, [selectedInquiry, currentUserId]);
+
+  useEffect(() => {
+    setTypingLabel("");
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+    }
+
+    if (isTypingRef.current) {
+      emitTyping(false);
+      isTypingRef.current = false;
+    }
+  }, [selectedInquiry?.inquiry_id]);
 
   useLayoutEffect(() => {
     scrollChatToBottom();
@@ -365,6 +445,17 @@ const OwnerDashboard = () => {
     try {
       setSending(true);
       setError("");
+
+      if (isTypingRef.current) {
+        emitTyping(false);
+        isTypingRef.current = false;
+      }
+
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+
       await sendMessage({
         inquiry_id: selectedInquiry.inquiry_id,
         receiver_id: selectedInquiry.customer_id,
@@ -513,6 +604,16 @@ const OwnerDashboard = () => {
       ),
     [inquiries, unreadByInquiry],
   );
+
+  const lastOutgoingMessageId = useMemo(() => {
+    for (let index = messages.length - 1; index >= 0; index -= 1) {
+      if (Number(messages[index].sender_id) === currentUserId) {
+        return messages[index].message_id;
+      }
+    }
+
+    return null;
+  }, [messages, currentUserId]);
 
   const activeListingsCount = properties.filter(
     (p) => p.status === "Active",
@@ -1191,32 +1292,47 @@ const OwnerDashboard = () => {
                               {messages.map((message) => {
                                 const isMine =
                                   Number(message.sender_id) === currentUserId;
+                                const isLastOutgoingMessage =
+                                  isMine &&
+                                  message.message_id === lastOutgoingMessageId;
+                                const senderName =
+                                  message.sender_name ||
+                                  selectedInquiry.name ||
+                                  "Requester";
+                                const messageTime = new Date(
+                                  message.created_at,
+                                ).toLocaleTimeString("en-US", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                });
+                                const deliveryLabel = isLastOutgoingMessage
+                                  ? Number(message.is_read) === 1
+                                    ? "Seen"
+                                    : "Sent"
+                                  : "";
                                 return (
                                   <div
                                     key={message.message_id}
                                     className={`flex ${isMine ? "justify-end" : "justify-start gap-2.5"}`}
                                   >
                                     {!isMine && (
-                                      <ChatAvatar
-                                        name={
-                                          message.sender_name || "Requester"
-                                        }
-                                        size="md"
-                                      />
+                                      <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-full border border-[#E5E7EB] bg-white text-[11px] font-semibold text-slate-600">
+                                        {senderName.charAt(0)}
+                                      </div>
                                     )}
                                     <div
                                       className={`max-w-[72%] flex flex-col ${isMine ? "items-end" : "items-start"}`}
                                     >
                                       {!isMine && (
-                                        <p className="mb-1.5 text-xs font-medium text-slate-600">
-                                          {message.sender_name || "Requester"}
+                                        <p className="mb-1.5 text-[12px] font-bold text-slate-700">
+                                          {senderName}
                                         </p>
                                       )}
                                       <div
                                         className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                                           isMine
                                             ? "bg-gradient-to-br from-slate-900 to-slate-700 text-white shadow-[0_12px_30px_rgba(15,23,42,0.22)]"
-                                            : "border border-slate-200 bg-white text-slate-800 shadow-[0_12px_30px_rgba(15,23,42,0.08)]"
+                                            : "border border-[#dbe4f3] bg-white text-slate-800 shadow-sm"
                                         }`}
                                       >
                                         <p>{message.content}</p>
@@ -1224,12 +1340,10 @@ const OwnerDashboard = () => {
                                       <p
                                         className={`mt-1.5 text-[10px] ${isMine ? "text-slate-500" : "text-slate-400"}`}
                                       >
-                                        {new Date(
-                                          message.created_at,
-                                        ).toLocaleTimeString("en-US", {
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                        })}
+                                        {messageTime}
+                                        {deliveryLabel
+                                          ? ` | ${deliveryLabel}`
+                                          : ""}
                                       </p>
                                     </div>
                                   </div>
@@ -1240,12 +1354,54 @@ const OwnerDashboard = () => {
                         </div>
 
                         <div className="border-t border-slate-200 bg-white p-4">
+                          {typingLabel && (
+                            <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[12px] font-medium text-slate-500">
+                              <span>{typingLabel}</span>
+                              <span className="h-1.5 w-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:-0.2s]" />
+                              <span className="h-1.5 w-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:-0.1s]" />
+                              <span className="h-1.5 w-1.5 rounded-full bg-slate-400 animate-bounce" />
+                            </div>
+                          )}
                           {selectedInquiry.customer_id ? (
                             <div className="flex gap-2">
                               <Input
                                 ref={messageInputRef}
                                 value={messageText}
-                                onChange={(e) => setMessageText(e.target.value)}
+                                onChange={(e) => {
+                                  const nextValue = e.target.value;
+                                  setMessageText(nextValue);
+
+                                  const hasContent =
+                                    nextValue.trim().length > 0;
+
+                                  if (hasContent && !isTypingRef.current) {
+                                    emitTyping(true);
+                                    isTypingRef.current = true;
+                                  }
+
+                                  if (typingTimeoutRef.current) {
+                                    clearTimeout(typingTimeoutRef.current);
+                                    typingTimeoutRef.current = null;
+                                  }
+
+                                  if (!hasContent && isTypingRef.current) {
+                                    emitTyping(false);
+                                    isTypingRef.current = false;
+                                    return;
+                                  }
+
+                                  if (hasContent) {
+                                    typingTimeoutRef.current = setTimeout(
+                                      () => {
+                                        if (isTypingRef.current) {
+                                          emitTyping(false);
+                                          isTypingRef.current = false;
+                                        }
+                                      },
+                                      1200,
+                                    );
+                                  }
+                                }}
                                 placeholder="Write a reply..."
                                 className="rounded-2xl border-slate-200 bg-white shadow-sm"
                                 onKeyDown={(e) => {

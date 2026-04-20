@@ -200,6 +200,14 @@ exports.markInquiryAsRead = async (req, res, next) => {
 
     await Message.markInquiryMessagesAsRead(inquiryId, userId);
 
+    const io = req.app.get("io");
+    if (io) {
+      io.to(`inquiry_${inquiryId}`).emit("messages_read", {
+        inquiryId,
+        readerId: userId,
+      });
+    }
+
     res.status(200).json({
       status: "success",
       message: "Messages marked as read",
