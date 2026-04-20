@@ -32,7 +32,10 @@ const App = () => (
               {/* Public Routes */}
               <Route path="/" element={<Home />} />
               <Route path="/properties" element={<Properties />} />
-              <Route path="/property-details/:id" element={<PropertyDetails />} />
+              <Route
+                path="/property-details/:id"
+                element={<PropertyDetails />}
+              />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/verify-email" element={<VerifyOTP />} />

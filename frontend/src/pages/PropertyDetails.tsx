@@ -43,9 +43,9 @@ const PropertyDetails: React.FC = () => {
   const [listing, setListing] = useState<ListingType | null>(null);
   const [loading, setLoading] = useState(true);
   const [savingFavorite, setSavingFavorite] = useState(false);
-  
+
   const { isFavorite, addFavorite, removeFavorite } = useFavorites();
-  const propertyId = id || '';
+  const propertyId = id || "";
   const isFav = isFavorite(propertyId);
 
   const [requestForm, setRequestForm] = useState({
@@ -59,7 +59,7 @@ const PropertyDetails: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleToggleFavorite = async () => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) return;
 
     try {
@@ -67,17 +67,17 @@ const PropertyDetails: React.FC = () => {
 
       if (isFav) {
         await fetch(`http://localhost:5000/api/favorites/${propertyId}`, {
-          method: 'DELETE',
+          method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
         removeFavorite(propertyId);
       } else {
-        await fetch('http://localhost:5000/api/favorites', {
-          method: 'POST',
+        await fetch("http://localhost:5000/api/favorites", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
@@ -391,17 +391,17 @@ const PropertyDetails: React.FC = () => {
 
         <div className="space-y-6">
           <div className="flex gap-4">
-            <Button 
-              variant={isFav ? "default" : "outline"} 
+            <Button
+              variant={isFav ? "default" : "outline"}
               className="flex-1"
               onClick={handleToggleFavorite}
               disabled={savingFavorite}
             >
-              <Heart 
-                className={`mr-2 ${isFav ? 'fill-current' : ''}`} 
-                size={18} 
-              /> 
-              {isFav ? 'Saved' : 'Save'}
+              <Heart
+                className={`mr-2 ${isFav ? "fill-current" : ""}`}
+                size={18}
+              />
+              {isFav ? "Saved" : "Save"}
             </Button>
             <Button variant="outline" className="flex-1">
               <Share2 className="mr-2" size={18} /> Share

@@ -43,7 +43,10 @@ const Navbar: React.FC = () => {
   const { clearFavorites } = useFavorites();
   const isLoggedIn = Boolean(localStorage.getItem("token"));
   const currentUserId = Number(user?.id || user?.user_id || 0);
-  const showMyInquiriesUnread = Boolean(isLoggedIn && user?.role !== "admin");
+  const isOwner = user?.role === "owner";
+  const isCustomer = user?.role === "user";
+  const showMyInquiriesUnread = Boolean(isLoggedIn && isCustomer);
+  const showDashboardUnread = Boolean(isLoggedIn && isOwner);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -94,10 +97,10 @@ const Navbar: React.FC = () => {
         let myInquiriesCount = 0;
 
         unreadMap.forEach((count, inquiryId) => {
-          if (ownerInquiryIds.has(inquiryId)) {
+          if (isOwner && ownerInquiryIds.has(inquiryId)) {
             dashboardCount += count;
           }
-          if (myInquiryIds.has(inquiryId)) {
+          if (isCustomer && myInquiryIds.has(inquiryId)) {
             myInquiriesCount += count;
           }
         });
@@ -184,7 +187,7 @@ const Navbar: React.FC = () => {
             </Link>
 
             {/* Dashboard Links - Conditional Based on Role */}
-            {isLoggedIn && user?.role === "owner" && (
+            {showDashboardUnread && (
               <Link
                 to="/owner-dashboard"
                 className={`text-sm font-medium flex items-center gap-1 ${isActive("/owner-dashboard") ? "text-primary" : "text-muted-foreground hover:text-primary"}`}

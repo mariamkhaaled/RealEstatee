@@ -7,7 +7,8 @@ import { useFavorites } from "@/context/FavoritesContext";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { pendingFavoriteId, addPendingFavorite, loadFavorites } = useFavorites();
+  const { pendingFavoriteId, addPendingFavorite, loadFavorites } =
+    useFavorites();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
