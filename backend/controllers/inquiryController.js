@@ -1,4 +1,5 @@
 const Inquiry = require("../models/inquiry.model");
+const User = require("../models/auth.model");
 const { sendInquiryNotification } = require("../services/emailService");
 
 exports.createInquiry = async (req, res, next) => {
@@ -10,6 +11,14 @@ exports.createInquiry = async (req, res, next) => {
       return res.status(401).json({
         status: "fail",
         message: "Authentication required",
+      });
+    }
+
+    const requesterRows = await User.findById(Number(customer_id));
+    if (!requesterRows || requesterRows.length === 0) {
+      return res.status(401).json({
+        status: "fail",
+        message: "Session is invalid. Please login again.",
       });
     }
 
@@ -103,16 +112,23 @@ exports.createInquiry = async (req, res, next) => {
     const inquiry = inquiryRows[0];
 
     if (inquiry?.owner_email) {
-      await sendInquiryNotification({
-        to: inquiry.owner_email,
-        ownerName: inquiry.owner_name,
-        propertyTitle: inquiry.property_title,
-        requesterName: inquiry.name,
-        requesterEmail: inquiry.email,
-        requesterPhone: inquiry.phone,
-        message: inquiry.message,
-        viewRequestUrl: `${process.env.FRONTEND_URL || "http://localhost:5173"}/owner-dashboard?inquiryId=${inquiry.inquiry_id}`,
-      });
+      try {
+        await sendInquiryNotification({
+          to: inquiry.owner_email,
+          ownerName: inquiry.owner_name,
+          propertyTitle: inquiry.property_title,
+          requesterName: inquiry.name,
+          requesterEmail: inquiry.email,
+          requesterPhone: inquiry.phone,
+          message: inquiry.message,
+          viewRequestUrl: `${process.env.FRONTEND_URL || "http://localhost:5173"}/owner-dashboard?inquiryId=${inquiry.inquiry_id}`,
+        });
+      } catch (mailError) {
+        console.error(
+          "Inquiry created but failed to send notification email:",
+          mailError,
+        );
+      }
     }
 
     const io = req.app.get("io");
@@ -142,7 +158,7 @@ exports.createInquiry = async (req, res, next) => {
     if (error?.code === "ER_NO_REFERENCED_ROW_2") {
       return res.status(400).json({
         status: "fail",
-        message: "Invalid listing_id: listing does not exist",
+        message: "Invalid inquiry references. Please refresh and try again.",
       });
     }
 
@@ -155,14 +171,106 @@ exports.getInquiries = async (req, res, next) => {
     const userRole = req.user?.role;
     const userId = req.user?.user_id || req.user?.id;
 
-    const inquiries =
-      userRole === "admin"
-        ? await Inquiry.getAllInquiries()
-        : await Inquiry.getInquiriesForOwner(userId || 0);
+    let inquiries = [];
+
+    if (userRole === "admin") {
+      inquiries = await Inquiry.getAllInquiries();
+    } else if (userRole === "owner") {
+      inquiries = await Inquiry.getInquiriesForOwner(userId || 0);
+    } else {
+      inquiries = await Inquiry.getInquiriesForCustomer(userId || 0);
+    }
 
     res.status(200).json({
       status: "success",
       data: inquiries,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getMyInquiries = async (req, res, next) => {
+  try {
+    const userId = req.user?.user_id || req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        status: "fail",
+        message: "Authentication required",
+      });
+    }
+
+    const inquiries = await Inquiry.getInquiriesForCustomer(Number(userId));
+
+    res.status(200).json({
+      status: "success",
+      data: inquiries,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateInquiryStatus = async (req, res, next) => {
+  try {
+    const inquiryId = Number(req.params.inquiryId);
+    const { status } = req.body;
+    const userId = Number(req.user?.user_id || req.user?.id || 0);
+    const userRole = req.user?.role;
+
+    if (!inquiryId || Number.isNaN(inquiryId)) {
+      return res.status(400).json({
+        status: "fail",
+        message: "Valid inquiryId is required",
+      });
+    }
+
+    const allowedStatuses = ["Accepted", "Rejected", "Reviewed", "Pending"];
+    if (!status || !allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        status: "fail",
+        message: "Invalid status value",
+      });
+    }
+
+    const inquiryRows = await Inquiry.getInquiryById(inquiryId);
+    const inquiry = inquiryRows[0];
+
+    if (!inquiry) {
+      return res.status(404).json({
+        status: "fail",
+        message: "Inquiry not found",
+      });
+    }
+
+    const isAdmin = userRole === "admin";
+    const isOwner = Number(inquiry.owner_id) === userId;
+
+    if (!isAdmin && !isOwner) {
+      return res.status(403).json({
+        status: "fail",
+        message: "You are not allowed to update this inquiry status",
+      });
+    }
+
+    await Inquiry.updateInquiryStatus(inquiryId, status);
+
+    const io = req.app.get("io");
+    if (io) {
+      io.to(`inquiry_${inquiryId}`).emit("inquiry_status_updated", {
+        inquiry_id: inquiryId,
+        status,
+      });
+    }
+
+    return res.status(200).json({
+      status: "success",
+      message: "Inquiry status updated successfully",
+      data: {
+        inquiry_id: inquiryId,
+        status,
+      },
     });
   } catch (error) {
     next(error);

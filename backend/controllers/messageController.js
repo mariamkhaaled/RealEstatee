@@ -162,3 +162,74 @@ exports.getInquiryMessages = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.markInquiryAsRead = async (req, res, next) => {
+  try {
+    const inquiryId = Number(req.params.inquiryId);
+    const userId = Number(req.user?.user_id || req.user?.id || 0);
+    const userRole = req.user?.role;
+
+    if (!inquiryId || Number.isNaN(inquiryId)) {
+      return res.status(400).json({
+        status: "fail",
+        message: "Valid inquiryId is required",
+      });
+    }
+
+    const participantsRows = await Inquiry.getInquiryParticipants(inquiryId);
+    const participants = participantsRows[0];
+
+    if (!participants) {
+      return res.status(404).json({
+        status: "fail",
+        message: "Inquiry not found",
+      });
+    }
+
+    const ownerId = Number(participants.owner_id);
+    const customerId = participants.customer_id
+      ? Number(participants.customer_id)
+      : null;
+
+    if (userRole !== "admin" && userId !== ownerId && userId !== customerId) {
+      return res.status(403).json({
+        status: "fail",
+        message: "You are not allowed to update messages for this inquiry",
+      });
+    }
+
+    await Message.markInquiryMessagesAsRead(inquiryId, userId);
+
+    res.status(200).json({
+      status: "success",
+      message: "Messages marked as read",
+      data: {
+        inquiry_id: inquiryId,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getUnreadCounts = async (req, res, next) => {
+  try {
+    const userId = Number(req.user?.user_id || req.user?.id || 0);
+
+    if (!userId) {
+      return res.status(401).json({
+        status: "fail",
+        message: "Unauthorized",
+      });
+    }
+
+    const rows = await Message.getUnreadCountsByInquiryForUser(userId);
+
+    res.status(200).json({
+      status: "success",
+      data: rows,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

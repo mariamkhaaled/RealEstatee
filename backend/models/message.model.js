@@ -33,3 +33,30 @@ exports.getMessagesByInquiry = async (inquiryId) => {
   const [rows] = await db.execute(sql, [inquiryId]);
   return rows;
 };
+
+exports.markInquiryMessagesAsRead = async (inquiryId, receiverId) => {
+  const sql = `
+    UPDATE messages
+    SET is_read = 1
+    WHERE inquiry_id = ?
+      AND receiver_id = ?
+      AND is_read = 0
+  `;
+
+  return db.execute(sql, [inquiryId, receiverId]);
+};
+
+exports.getUnreadCountsByInquiryForUser = async (userId) => {
+  const sql = `
+    SELECT
+      inquiry_id,
+      COUNT(*) AS unread_count
+    FROM messages
+    WHERE receiver_id = ?
+      AND is_read = 0
+    GROUP BY inquiry_id
+  `;
+
+  const [rows] = await db.execute(sql, [userId]);
+  return rows;
+};

@@ -99,7 +99,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'Test Owner','owner@test.com','123456','01000000000','owner',0,NULL,NULL,'2026-04-19 16:38:42'),(2,'Ahmed Ali','ahmed@test.com','123456',NULL,'owner',0,NULL,NULL,'2026-04-19 17:00:36'),(4,'Mariam Khaled','mariam.khaledwhby87@gmail.com','$2b$10$g7Pxqr4EI0MKurbTmJfai.E8tsaMhzvbJO/i/VbxdtjkgvYjBdvne','0000000000','owner',1,NULL,NULL,'2026-04-19 17:28:53');
+REPLACE INTO `users` VALUES (1,'Test Owner','owner@test.com','123456','01000000000','owner',0,NULL,NULL,'2026-04-19 16:38:42'),(2,'Ahmed Ali','ahmed@test.com','123456',NULL,'owner',0,NULL,NULL,'2026-04-19 17:00:36'),(4,'Mariam Khaled','mariam.khaledwhby87@gmail.com','$2b$10$g7Pxqr4EI0MKurbTmJfai.E8tsaMhzvbJO/i/VbxdtjkgvYjBdvne','0000000000','owner',1,NULL,NULL,'2026-04-19 17:28:53');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
