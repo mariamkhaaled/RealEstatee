@@ -107,3 +107,8 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+const adminRoutes = require('./routes/admin.routes');
+
+// Use the admin routes
+app.use('/api/admin', adminRoutes);
