@@ -10,6 +10,7 @@ import {
   Share2,
   Phone,
   Mail,
+  X,
 } from "lucide-react";
 import { createInquiry } from "@/api/inquiries";
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,8 @@ const PropertyDetails: React.FC = () => {
   const [listing, setListing] = useState<ListingType | null>(null);
   const [loading, setLoading] = useState(true);
   const [savingFavorite, setSavingFavorite] = useState(false);
+  const [showGallery, setShowGallery] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(0);
 
   const { isFavorite, addFavorite, removeFavorite } = useFavorites();
   const propertyId = id || "";
@@ -174,9 +177,11 @@ const PropertyDetails: React.FC = () => {
   const safeImages =
     listing.images && listing.images.length > 0
       ? listing.images.map((img) =>
-          img.startsWith("http") ? img : `http://localhost:5000${img}`,
-        )
+        img.startsWith("http") ? img : `http://localhost:5000${img}`,
+      )
       : ["https://via.placeholder.com/1200x700?text=No+Image"];
+
+  const imageCount = safeImages.length;
 
   const safeFeatures = listing.features || [];
 
@@ -265,219 +270,330 @@ const PropertyDetails: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
-        <div>
-          <div className="flex gap-2 mb-2 flex-wrap">
-            <Badge className="bg-primary text-primary-foreground">
-              For {listing.purpose}
-            </Badge>
-
-            <Badge variant="outline" className="text-foreground">
-              {listing.property_type}
-            </Badge>
-
-            <Badge
-              variant="outline"
-              className={getStatusBadgeClass(listing.status)}
-            >
-              {listing.status}
-            </Badge>
-          </div>
-
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-            {listing.title}
-          </h1>
-
-          <div className="flex items-center text-muted-foreground">
-            <MapPin size={18} className="mr-1" />
-            <span>
-              {listing.city}
-              {listing.address ? `, ${listing.address}` : ""}
-            </span>
-          </div>
-        </div>
-
-        <div className="text-left md:text-right">
-          <p className="text-3xl font-bold text-primary">
-            ${Number(listing.price).toLocaleString()}
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10 h-[500px] rounded-2xl overflow-hidden">
-        <div className="md:col-span-3 h-full">
-          <img
-            src={safeImages[0]}
-            alt="Main"
-            className="w-full h-full object-cover"
-          />
-        </div>
-
-        <div className="hidden md:flex flex-col gap-4 h-full">
-          <img
-            src={safeImages[1] || safeImages[0]}
-            alt="Sub 1"
-            className="w-full h-1/2 object-cover"
-          />
-          <div className="relative w-full h-1/2">
-            <img
-              src={safeImages[2] || safeImages[0]}
-              alt="Sub 2"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        <div className="lg:col-span-2 space-y-8">
-          <div className="flex bg-card border border-border rounded-xl p-6 shadow-custom justify-around">
-            <div className="flex flex-col items-center">
-              <Bed size={28} className="text-primary mb-2" />
-              <span className="font-semibold text-foreground">
-                {listing.bedrooms} Bedrooms
-              </span>
-            </div>
-
-            <div className="w-px bg-border"></div>
-
-            <div className="flex flex-col items-center">
-              <Bath size={28} className="text-primary mb-2" />
-              <span className="font-semibold text-foreground">
-                {listing.bathrooms} Bathrooms
-              </span>
-            </div>
-
-            <div className="w-px bg-border"></div>
-
-            <div className="flex flex-col items-center">
-              <Square size={28} className="text-primary mb-2" />
-              <span className="font-semibold text-foreground">
-                {listing.area.toLocaleString()} sqft
-              </span>
-            </div>
-          </div>
-
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-foreground mb-4">
-              Description
-            </h2>
-            <p className="text-muted-foreground leading-relaxed">
-              {listing.description}
+            <div className="flex gap-2 mb-2 flex-wrap">
+              <Badge className="bg-primary text-primary-foreground">
+                For {listing.purpose}
+              </Badge>
+
+              <Badge variant="outline" className="text-foreground">
+                {listing.property_type}
+              </Badge>
+
+              <Badge
+                variant="outline"
+                className={getStatusBadgeClass(listing.status)}
+              >
+                {listing.status}
+              </Badge>
+            </div>
+
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+              {listing.title}
+            </h1>
+
+            <div className="flex items-center text-muted-foreground">
+              <MapPin size={18} className="mr-1" />
+              <span>
+                {listing.city}
+                {listing.address ? `, ${listing.address}` : ""}
+              </span>
+            </div>
+          </div>
+
+          <div className="text-left md:text-right">
+            <p className="text-3xl font-bold text-primary">
+              ${Number(listing.price).toLocaleString()}
             </p>
           </div>
+        </div>
 
-          <div>
-            <h2 className="text-2xl font-bold text-foreground mb-4">
-              Features & Amenities
-            </h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10 h-[500px] rounded-2xl overflow-hidden">
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {safeFeatures.map((feature) => (
+          {/* Main image */}
+          <div className="md:col-span-3 h-full">
+            <img
+              src={safeImages[0]}
+              alt="Main"
+              onClick={() => {
+                setSelectedImage(0);
+                setShowGallery(true);
+              }}
+              className="w-full h-full object-cover cursor-pointer"
+            />
+          </div>
+
+          {/* Right side */}
+          {safeImages.length > 1 && (
+            <div className="hidden md:flex flex-col gap-4 h-full">
+
+              {/* Second image */}
+              <img
+                src={safeImages[1]}
+                alt="Sub 1"
+                onClick={() => {
+                  setSelectedImage(1);
+                  setShowGallery(true);
+                }}
+                className={`w-full ${safeImages.length === 2 ? "h-full" : "h-1/2"} object-cover cursor-pointer`}
+              />
+
+              {/* Third image + overlay */}
+              {safeImages.length >= 3 && (
                 <div
-                  key={feature}
-                  className="flex items-center text-muted-foreground"
+                  className="relative w-full h-1/2 cursor-pointer"
+                  onClick={() => {
+                    setSelectedImage(2);
+                    setShowGallery(true);
+                  }}
                 >
-                  <div className="w-5 h-5 rounded-full bg-accent flex items-center justify-center mr-3 flex-shrink-0">
-                    <Check size={12} className="text-primary" />
-                  </div>
-                  <span className="text-sm">{feature}</span>
+                  <img
+                    src={safeImages[2]}
+                    alt="Sub 2"
+                    className="w-full h-full object-cover"
+                  />
+
+                  {safeImages.length > 3 && (
+                    <div className="absolute inset-0 bg-black/45 flex items-start justify-center pt-15">
+                      <span className="text-white text-xl font-semibold">
+                        +{safeImages.length - 3} more
+                      </span>
+                    </div>
+                  )}
                 </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          <div className="lg:col-span-2 space-y-8">
+            <div className="flex bg-card border border-border rounded-xl p-6 shadow-custom justify-around">
+              <div className="flex flex-col items-center">
+                <Bed size={28} className="text-primary mb-2" />
+                <span className="font-semibold text-foreground">
+                  {listing.bedrooms} Bedrooms
+                </span>
+              </div>
+
+              <div className="w-px bg-border"></div>
+
+              <div className="flex flex-col items-center">
+                <Bath size={28} className="text-primary mb-2" />
+                <span className="font-semibold text-foreground">
+                  {listing.bathrooms} Bathrooms
+                </span>
+              </div>
+
+              <div className="w-px bg-border"></div>
+
+              <div className="flex flex-col items-center">
+                <Square size={28} className="text-primary mb-2" />
+                <span className="font-semibold text-foreground">
+                  {listing.area.toLocaleString()} sqft
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-4">
+                Description
+              </h2>
+              <p className="text-muted-foreground leading-relaxed">
+                {listing.description}
+              </p>
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-foreground mb-4">
+                Features & Amenities
+              </h2>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {safeFeatures.map((feature) => (
+                  <div
+                    key={feature}
+                    className="flex items-center text-muted-foreground"
+                  >
+                    <div className="w-5 h-5 rounded-full bg-accent flex items-center justify-center mr-3 flex-shrink-0">
+                      <Check size={12} className="text-primary" />
+                    </div>
+                    <span className="text-sm">{feature}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <div className="flex gap-4">
+              <Button
+                variant={isFav ? "default" : "outline"}
+                className="flex-1"
+                onClick={handleToggleFavorite}
+                disabled={savingFavorite}
+              >
+                <Heart
+                  className={`mr-2 ${isFav ? "fill-current" : ""}`}
+                  size={18}
+                />
+                {isFav ? "Saved" : "Save"}
+              </Button>
+
+              <Button variant="outline" className="flex-1">
+                <Share2 className="mr-2" size={18} /> Share
+              </Button>
+            </div>
+
+            <Card className="shadow-custom border-border">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-bold text-foreground mb-2">
+                  Request This Property
+                </h3>
+
+                <form className="space-y-4" onSubmit={handleRequestSubmit}>
+                  <Input
+                    name="name"
+                    placeholder="Your Name"
+                    value={requestForm.name}
+                    onChange={handleChange}
+                    disabled={isListingClosed || isSubmitting}
+                  />
+                  <Input
+                    name="email"
+                    placeholder="Email Address"
+                    type="email"
+                    value={requestForm.email}
+                    onChange={handleChange}
+                    disabled={isListingClosed || isSubmitting}
+                  />
+                  <Input
+                    name="phone"
+                    placeholder="Phone Number"
+                    type="tel"
+                    value={requestForm.phone}
+                    onChange={handleChange}
+                    disabled={isListingClosed || isSubmitting}
+                  />
+                  <textarea
+                    name="message"
+                    rows={4}
+                    value={requestForm.message}
+                    onChange={handleChange}
+                    disabled={isListingClosed || isSubmitting}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary resize-none disabled:opacity-60"
+                    placeholder="Write your request message..."
+                  ></textarea>
+
+                  {submitMessage && <p className="text-sm">{submitMessage}</p>}
+
+                  <Button
+                    className="w-full"
+                    disabled={isListingClosed || isSubmitting}
+                  >
+                    {isSubmitting ? "Sending..." : "Send Request"}
+                  </Button>
+                </form>
+
+                <div className="mt-6 pt-6 border-t border-border space-y-2">
+                  <Button
+                    variant="secondary"
+                    className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  >
+                    <Phone className="mr-2" size={16} /> Contact Owner
+                  </Button>
+
+                  <Button
+                    variant="secondary"
+                    className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  >
+                    <Mail className="mr-2" size={16} /> Send Email
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+
+      {showGallery && (
+        <div className="fixed inset-0 z-50 bg-black/95 flex flex-col">
+          {/* Top bar */}
+          <div className="flex items-center justify-between px-6 py-4 bg-black/40 backdrop-blur-sm">
+            <p className="text-white text-sm md:text-base font-medium">
+              {selectedImage + 1} / {safeImages.length}
+            </p>
+
+            <button
+              onClick={() => setShowGallery(false)}
+              className="text-white hover:text-gray-300 transition"
+            >
+              <X size={30} />
+            </button>
+          </div>
+
+          {/* Main preview */}
+          <div className="flex-1 flex items-center justify-center px-4 md:px-10 relative">
+            {safeImages.length > 1 && (
+              <button
+                onClick={() =>
+                  setSelectedImage((prev) =>
+                    prev === 0 ? safeImages.length - 1 : prev - 1
+                  )
+                }
+                className="absolute left-4 md:left-8 bg-black/40 hover:bg-black/60 text-white rounded-full p-3 transition"
+              >
+                ‹
+              </button>
+            )}
+
+            <img
+              src={safeImages[selectedImage]}
+              alt={`Property ${selectedImage + 1}`}
+              className="max-h-[75vh] w-auto max-w-full object-contain rounded-2xl shadow-2xl"
+            />
+
+            {safeImages.length > 1 && (
+              <button
+                onClick={() =>
+                  setSelectedImage((prev) =>
+                    prev === safeImages.length - 1 ? 0 : prev + 1
+                  )
+                }
+                className="absolute right-4 md:right-8 bg-black/40 hover:bg-black/60 text-white rounded-full p-3 transition"
+              >
+                ›
+              </button>
+            )}
+          </div>
+
+          {/* Thumbnails */}
+          <div className="px-4 md:px-8 pb-6">
+            <div className="flex gap-3 overflow-x-auto justify-start md:justify-center">
+              {safeImages.map((img, index) => (
+                <button
+                  key={index}
+                  onClick={() => setSelectedImage(index)}
+                  className={`shrink-0 rounded-xl overflow-hidden border-2 transition ${selectedImage === index
+                      ? "border-white"
+                      : "border-transparent opacity-70 hover:opacity-100"
+                    }`}
+                >
+                  <img
+                    src={img}
+                    alt={`Thumb ${index + 1}`}
+                    className="w-24 h-20 object-cover"
+                  />
+                </button>
               ))}
             </div>
           </div>
         </div>
-
-        <div className="space-y-6">
-          <div className="flex gap-4">
-            <Button
-              variant={isFav ? "default" : "outline"}
-              className="flex-1"
-              onClick={handleToggleFavorite}
-              disabled={savingFavorite}
-            >
-              <Heart
-                className={`mr-2 ${isFav ? "fill-current" : ""}`}
-                size={18}
-              />
-              {isFav ? "Saved" : "Save"}
-            </Button>
-            <Button variant="outline" className="flex-1">
-              <Share2 className="mr-2" size={18} /> Share
-            </Button>
-          </div>
-
-          <Card className="shadow-custom border-border">
-            <CardContent className="p-6">
-              <h3 className="text-lg font-bold text-foreground mb-2">
-                Request This Property
-              </h3>
-
-              <form className="space-y-4" onSubmit={handleRequestSubmit}>
-                <Input
-                  name="name"
-                  placeholder="Your Name"
-                  value={requestForm.name}
-                  onChange={handleChange}
-                  disabled={isListingClosed || isSubmitting}
-                />
-                <Input
-                  name="email"
-                  placeholder="Email Address"
-                  type="email"
-                  value={requestForm.email}
-                  onChange={handleChange}
-                  disabled={isListingClosed || isSubmitting}
-                />
-                <Input
-                  name="phone"
-                  placeholder="Phone Number"
-                  type="tel"
-                  value={requestForm.phone}
-                  onChange={handleChange}
-                  disabled={isListingClosed || isSubmitting}
-                />
-                <textarea
-                  name="message"
-                  rows={4}
-                  value={requestForm.message}
-                  onChange={handleChange}
-                  disabled={isListingClosed || isSubmitting}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary resize-none disabled:opacity-60"
-                  placeholder="Write your request message..."
-                ></textarea>
-
-                {submitMessage && <p className="text-sm">{submitMessage}</p>}
-
-                <Button
-                  className="w-full"
-                  disabled={isListingClosed || isSubmitting}
-                >
-                  {isSubmitting ? "Sending..." : "Send Request"}
-                </Button>
-              </form>
-
-              <div className="mt-6 pt-6 border-t border-border space-y-2">
-                <Button
-                  variant="secondary"
-                  className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                >
-                  <Phone className="mr-2" size={16} /> Contact Owner
-                </Button>
-
-                <Button
-                  variant="secondary"
-                  className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                >
-                  <Mail className="mr-2" size={16} /> Send Email
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 };
 
