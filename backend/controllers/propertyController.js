@@ -22,8 +22,8 @@ exports.createProperty = async (req, res, next) => {
         const bodyImages = Array.isArray(req.body.images)
             ? req.body.images
             : req.body.images
-            ? JSON.parse(req.body.images)
-            : [];
+                ? JSON.parse(req.body.images)
+                : [];
 
         const parsedData = {
             owner_id: Number(req.body.owner_id),
@@ -92,6 +92,78 @@ exports.getPropertyById = async (req, res, next) => {
         res.status(200).json({
             status: 'success',
             data: { property }
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+    exports.updateProperty = async (req, res, next) => {
+    try {
+        const propertyId = Number(req.params.id);
+
+        const uploadedImages = (req.files || []).map(
+            (file) => `/uploads/${file.filename}`
+        );
+
+        const bodyImages = Array.isArray(req.body.images)
+            ? req.body.images
+            : req.body.images
+                ? JSON.parse(req.body.images)
+                : [];
+
+        const parsedData = {
+            owner_id: Number(req.body.owner_id),
+
+            property:
+                typeof req.body.property === "string"
+                    ? JSON.parse(req.body.property)
+                    : req.body.property,
+
+            location:
+                typeof req.body.location === "string"
+                    ? JSON.parse(req.body.location)
+                    : req.body.location,
+
+            listing:
+                typeof req.body.listing === "string"
+                    ? JSON.parse(req.body.listing)
+                    : req.body.listing,
+
+            feature_ids:
+                typeof req.body.feature_ids === "string"
+                    ? JSON.parse(req.body.feature_ids)
+                    : req.body.feature_ids || [],
+
+            images: uploadedImages.length > 0 ? uploadedImages : bodyImages
+        };
+
+        const updatedProperty = await Property.update(
+            propertyId,
+            parsedData.owner_id,
+            parsedData
+        );
+
+        res.status(200).json({
+            status: 'success',
+            message: 'Property updated successfully',
+            data: { property: updatedProperty }
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+exports.deleteProperty = async (req, res, next) => {
+    try {
+        const propertyId = Number(req.params.id);
+        const ownerId = Number(req.body.owner_id);
+
+        await Property.delete(propertyId, ownerId);
+
+        res.status(200).json({
+            status: 'success',
+            message: 'Property deleted successfully'
         });
     } catch (err) {
         next(err);
