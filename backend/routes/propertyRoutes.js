@@ -3,6 +3,11 @@ const propertyController = require('../controllers/propertyController');
 const upload = require('../middleware/upload');
 
 const router = express.Router();
+// Add updateListingStatus to your imports at the top
+const { updateListingStatus } = require('../controllers/propertyController');
+
+// Add this route with your other property routes
+router.patch('/listing-status/:listingId', updateListingStatus);
 
 
 router.get('/', propertyController.getAllProperties);

@@ -1,4 +1,4 @@
--- Active: 1776112129252@@127.0.0.1@3306@real_estate
+-- Active: 1776112129252@@127.0.0.1@3306@real_estate 
 DROP DATABASE IF EXISTS real_estate;
 CREATE DATABASE real_estate;
 USE real_estate;
