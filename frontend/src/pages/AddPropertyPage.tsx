@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { UploadCloud, X, ImagePlus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React, { useEffect, useRef, useState } from "react";
+import { UploadCloud, X, ImagePlus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type PropertyFormData = {
   title: string;
@@ -23,24 +23,45 @@ type Feature = {
 type AddPropertyModalProps = {
   onClose: () => void;
   onSave?: () => void;
+  mode?: "create" | "update";
+  initialProperty?: {
+    property_id: number;
+    title: string;
+    description: string;
+    property_type: string;
+    bedrooms: number;
+    bathrooms: number;
+    area: number;
+    purpose: string;
+    price: string | number;
+    city: string;
+    address: string;
+    images: string[];
+    features: string[];
+  } | null;
 };
 
 const MAX_IMAGES = 10;
 
-const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ onClose, onSave }) => {
+const AddPropertyModal: React.FC<AddPropertyModalProps> = ({
+  onClose,
+  onSave,
+  mode = "create",
+  initialProperty = null,
+}) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [formData, setFormData] = useState<PropertyFormData>({
-    title: '',
-    price: '',
-    location: '',
-    address: '',
-    type: '',
-    purpose: '',
-    bedrooms: '',
-    bathrooms: '',
-    area: '',
-    description: '',
+    title: "",
+    price: "",
+    location: "",
+    address: "",
+    type: "",
+    purpose: "",
+    bedrooms: "",
+    bathrooms: "",
+    area: "",
+    description: "",
   });
 
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -48,30 +69,29 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ onClose, onSave }) 
   const [selectedFeatures, setSelectedFeatures] = useState<number[]>([]);
   const [availableFeatures, setAvailableFeatures] = useState<Feature[]>([]);
 
-  const [imageError, setImageError] = useState('');
-  const [featuresError, setFeaturesError] = useState('');
+  const [imageError, setImageError] = useState("");
+  const [featuresError, setFeaturesError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingFeatures, setIsLoadingFeatures] = useState(true);
-  const [submitError, setSubmitError] = useState('');
+  const [submitError, setSubmitError] = useState("");
 
-  
   useEffect(() => {
     const fetchFeatures = async () => {
       try {
-        setFeaturesError('');
+        setFeaturesError("");
 
-        const res = await fetch('http://localhost:5000/api/features');
+        const res = await fetch("http://localhost:5000/api/features");
         const data = await res.json();
 
         if (!res.ok) {
-          throw new Error(data.message || 'Failed to load features');
+          throw new Error(data.message || "Failed to load features");
         }
 
         setAvailableFeatures(data.features || data.data?.features || []);
       } catch (error) {
-        console.error('Error loading features:', error);
+        console.error("Error loading features:", error);
         setFeaturesError(
-          error instanceof Error ? error.message : 'Failed to load features.'
+          error instanceof Error ? error.message : "Failed to load features.",
         );
       } finally {
         setIsLoadingFeatures(false);
@@ -81,8 +101,58 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ onClose, onSave }) 
     fetchFeatures();
   }, []);
 
+  useEffect(() => {
+    if (mode !== "update" || !initialProperty) {
+      return;
+    }
+
+    setFormData({
+      title: initialProperty.title || "",
+      price: String(initialProperty.price ?? ""),
+      location: initialProperty.city || "",
+      address: initialProperty.address || "",
+      type: initialProperty.property_type || "",
+      purpose: initialProperty.purpose || "",
+      bedrooms: String(initialProperty.bedrooms ?? ""),
+      bathrooms: String(initialProperty.bathrooms ?? ""),
+      area: String(initialProperty.area ?? ""),
+      description: initialProperty.description || "",
+    });
+
+    setSelectedFiles([]);
+    setPreviewUrls(
+      (initialProperty.images || []).map((rawUrl) =>
+        rawUrl.startsWith("http") ? rawUrl : `http://localhost:5000${rawUrl}`,
+      ),
+    );
+  }, [mode, initialProperty]);
+
+  useEffect(() => {
+    if (
+      mode !== "update" ||
+      !initialProperty ||
+      availableFeatures.length === 0
+    ) {
+      return;
+    }
+
+    const propertyFeatureNames = new Set(
+      (initialProperty.features || []).map((name) => name.toLowerCase()),
+    );
+
+    const featureIds = availableFeatures
+      .filter((feature) =>
+        propertyFeatureNames.has(feature.feature_name.toLowerCase()),
+      )
+      .map((feature) => feature.feature_id);
+
+    setSelectedFeatures(featureIds);
+  }, [mode, initialProperty, availableFeatures]);
+
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -95,74 +165,81 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ onClose, onSave }) 
     const files = e.target.files;
     if (!files) return;
 
-    setImageError('');
+    setImageError("");
 
     const incomingFiles = Array.from(files);
     const remainingSlots = MAX_IMAGES - selectedFiles.length;
 
     if (remainingSlots <= 0) {
       setImageError(`You can upload up to ${MAX_IMAGES} images only.`);
-      e.target.value = '';
+      e.target.value = "";
       return;
     }
 
     const filesToAdd = incomingFiles.slice(0, remainingSlots);
 
     setSelectedFiles((prev) => [...prev, ...filesToAdd]);
-    
+
     const newUrls = filesToAdd.map((file) => URL.createObjectURL(file));
     setPreviewUrls((prev) => [...prev, ...newUrls]);
 
     if (incomingFiles.length > remainingSlots) {
-      setImageError(`Only ${remainingSlots} more image(s) were added. Maximum is ${MAX_IMAGES}.`);
+      setImageError(
+        `Only ${remainingSlots} more image(s) were added. Maximum is ${MAX_IMAGES}.`,
+      );
     }
 
-    e.target.value = '';
+    e.target.value = "";
   };
 
   const removeImage = (index: number) => {
-    URL.revokeObjectURL(previewUrls[index]);
+    if (previewUrls[index]?.startsWith("blob:")) {
+      URL.revokeObjectURL(previewUrls[index]);
+    }
 
     setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
-    setImageError('');
+    setImageError("");
   };
 
   const toggleFeature = (featureId: number) => {
     setSelectedFeatures((prev) =>
       prev.includes(featureId)
         ? prev.filter((id) => id !== featureId)
-        : [...prev, featureId]
+        : [...prev, featureId],
     );
   };
 
   const resetForm = () => {
-    previewUrls.forEach((url) => URL.revokeObjectURL(url));
+    previewUrls.forEach((url) => {
+      if (url.startsWith("blob:")) {
+        URL.revokeObjectURL(url);
+      }
+    });
 
     setFormData({
-      title: '',
-      price: '',
-      location: '',
-      address: '',
-      type: '',
-      purpose: '',
-      bedrooms: '',
-      bathrooms: '',
-      area: '',
-      description: '',
+      title: "",
+      price: "",
+      location: "",
+      address: "",
+      type: "",
+      purpose: "",
+      bedrooms: "",
+      bathrooms: "",
+      area: "",
+      description: "",
     });
 
     setSelectedFiles([]);
     setPreviewUrls([]);
     setSelectedFeatures([]);
-    setImageError('');
-    setSubmitError('');
+    setImageError("");
+    setSubmitError("");
   };
 
-  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitError('');
+    setSubmitError("");
 
     if (
       !formData.title.trim() ||
@@ -172,96 +249,120 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ onClose, onSave }) 
       !formData.purpose.trim() ||
       !formData.description.trim()
     ) {
-      setSubmitError('Please fill all required fields.');
+      setSubmitError("Please fill all required fields.");
       return;
     }
 
     setIsSubmitting(true);
 
-try {
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
-  const realOwnerId = user?.user_id || user?.id;
+    try {
+      const user = JSON.parse(localStorage.getItem("user") || "null");
+      const realOwnerId = user?.user_id || user?.id;
 
-  if (!realOwnerId) {
-    setSubmitError('No logged-in owner found.');
-    setIsSubmitting(false);
-    return;
-  }
+      if (!realOwnerId) {
+        setSubmitError("No logged-in owner found.");
+        setIsSubmitting(false);
+        return;
+      }
 
-  const payload = new FormData();
+      const payload = new FormData();
 
-  payload.append('owner_id', String(realOwnerId));
+      payload.append("owner_id", String(realOwnerId));
 
-  payload.append(
-    'property',
-    JSON.stringify({
-      title: formData.title,
-      description: formData.description,
-      type: formData.type,
-      bedrooms: formData.bedrooms ? Number(formData.bedrooms) : 0,
-      bathrooms: formData.bathrooms ? Number(formData.bathrooms) : 0,
-      area: formData.area ? Number(formData.area) : 0,
-    })
-  );
+      payload.append(
+        "property",
+        JSON.stringify({
+          title: formData.title,
+          description: formData.description,
+          type: formData.type,
+          bedrooms: formData.bedrooms ? Number(formData.bedrooms) : 0,
+          bathrooms: formData.bathrooms ? Number(formData.bathrooms) : 0,
+          area: formData.area ? Number(formData.area) : 0,
+        }),
+      );
 
-  payload.append(
-    'location',
-    JSON.stringify({
-      city: formData.location,
-      address: formData.address,
-    })
-  );
+      payload.append(
+        "location",
+        JSON.stringify({
+          city: formData.location,
+          address: formData.address,
+        }),
+      );
 
-  payload.append(
-    'listing',
-    JSON.stringify({
-      price: Number(formData.price),
-      purpose: formData.purpose,
-      status: 'Active',
-      views: 0,
-    })
-  );
+      payload.append(
+        "listing",
+        JSON.stringify({
+          price: Number(formData.price),
+          purpose: formData.purpose,
+          status: "Active",
+          views: 0,
+        }),
+      );
 
-  payload.append('feature_ids', JSON.stringify(selectedFeatures));
+      payload.append("feature_ids", JSON.stringify(selectedFeatures));
 
-  selectedFiles.forEach((file) => {
-    payload.append('images', file);
-  });
+      selectedFiles.forEach((file) => {
+        payload.append("images", file);
+      });
 
-  const res = await fetch('http://localhost:5000/api/properties', {
-    method: 'POST',
-    body: payload,
-  });
+      if (mode === "update" && initialProperty) {
+        const retainedImages = previewUrls.filter(
+          (url) => !url.startsWith("blob:"),
+        );
+        payload.append("retained_images", JSON.stringify(retainedImages));
+      }
 
-  const data = await res.json();
+      const endpoint =
+        mode === "update" && initialProperty
+          ? `http://localhost:5000/api/properties/${initialProperty.property_id}`
+          : "http://localhost:5000/api/properties";
 
-  if (!res.ok) {
-    throw new Error(data.message || `Request failed with status ${res.status}`);
-  }
+      const method = mode === "update" ? "PUT" : "POST";
 
-  alert('Property saved successfully');
-  resetForm();
+      const res = await fetch(endpoint, {
+        method,
+        body: payload,
+      });
 
-  if (onSave) onSave();
-  onClose();
-} catch (error) {
-  console.error('Error saving property:', error);
-  setSubmitError(
-    error instanceof Error
-      ? error.message
-      : 'Failed to save property. Check backend and try again.'
-  );
-} finally {
-  setIsSubmitting(false);
-}
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(
+          data.message || `Request failed with status ${res.status}`,
+        );
+      }
+
+      alert(
+        mode === "update"
+          ? "Property updated successfully"
+          : "Property saved successfully",
+      );
+      resetForm();
+
+      if (onSave) onSave();
+      onClose();
+    } catch (error) {
+      console.error("Error saving property:", error);
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : "Failed to save property. Check backend and try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="max-h-[85vh] overflow-y-auto pr-1">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-foreground">Add New Property</h2>
+        <h2 className="text-2xl font-bold text-foreground">
+          {mode === "update" ? "Update Property" : "Add New Property"}
+        </h2>
         <p className="text-muted-foreground mt-1">
-          Fill in the property details below.
+          {mode === "update"
+            ? "Edit the property details below."
+            : "Fill in the property details below."}
         </p>
       </div>
 
@@ -333,12 +434,16 @@ try {
             </div>
           )}
 
-          {imageError && <p className="text-sm text-red-500 mt-2">{imageError}</p>}
+          {imageError && (
+            <p className="text-sm text-red-500 mt-2">{imageError}</p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label className="block text-sm font-medium mb-2">Property Title</label>
+            <label className="block text-sm font-medium mb-2">
+              Property Title
+            </label>
             <input
               type="text"
               name="title"
@@ -446,7 +551,9 @@ try {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Area (sqft)</label>
+            <label className="block text-sm font-medium mb-2">
+              Area (sqft)
+            </label>
             <input
               type="number"
               name="area"
@@ -472,7 +579,9 @@ try {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-3">Features / Amenities</label>
+          <label className="block text-sm font-medium mb-3">
+            Features / Amenities
+          </label>
 
           {isLoadingFeatures ? (
             <p className="text-sm text-muted-foreground">Loading features...</p>
@@ -481,7 +590,9 @@ try {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {availableFeatures.map((feature) => {
-                const isSelected = selectedFeatures.includes(feature.feature_id);
+                const isSelected = selectedFeatures.includes(
+                  feature.feature_id,
+                );
 
                 return (
                   <button
@@ -490,8 +601,8 @@ try {
                     onClick={() => toggleFeature(feature.feature_id)}
                     className={`rounded-lg border px-4 py-3 text-sm text-left transition ${
                       isSelected
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border bg-background hover:bg-muted'
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-background hover:bg-muted"
                     }`}
                   >
                     {feature.feature_name}
@@ -506,7 +617,13 @@ try {
 
         <div className="flex gap-3 pt-2">
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : 'Save Property'}
+            {isSubmitting
+              ? mode === "update"
+                ? "Updating..."
+                : "Saving..."
+              : mode === "update"
+                ? "Update Property"
+                : "Save Property"}
           </Button>
 
           <Button

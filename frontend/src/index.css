@@ -56,7 +56,7 @@
   --input: rgb(209, 213, 219);
   --ring: rgb(59, 130, 246);
   --radius: 0.75rem;
-  
+
   --shadow-x: 0px;
   --shadow-y: 4px;
   --shadow-blur: 20px;
@@ -76,6 +76,25 @@
 
 @layer utilities {
   .shadow-custom {
-    box-shadow: var(--shadow-x) var(--shadow-y) var(--shadow-blur) var(--shadow-spread) var(--shadow-color);
+    box-shadow: var(--shadow-x) var(--shadow-y) var(--shadow-blur)
+      var(--shadow-spread) var(--shadow-color);
+  }
+
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.7) transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.7);
+    border-radius: 999px;
   }
 }

@@ -10,7 +10,6 @@ import { Link, Navigate, useSearchParams } from "react-router-dom";
 import {
   Building,
   Eye,
-  Heart,
   MessageSquare,
   Send,
   CheckCircle2,
@@ -25,6 +24,10 @@ import {
   TrendingUp,
   ChevronLeft,
   ChevronRight,
+  Download,
+  MoreVertical,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,6 +48,23 @@ import {
 } from "@/api/messages";
 import { connectSocket } from "@/lib/socket";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import AddPropertyModal from "./AddPropertyPage";
 
 type PropertyType = {
@@ -93,6 +113,13 @@ const OwnerDashboard = () => {
 
   const [error, setError] = useState("");
   const [openAddModal, setOpenAddModal] = useState(false);
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [editingProperty, setEditingProperty] =
+    useState<PropertyType | null>(null);
+  const [propertyToDelete, setPropertyToDelete] =
+    useState<PropertyType | null>(null);
+  const [deletingProperty, setDeletingProperty] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [propertySearch, setPropertySearch] = useState("");
   const [showActiveOnly, setShowActiveOnly] = useState(false);
   const [inquiryStatusFilter, setInquiryStatusFilter] = useState<
@@ -680,6 +707,133 @@ const OwnerDashboard = () => {
     setActiveImageIndex((prev) => (prev + 1) % selectedPropertyImages.length);
   };
 
+  const escapeCsvCell = (value: string | number | null | undefined) => {
+    const normalized = String(value ?? "").replace(/\r?\n|\r/g, " ").trim();
+    return `"${normalized.replace(/"/g, '""')}"`;
+  };
+
+  const handleExportData = () => {
+    if (properties.length === 0) {
+      setError("No properties available to export.");
+      return;
+    }
+
+    try {
+      setExporting(true);
+      setError("");
+
+      const headers = [
+        "Property ID",
+        "Title",
+        "Type",
+        "Purpose",
+        "Status",
+        "Price",
+        "Bedrooms",
+        "Bathrooms",
+        "Area",
+        "City",
+        "Address",
+        "Views",
+        "Features",
+        "Image Count",
+      ];
+
+      const rows = properties.map((property) => [
+        property.property_id,
+        property.title,
+        property.property_type,
+        property.purpose,
+        property.status,
+        property.price,
+        property.bedrooms,
+        property.bathrooms,
+        property.area,
+        property.city,
+        property.address,
+        property.views,
+        (property.features || []).join(" | "),
+        (property.images || []).length,
+      ]);
+
+      const csv = [
+        headers.map((header) => escapeCsvCell(header)).join(","),
+        ...rows.map((row) =>
+          row
+            .map((cell) =>
+              escapeCsvCell(typeof cell === "number" ? String(cell) : cell),
+            )
+            .join(","),
+        ),
+      ].join("\n");
+
+      const blob = new Blob([csv], {
+        type: "text/csv;charset=utf-8;",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `owner-properties-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch {
+      setError("Failed to export properties data.");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const openEditPropertyModal = (property: PropertyType) => {
+    setEditingProperty(property);
+    setOpenEditModal(true);
+  };
+
+  const handleDeleteProperty = async () => {
+    if (!propertyToDelete) {
+      return;
+    }
+
+    try {
+      setDeletingProperty(true);
+      setError("");
+
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `http://localhost:5000/api/properties/${propertyToDelete.property_id}`,
+        {
+          method: "DELETE",
+          headers: token
+            ? {
+                Authorization: `Bearer ${token}`,
+              }
+            : undefined,
+        },
+      );
+
+      if (!response.ok) {
+        const body = await response.json().catch(() => null);
+        throw new Error(body?.message || "Failed to delete property");
+      }
+
+      setProperties((prev) =>
+        prev.filter(
+          (property) => property.property_id !== propertyToDelete.property_id,
+        ),
+      );
+
+      setSelectedPropertyId((prev) =>
+        prev === propertyToDelete.property_id ? null : prev,
+      );
+      setPropertyToDelete(null);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Failed to delete property"));
+    } finally {
+      setDeletingProperty(false);
+    }
+  };
+
   if (!isOwner) {
     return <Navigate to="/" replace />;
   }
@@ -705,11 +859,12 @@ const OwnerDashboard = () => {
             </h2>
           </div>
           <Button
-            onClick={() => setOpenAddModal(true)}
+            onClick={handleExportData}
+            disabled={exporting || properties.length === 0}
             className="rounded-full bg-slate-950 text-white shadow-[0_16px_35px_rgba(15,23,42,0.22)] hover:bg-slate-800 h-11 px-6"
           >
-            <Plus className="mr-2 h-4 w-4" />
-            Add Property
+            <Download className="mr-2 h-4 w-4" />
+            {exporting ? "Exporting..." : "Export Data"}
           </Button>
         </div>
 
@@ -754,8 +909,8 @@ const OwnerDashboard = () => {
                 {/* 3-Column Layout: Left Navigator (25%) | Center Focus (50%) | Right Snapshots (25%) */}
                 <div className="grid h-[78vh] min-h-[680px] gap-4 lg:grid-cols-[1fr_2fr_1fr]">
                   {/* LEFT COLUMN: Property Navigator Sidebar */}
-                  <section className="flex flex-col overflow-hidden rounded-[34px] border border-white/65 bg-white/58 shadow-[0_18px_50px_rgba(15,23,42,0.06)] backdrop-blur-2xl">
-                    <div className="border-b border-slate-200/60 bg-white/58 px-5 py-4">
+                  <section className="flex h-full flex-col overflow-hidden rounded-[34px] border border-white/65 bg-white/58 shadow-[0_18px_50px_rgba(15,23,42,0.06)] backdrop-blur-2xl">
+                    <div className="sticky top-0 z-20 border-b border-slate-200/60 bg-white/88 px-5 py-4 backdrop-blur-xl">
                       <div className="flex items-center justify-between gap-3 mb-4">
                         <div>
                           <p className="text-[10px] uppercase tracking-[0.24em] text-slate-400">
@@ -782,9 +937,17 @@ const OwnerDashboard = () => {
                           className="rounded-full border-slate-200/70 bg-white/88 pl-9 text-sm"
                         />
                       </div>
+
+                      <Button
+                        onClick={() => setOpenAddModal(true)}
+                        className="mt-3 w-full rounded-full bg-slate-950 text-white shadow-[0_12px_28px_rgba(15,23,42,0.18)] hover:bg-slate-800 text-sm h-9"
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Property
+                      </Button>
                     </div>
 
-                    <div className="min-h-0 flex-1 overflow-y-auto p-3">
+                    <div className="min-h-0 h-full flex-1 overflow-y-auto custom-scrollbar p-3">
                       {loadingProperties ? (
                         <div className="px-3 py-6 text-sm text-slate-500">
                           Loading...
@@ -800,56 +963,84 @@ const OwnerDashboard = () => {
                               selectedProperty?.property_id ===
                               property.property_id;
                             return (
-                              <button
+                              <div
                                 key={property.property_id}
-                                type="button"
-                                onClick={() =>
-                                  setSelectedPropertyId(property.property_id)
-                                }
-                                className={`w-full rounded-[20px] border p-2.5 text-left transition-all duration-300 ${
+                                className={`relative w-full rounded-[20px] border p-2.5 text-left transition-all duration-300 ${
                                   isSelected
                                     ? "border-blue-300/50 bg-[radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_28%),linear-gradient(90deg,_rgba(239,246,255,0.96),_rgba(255,255,255,0.95))] shadow-[0_12px_28px_rgba(59,130,246,0.10)]"
                                     : "border-slate-200/65 bg-white/72 hover:border-slate-300/70 hover:bg-white/88"
                                 }`}
                               >
-                                <div className="flex items-center gap-2.5">
-                                  <img
-                                    src={getPropertyImage(property.images)}
-                                    alt={property.title}
-                                    className="h-12 w-12 rounded-2xl object-cover shadow-sm"
-                                  />
-                                  <div className="min-w-0 flex-1">
-                                    <p className="truncate text-xs font-semibold text-slate-950">
-                                      {property.title}
-                                    </p>
-                                    <p className="text-xs font-semibold text-slate-900">
-                                      {formatPrice(property.price)}
-                                    </p>
-                                    <div className="mt-1 flex items-center gap-1">
-                                      <span
-                                        className={`h-1.5 w-1.5 rounded-full ${property.status === "Active" ? "bg-emerald-500" : "bg-amber-500"}`}
-                                      />
-                                      <span className="text-[10px] text-slate-500 uppercase tracking-[0.1em]">
-                                        {property.status}
-                                      </span>
+                                <div className="absolute right-2 top-2 z-10">
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-7 w-7 rounded-full bg-white/75 text-slate-600 hover:bg-white"
+                                        onClick={(event) => {
+                                          event.stopPropagation();
+                                        }}
+                                      >
+                                        <MoreVertical className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-44">
+                                      <DropdownMenuItem
+                                        onClick={() => openEditPropertyModal(property)}
+                                      >
+                                        <Pencil className="h-4 w-4" />
+                                        Update Property
+                                      </DropdownMenuItem>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem
+                                        variant="destructive"
+                                        onClick={() => setPropertyToDelete(property)}
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                        Delete Property
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setSelectedPropertyId(property.property_id)
+                                  }
+                                  className="w-full"
+                                >
+                                  <div className="flex items-center gap-2.5 pr-8">
+                                    <img
+                                      src={getPropertyImage(property.images)}
+                                      alt={property.title}
+                                      className="h-12 w-12 rounded-2xl object-cover shadow-sm"
+                                    />
+                                    <div className="min-w-0 flex-1">
+                                      <p className="truncate text-xs font-semibold text-slate-950">
+                                        {property.title}
+                                      </p>
+                                      <p className="text-xs font-semibold text-slate-900">
+                                        {formatPrice(property.price)}
+                                      </p>
+                                      <div className="mt-1 flex items-center gap-1">
+                                        <span
+                                          className={`h-1.5 w-1.5 rounded-full ${property.status === "Active" ? "bg-emerald-500" : "bg-amber-500"}`}
+                                        />
+                                        <span className="text-[10px] text-slate-500 uppercase tracking-[0.1em]">
+                                          {property.status}
+                                        </span>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                              </button>
+                                </button>
+                              </div>
                             );
                           })}
                         </div>
                       )}
-                    </div>
-
-                    <div className="border-t border-slate-200/60 bg-white/58 p-3">
-                      <Button
-                        onClick={() => setOpenAddModal(true)}
-                        className="w-full rounded-full bg-slate-950 text-white shadow-[0_12px_28px_rgba(15,23,42,0.18)] hover:bg-slate-800 text-sm h-9"
-                      >
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add Property
-                      </Button>
                     </div>
                   </section>
 
@@ -1542,6 +1733,72 @@ const OwnerDashboard = () => {
             />
           </DialogContent>
         </Dialog>
+
+        <Dialog
+          open={openEditModal}
+          onOpenChange={(nextOpen) => {
+            setOpenEditModal(nextOpen);
+            if (!nextOpen) {
+              setEditingProperty(null);
+            }
+          }}
+        >
+          <DialogContent className="fixed top-[50%] left-[50%] z-50 w-[95vw] max-w-6xl max-h-[90vh] translate-x-[-50%] translate-y-[-50%] bg-white">
+            {editingProperty ? (
+              <AddPropertyModal
+                mode="update"
+                initialProperty={editingProperty}
+                onClose={() => {
+                  setOpenEditModal(false);
+                  setEditingProperty(null);
+                }}
+                onSave={() => {
+                  setActiveTab("properties");
+                  fetchOwnerProperties();
+                }}
+              />
+            ) : null}
+          </DialogContent>
+        </Dialog>
+
+        <AlertDialog
+          open={Boolean(propertyToDelete)}
+          onOpenChange={(nextOpen) => {
+            if (!nextOpen && !deletingProperty) {
+              setPropertyToDelete(null);
+            }
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete property?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently remove
+                {" "}
+                <span className="font-medium text-slate-800">
+                  {propertyToDelete?.title || "this property"}
+                </span>
+                {" "}
+                and associated records.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={deletingProperty}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={(event) => {
+                  event.preventDefault();
+                  handleDeleteProperty();
+                }}
+                disabled={deletingProperty}
+                className="bg-rose-600 hover:bg-rose-700"
+              >
+                {deletingProperty ? "Deleting..." : "Delete Property"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
