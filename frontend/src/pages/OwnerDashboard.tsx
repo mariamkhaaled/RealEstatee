@@ -119,10 +119,12 @@ const OwnerDashboard = () => {
   const [error, setError] = useState("");
   const [openAddModal, setOpenAddModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
-  const [editingProperty, setEditingProperty] =
-    useState<PropertyType | null>(null);
-  const [propertyToDelete, setPropertyToDelete] =
-    useState<PropertyType | null>(null);
+  const [editingProperty, setEditingProperty] = useState<PropertyType | null>(
+    null,
+  );
+  const [propertyToDelete, setPropertyToDelete] = useState<PropertyType | null>(
+    null,
+  );
   const [deletingProperty, setDeletingProperty] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [propertySearch, setPropertySearch] = useState("");
@@ -680,17 +682,17 @@ const OwnerDashboard = () => {
       setSelectedPropertyId(filteredProperties[0].property_id);
     }
   }, [filteredProperties, selectedPropertyId]);
-  
+
   const totalViews = properties.reduce(
     (sum, p) => sum + Number(p.views || 0),
     0,
   );
-  
+
   const selectedPropertyUnread = selectedPropertyInquiries.reduce(
     (sum, inquiry) => sum + Number(unreadByInquiry[inquiry.inquiry_id] || 0),
     0,
   );
-  
+
   const totalInquiries = inquiries.length;
 
   useEffect(() => {
@@ -716,7 +718,9 @@ const OwnerDashboard = () => {
   };
 
   const escapeCsvCell = (value: string | number | null | undefined) => {
-    const normalized = String(value ?? "").replace(/\r?\n|\r/g, " ").trim();
+    const normalized = String(value ?? "")
+      .replace(/\r?\n|\r/g, " ")
+      .trim();
     return `"${normalized.replace(/"/g, '""')}"`;
   };
 
@@ -916,7 +920,6 @@ const OwnerDashboard = () => {
               <TabsContent value="properties" className="pt-2">
                 {/* 3-Column Layout: Left Navigator (25%) | Center Focus (50%) | Right Snapshots (25%) */}
                 <div className="grid h-[78vh] min-h-[680px] gap-4 lg:grid-cols-[1fr_2fr_1fr]">
-                  
                   {/* LEFT COLUMN: Property Navigator Sidebar */}
                   <section className="flex h-full flex-col overflow-hidden rounded-[34px] border border-white/65 bg-white/58 shadow-[0_18px_50px_rgba(15,23,42,0.06)] backdrop-blur-2xl">
                     <div className="sticky top-0 z-20 border-b border-slate-200/60 bg-white/88 px-5 py-4 backdrop-blur-xl">
@@ -971,13 +974,29 @@ const OwnerDashboard = () => {
                             const isSelected =
                               selectedProperty?.property_id ===
                               property.property_id;
-                            
+
                             const getStatusConfig = (status: string) => {
                               switch (status) {
-                                case 'Active': return { color: 'bg-emerald-500', label: 'Approved' };
-                                case 'Pending': return { color: 'bg-amber-500', label: 'Pending Approval' };
-                                case 'Closed': return { color: 'bg-rose-500', label: 'Rejected' };
-                                default: return { color: 'bg-slate-400', label: status };
+                                case "Active":
+                                  return {
+                                    color: "bg-emerald-500",
+                                    label: "Approved",
+                                  };
+                                case "Pending":
+                                  return {
+                                    color: "bg-amber-500",
+                                    label: "Pending Approval",
+                                  };
+                                case "Closed":
+                                  return {
+                                    color: "bg-rose-500",
+                                    label: "Rejected",
+                                  };
+                                default:
+                                  return {
+                                    color: "bg-slate-400",
+                                    label: status,
+                                  };
                               }
                             };
                             const statusInfo = getStatusConfig(property.status);
@@ -1006,9 +1025,14 @@ const OwnerDashboard = () => {
                                         <MoreVertical className="h-4 w-4" />
                                       </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-44">
+                                    <DropdownMenuContent
+                                      align="end"
+                                      className="w-44"
+                                    >
                                       <DropdownMenuItem
-                                        onClick={() => openEditPropertyModal(property)}
+                                        onClick={() =>
+                                          openEditPropertyModal(property)
+                                        }
                                       >
                                         <Pencil className="h-4 w-4" />
                                         Update Property
@@ -1016,7 +1040,9 @@ const OwnerDashboard = () => {
                                       <DropdownMenuSeparator />
                                       <DropdownMenuItem
                                         variant="destructive"
-                                        onClick={() => setPropertyToDelete(property)}
+                                        onClick={() =>
+                                          setPropertyToDelete(property)
+                                        }
                                       >
                                         <Trash2 className="h-4 w-4" />
                                         Delete Property
@@ -1046,7 +1072,9 @@ const OwnerDashboard = () => {
                                         {formatPrice(property.price)}
                                       </p>
                                       <div className="mt-1 flex items-center gap-1">
-                                        <span className={`h-1.5 w-1.5 rounded-full ${statusInfo.color}`} />
+                                        <span
+                                          className={`h-1.5 w-1.5 rounded-full ${statusInfo.color}`}
+                                        />
                                         <span className="text-[10px] text-slate-500 uppercase tracking-[0.1em]">
                                           {statusInfo.label}
                                         </span>
@@ -1066,7 +1094,6 @@ const OwnerDashboard = () => {
                   <section className="flex flex-col gap-4 overflow-hidden rounded-[34px] border border-white/65 bg-white/58 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-2xl">
                     {selectedProperty ? (
                       <div className="flex h-full min-h-0 flex-col justify-between gap-4">
-                        
                         {/* Large Cinematic Property Image with Glassmorphism Overlay */}
                         <div className="relative h-[580px] max-h-[calc(100%-11rem)] min-h-[420px] flex-shrink-0 overflow-hidden rounded-[30px] border border-white/70 bg-white/80 shadow-[0_20px_55px_rgba(15,23,42,0.08)]">
                           {selectedPropertyImages.map((imageUrl, index) => (
@@ -1129,15 +1156,24 @@ const OwnerDashboard = () => {
                                   <p className="text-[6px] uppercase tracking-[0.32em] text-slate-400 font-medium">
                                     Property Focus
                                   </p>
-                                  <Badge className={`text-[8px] px-2 py-0 h-4 border-transparent ${
-                                    selectedProperty.status === 'Active' ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100' : 
-                                    selectedProperty.status === 'Pending' ? 'bg-amber-100 text-amber-700 hover:bg-amber-100' : 
-                                    selectedProperty.status === 'Closed' ? 'bg-rose-100 text-rose-700 hover:bg-rose-100' :
-                                    'bg-slate-100 text-slate-700 hover:bg-slate-100'
-                                  }`}>
-                                    {selectedProperty.status === 'Active' ? 'Approved' : 
-                                     selectedProperty.status === 'Pending' ? 'Pending Approval' : 
-                                     selectedProperty.status === 'Closed' ? 'Rejected' : selectedProperty.status}
+                                  <Badge
+                                    className={`text-[8px] px-2 py-0 h-4 border-transparent ${
+                                      selectedProperty.status === "Active"
+                                        ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
+                                        : selectedProperty.status === "Pending"
+                                          ? "bg-amber-100 text-amber-700 hover:bg-amber-100"
+                                          : selectedProperty.status === "Closed"
+                                            ? "bg-rose-100 text-rose-700 hover:bg-rose-100"
+                                            : "bg-slate-100 text-slate-700 hover:bg-slate-100"
+                                    }`}
+                                  >
+                                    {selectedProperty.status === "Active"
+                                      ? "Approved"
+                                      : selectedProperty.status === "Pending"
+                                        ? "Pending Approval"
+                                        : selectedProperty.status === "Closed"
+                                          ? "Rejected"
+                                          : selectedProperty.status}
                                   </Badge>
                                 </div>
                                 <h3 className="mt-1 text-lg font-bold tracking-tight text-slate-950 break-words leading-tight line-clamp-2">
@@ -1164,18 +1200,27 @@ const OwnerDashboard = () => {
                           <div className="rounded-2xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur-md">
                             <div className="flex items-center gap-2 text-slate-500 mb-1">
                               <DollarSign className="h-3.5 w-3.5" />
-                              <span className="text-[10px] font-semibold uppercase tracking-wider">Price</span>
+                              <span className="text-[10px] font-semibold uppercase tracking-wider">
+                                Price
+                              </span>
                             </div>
-                            <p className="text-sm font-bold text-slate-900">{formatPrice(selectedProperty.price)}</p>
+                            <p className="text-sm font-bold text-slate-900">
+                              {formatPrice(selectedProperty.price)}
+                            </p>
                           </div>
 
                           {/* Location */}
                           <div className="rounded-2xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur-md">
                             <div className="flex items-center gap-2 text-slate-500 mb-1">
                               <MapPin className="h-3.5 w-3.5" />
-                              <span className="text-[10px] font-semibold uppercase tracking-wider">Location</span>
+                              <span className="text-[10px] font-semibold uppercase tracking-wider">
+                                Location
+                              </span>
                             </div>
-                            <p className="text-sm font-bold text-slate-900 truncate" title={selectedProperty.city}>
+                            <p
+                              className="text-sm font-bold text-slate-900 truncate"
+                              title={selectedProperty.city}
+                            >
                               {selectedProperty.city}
                             </p>
                           </div>
@@ -1184,41 +1229,55 @@ const OwnerDashboard = () => {
                           <div className="rounded-2xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur-md">
                             <div className="flex items-center gap-2 text-slate-500 mb-1">
                               <Home className="h-3.5 w-3.5" />
-                              <span className="text-[10px] font-semibold uppercase tracking-wider">Type</span>
+                              <span className="text-[10px] font-semibold uppercase tracking-wider">
+                                Type
+                              </span>
                             </div>
-                            <p className="text-sm font-bold text-slate-900">{selectedProperty.property_type}</p>
+                            <p className="text-sm font-bold text-slate-900">
+                              {selectedProperty.property_type}
+                            </p>
                           </div>
 
                           {/* Bedrooms */}
                           <div className="rounded-2xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur-md">
                             <div className="mb-1 flex items-center gap-2 text-slate-500">
                               <Bed className="h-3.5 w-3.5" />
-                              <span className="text-[10px] font-semibold uppercase tracking-wider">Bedrooms</span>
+                              <span className="text-[10px] font-semibold uppercase tracking-wider">
+                                Bedrooms
+                              </span>
                             </div>
-                            <p className="text-sm font-bold text-slate-900">{selectedProperty.bedrooms}</p>
+                            <p className="text-sm font-bold text-slate-900">
+                              {selectedProperty.bedrooms}
+                            </p>
                           </div>
 
                           {/* Bathrooms */}
                           <div className="rounded-2xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur-md">
                             <div className="mb-1 flex items-center gap-2 text-slate-500">
                               <Bath className="h-3.5 w-3.5" />
-                              <span className="text-[10px] font-semibold uppercase tracking-wider">Bathrooms</span>
+                              <span className="text-[10px] font-semibold uppercase tracking-wider">
+                                Bathrooms
+                              </span>
                             </div>
-                            <p className="text-sm font-bold text-slate-900">{selectedProperty.bathrooms}</p>
+                            <p className="text-sm font-bold text-slate-900">
+                              {selectedProperty.bathrooms}
+                            </p>
                           </div>
 
                           {/* Area */}
                           <div className="rounded-2xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur-md">
                             <div className="flex items-center gap-2 text-slate-500 mb-1">
                               <Maximize className="h-3.5 w-3.5" />
-                              <span className="text-[10px] font-semibold uppercase tracking-wider">Area</span>
+                              <span className="text-[10px] font-semibold uppercase tracking-wider">
+                                Area
+                              </span>
                             </div>
                             <p className="text-sm font-bold text-slate-900">
-                              {Number(selectedProperty.area || 0).toFixed(2)} sqft
+                              {Number(selectedProperty.area || 0).toFixed(2)}{" "}
+                              sqft
                             </p>
                           </div>
                         </div>
-
                       </div>
                     ) : (
                       <div className="flex flex-1 items-center justify-center rounded-[30px] border border-dashed border-slate-200 bg-white/70 text-sm text-slate-500">
@@ -1866,12 +1925,10 @@ const OwnerDashboard = () => {
             <AlertDialogHeader>
               <AlertDialogTitle>Delete property?</AlertDialogTitle>
               <AlertDialogDescription>
-                This will permanently remove
-                {" "}
+                This will permanently remove{" "}
                 <span className="font-medium text-slate-800">
                   {propertyToDelete?.title || "this property"}
-                </span>
-                {" "}
+                </span>{" "}
                 and associated records.
               </AlertDialogDescription>
             </AlertDialogHeader>
