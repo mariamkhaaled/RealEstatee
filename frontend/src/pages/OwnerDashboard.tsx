@@ -23,6 +23,8 @@ import {
   Activity,
   Bell,
   TrendingUp,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -73,6 +75,7 @@ const OwnerDashboard = () => {
   const [selectedPropertyId, setSelectedPropertyId] = useState<number | null>(
     null,
   );
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const [inquiries, setInquiries] = useState<InquiryItem[]>([]);
   const [selectedInquiry, setSelectedInquiry] = useState<InquiryItem | null>(
@@ -552,6 +555,22 @@ const OwnerDashboard = () => {
     return `http://localhost:5000${raw}`;
   };
 
+  const getPropertyImages = (images: string[] = []) => {
+    if (!Array.isArray(images) || images.length === 0) {
+      return ["https://via.placeholder.com/1200x720?text=No+Image"];
+    }
+
+    const normalizedImages = images
+      .filter(Boolean)
+      .map((raw) =>
+        raw.startsWith("http") ? raw : `http://localhost:5000${raw}`,
+      );
+
+    return normalizedImages.length > 0
+      ? normalizedImages
+      : ["https://via.placeholder.com/1200x720?text=No+Image"];
+  };
+
   const filteredProperties = useMemo(() => {
     return properties.filter((property) => {
       const matchesSearch =
@@ -595,6 +614,11 @@ const OwnerDashboard = () => {
     );
   }, [filteredInquiries, selectedProperty?.listing_id]);
 
+  const selectedPropertyImages = useMemo(
+    () => getPropertyImages(selectedProperty?.images || []),
+    [selectedProperty?.images],
+  );
+
   const totalUnread = useMemo(
     () =>
       inquiries.reduce(
@@ -633,6 +657,28 @@ const OwnerDashboard = () => {
     0,
   );
   const totalInquiries = inquiries.length;
+
+  useEffect(() => {
+    setActiveImageIndex(0);
+  }, [selectedProperty?.property_id]);
+
+  const showPreviousImage = () => {
+    if (selectedPropertyImages.length <= 1) {
+      return;
+    }
+
+    setActiveImageIndex((prev) =>
+      prev === 0 ? selectedPropertyImages.length - 1 : prev - 1,
+    );
+  };
+
+  const showNextImage = () => {
+    if (selectedPropertyImages.length <= 1) {
+      return;
+    }
+
+    setActiveImageIndex((prev) => (prev + 1) % selectedPropertyImages.length);
+  };
 
   if (!isOwner) {
     return <Navigate to="/" replace />;
@@ -813,15 +859,60 @@ const OwnerDashboard = () => {
                       <>
                         {/* Large Cinematic Property Image with Glassmorphism Overlay */}
                         <div className="relative overflow-hidden rounded-[30px] border border-white/70 bg-white/80 shadow-[0_20px_55px_rgba(15,23,42,0.08)] flex-1">
-                          <img
-                            src={getPropertyImage(selectedProperty.images)}
-                            alt={selectedProperty.title}
-                            className="absolute inset-0 h-full w-full object-cover"
-                          />
+                          {selectedPropertyImages.map((imageUrl, index) => (
+                            <img
+                              key={`${selectedProperty.property_id}-${imageUrl}-${index}`}
+                              src={imageUrl}
+                              alt={`${selectedProperty.title} - image ${index + 1}`}
+                              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ease-out ${
+                                activeImageIndex === index
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              }`}
+                            />
+                          ))}
                           <div className="absolute inset-0 bg-gradient-to-r from-slate-950/20 via-transparent to-transparent" />
 
+                          {selectedPropertyImages.length > 1 ? (
+                            <>
+                              <button
+                                type="button"
+                                onClick={showPreviousImage}
+                                aria-label="Previous property image"
+                                className="absolute left-3 top-1/2 z-20 -translate-y-1/2 rounded-full border border-white/40 bg-slate-950/45 p-2 text-white backdrop-blur-sm transition hover:bg-slate-950/65"
+                              >
+                                <ChevronLeft className="h-4 w-4" />
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={showNextImage}
+                                aria-label="Next property image"
+                                className="absolute right-3 top-1/2 z-20 -translate-y-1/2 rounded-full border border-white/40 bg-slate-950/45 p-2 text-white backdrop-blur-sm transition hover:bg-slate-950/65"
+                              >
+                                <ChevronRight className="h-4 w-4" />
+                              </button>
+
+                              <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-white/35 bg-slate-900/30 px-2.5 py-1.5 backdrop-blur-sm">
+                                {selectedPropertyImages.map((_, index) => (
+                                  <button
+                                    key={`dot-${selectedProperty.property_id}-${index}`}
+                                    type="button"
+                                    aria-label={`Go to image ${index + 1}`}
+                                    onClick={() => setActiveImageIndex(index)}
+                                    className={`h-2 w-2 rounded-full transition-all duration-300 ${
+                                      index === activeImageIndex
+                                        ? "bg-white scale-110"
+                                        : "bg-white/55 hover:bg-white/80"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                            </>
+                          ) : null}
+
                           {/* Glassmorphism Overlay Card - Left Side Centered */}
-                          <div className="absolute bottom-4 right-4 w-fit max-w-[calc(100%-2rem)] min-w-[260px] rounded-[22px] border border-white/40 bg-white/28 px-4 py-3 shadow-[0_16px_40px_rgba(15,23,42,0.12)] backdrop-blur-3xl sm:min-w-[300px]">
+                          <div className="absolute bottom-14 right-4 w-fit max-w-[calc(100%-2rem)] min-w-[260px] rounded-[22px] border border-white/40 bg-white/28 px-4 py-3 shadow-[0_16px_40px_rgba(15,23,42,0.12)] backdrop-blur-3xl sm:min-w-[300px]">
                             <div className="flex items-center justify-between gap-3">
                               <div className="min-w-0 max-w-[clamp(180px,55vw,560px)]">
                                 <p className="text-[6px] uppercase tracking-[0.32em] text-slate-400 font-medium">
