@@ -31,7 +31,7 @@ import {
   MapPin,
   Bed,
   Bath,
-  Square,
+  Maximize,
   DollarSign,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -1065,10 +1065,10 @@ const OwnerDashboard = () => {
                   {/* CENTER COLUMN: Main Property Focus Area */}
                   <section className="flex flex-col gap-4 overflow-hidden rounded-[34px] border border-white/65 bg-white/58 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-2xl">
                     {selectedProperty ? (
-                      <div className="flex flex-col h-full overflow-y-auto pr-2 pb-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300/70 [&::-webkit-scrollbar-track]:bg-transparent">
+                      <div className="flex h-full min-h-0 flex-col justify-between gap-4">
                         
                         {/* Large Cinematic Property Image with Glassmorphism Overlay */}
-                        <div className="relative h-[340px] flex-shrink-0 overflow-hidden rounded-[30px] border border-white/70 bg-white/80 shadow-[0_20px_55px_rgba(15,23,42,0.08)]">
+                        <div className="relative h-[580px] max-h-[calc(100%-11rem)] min-h-[420px] flex-shrink-0 overflow-hidden rounded-[30px] border border-white/70 bg-white/80 shadow-[0_20px_55px_rgba(15,23,42,0.08)]">
                           {selectedPropertyImages.map((imageUrl, index) => (
                             <img
                               key={`${selectedProperty.property_id}-${imageUrl}-${index}`}
@@ -1158,8 +1158,8 @@ const OwnerDashboard = () => {
                           </div>
                         </div>
 
-                        {/* NEW: Property Details Grid with Icons */}
-                        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        {/* Property Details Grid */}
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                           {/* Price */}
                           <div className="rounded-2xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur-md">
                             <div className="flex items-center gap-2 text-slate-500 mb-1">
@@ -1191,7 +1191,7 @@ const OwnerDashboard = () => {
 
                           {/* Bedrooms */}
                           <div className="rounded-2xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur-md">
-                            <div className="flex items-center gap-2 text-slate-500 mb-1">
+                            <div className="mb-1 flex items-center gap-2 text-slate-500">
                               <Bed className="h-3.5 w-3.5" />
                               <span className="text-[10px] font-semibold uppercase tracking-wider">Bedrooms</span>
                             </div>
@@ -1200,7 +1200,7 @@ const OwnerDashboard = () => {
 
                           {/* Bathrooms */}
                           <div className="rounded-2xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur-md">
-                            <div className="flex items-center gap-2 text-slate-500 mb-1">
+                            <div className="mb-1 flex items-center gap-2 text-slate-500">
                               <Bath className="h-3.5 w-3.5" />
                               <span className="text-[10px] font-semibold uppercase tracking-wider">Bathrooms</span>
                             </div>
@@ -1210,10 +1210,12 @@ const OwnerDashboard = () => {
                           {/* Area */}
                           <div className="rounded-2xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur-md">
                             <div className="flex items-center gap-2 text-slate-500 mb-1">
-                              <Square className="h-3.5 w-3.5" />
+                              <Maximize className="h-3.5 w-3.5" />
                               <span className="text-[10px] font-semibold uppercase tracking-wider">Area</span>
                             </div>
-                            <p className="text-sm font-bold text-slate-900">{selectedProperty.area} sqft</p>
+                            <p className="text-sm font-bold text-slate-900">
+                              {Number(selectedProperty.area || 0).toFixed(2)} sqft
+                            </p>
                           </div>
                         </div>
 
