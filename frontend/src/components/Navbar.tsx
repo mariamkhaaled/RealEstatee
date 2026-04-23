@@ -8,6 +8,7 @@ import {
   LogOut,
   LayoutDashboard,
   MessageSquare,
+  Building
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -183,15 +184,17 @@ const Navbar: React.FC = () => {
           <div className="hidden md:flex items-center space-x-8">
             <Link
               to="/"
-              className={`text-sm font-medium ${isActive("/") ? "text-primary" : "text-muted-foreground hover:text-primary"}`}
+              className={`text-sm font-medium flex items-center gap-1 ${isActive("/") ? "text-primary" : "text-muted-foreground hover:text-primary"}`}
             >
+              <Home size={16} />
               Home
             </Link>
 
             <Link
               to="/properties"
-              className={`text-sm font-medium ${isActive("/properties") ? "text-primary" : "text-muted-foreground hover:text-primary"}`}
+              className={`text-sm font-medium flex items-center gap-1 ${isActive("/properties") ? "text-primary" : "text-muted-foreground hover:text-primary"}`}
             >
+              <Building size={16} />
               Properties
             </Link>
 

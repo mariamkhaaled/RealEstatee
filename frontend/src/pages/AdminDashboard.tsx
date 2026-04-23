@@ -2,8 +2,24 @@ import React, { useEffect, useState } from 'react';
 import { 
   MoreHorizontal, Check, X, MapPin
 } from 'lucide-react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
+
+// Add these to your existing imports at the top
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Setup default marker icon pointing to external URLs to avoid bundler image issues
+const defaultPin = new L.Icon({
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+});
+
 
 interface Property {
   property_id: number;
@@ -222,8 +238,10 @@ const AdminDashboard: React.FC = () => {
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="font-bold text-slate-800 text-lg">Property List</h3>
-                <span className="text-xs text-indigo-600 font-semibold cursor-pointer hover:underline">See All Listing</span>
-              </div>
+                  <Link to="/properties" className="text-xs text-indigo-600 font-semibold cursor-pointer hover:underline">
+                    See All Listing
+                   </Link> 
+          </div>
               
               <div className="space-y-5">
                 {recentListings.length > 0 ? recentListings.map((prop, idx) => (
@@ -245,20 +263,31 @@ const AdminDashboard: React.FC = () => {
             </div>
 
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-              <h3 className="font-bold text-slate-800 text-lg mb-4">Sales by Region</h3>
-              <div className="w-full h-64 bg-slate-100 rounded-xl overflow-hidden relative border border-slate-100">
-                <img 
-                  src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=600&q=80" 
-                  className="w-full h-full object-cover opacity-60" 
-                  alt="Map View" 
-                />
-                <div className="absolute inset-0 bg-white/40"></div>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                  <MapPin size={32} className="text-indigo-600 drop-shadow-md" fill="white" />
-                  <span className="bg-white text-slate-800 text-xs font-bold px-2 py-1 rounded shadow-sm mt-1">High Activity</span>
-                </div>
-              </div>
-            </div>
+    <h3 className="font-bold text-slate-800 text-lg mb-4">Sales by Region</h3>
+    {/* z-0 ensures the map doesn't overlap any sticky navbars */}
+    <div className="w-full h-64 bg-slate-100 rounded-xl overflow-hidden relative border border-slate-100 z-0">
+      <MapContainer 
+        center={[30.0444, 31.2357]} 
+        zoom={6} 
+        scrollWheelZoom={false} 
+        style={{ height: '100%', width: '100%' }}
+      >
+        {/* Using CartoDB Voyager tiles for a clean, light aesthetic that matches your dashboard */}
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+        />
+        
+        {/* Example Pins corresponding to common listing areas */}
+        <Marker position={[30.0444, 31.2357]} icon={defaultPin}>
+          <Popup className="font-sans font-medium text-slate-800">High Activity: Cairo</Popup>
+        </Marker>
+        <Marker position={[31.2001, 29.9187]} icon={defaultPin}>
+          <Popup className="font-sans font-medium text-slate-800">High Activity: Alexandria</Popup>
+        </Marker>
+      </MapContainer>
+  </div>
+</div>
           </div>
         </div>
       </main>
