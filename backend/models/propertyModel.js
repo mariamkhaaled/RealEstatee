@@ -1,77 +1,79 @@
 const db = require('../config/db');
 
 class Property {
-    static async findAll() {
-    const [rows] = await db.execute(`
-        SELECT 
-            p.property_id,
-            p.title,
-            p.description,
-            p.property_type,
-            p.bedrooms,
-            p.bathrooms,
-            p.area,
+  static async findAll() {
+        const [rows] = await db.execute(`
+            SELECT 
+                p.property_id,
+                p.title,
+                p.description,
+                p.property_type,
+                p.bedrooms,
+                p.bathrooms,
+                p.area,
 
-            l.listing_id,
-            l.purpose,
-            l.price,
-            l.status,
-            l.views,
+                u.full_name AS owner_name,
 
-            pl.city,
-            pl.address,
+                l.listing_id,
+                l.purpose,
+                l.price,
+                l.status,
+                l.views,
 
-            pi.image_url,
-            f.feature_name
+                pl.city,
+                pl.address,
 
-        FROM properties p
-        JOIN listings l ON p.property_id = l.property_id
-        LEFT JOIN property_locations pl ON p.property_id = pl.property_id
-        LEFT JOIN property_images pi ON p.property_id = pi.property_id
-        LEFT JOIN property_features pf ON p.property_id = pf.property_id
-        LEFT JOIN features f ON pf.feature_id = f.feature_id
-        ORDER BY p.property_id DESC
-    `);
+                pi.image_url,
+                f.feature_name
 
-    const propertiesMap = {};
+            FROM properties p
+            JOIN users u ON p.owner_id = u.user_id
+            JOIN listings l ON p.property_id = l.property_id
+            LEFT JOIN property_locations pl ON p.property_id = pl.property_id
+            LEFT JOIN property_images pi ON p.property_id = pi.property_id
+            LEFT JOIN property_features pf ON p.property_id = pf.property_id
+            LEFT JOIN features f ON pf.feature_id = f.feature_id
+            ORDER BY p.property_id DESC
+        `);
 
-    for (const row of rows) {
-        if (!propertiesMap[row.property_id]) {
-            propertiesMap[row.property_id] = {
-                property_id: row.property_id,
-                title: row.title,
-                description: row.description,
-                property_type: row.property_type,
-                bedrooms: row.bedrooms,
-                bathrooms: row.bathrooms,
-                area: row.area,
-                listing_id: row.listing_id,
-                purpose: row.purpose,
-                price: row.price,
-                status: row.status,
-                views: row.views,
-                city: row.city,
-                address: row.address,
-                images: [],
-                features: []
-            };
+        const propertiesMap = {};
+
+        for (const row of rows) {
+            if (!propertiesMap[row.property_id]) {
+                propertiesMap[row.property_id] = {
+                    property_id: row.property_id,
+                    title: row.title,
+                    description: row.description,
+                    property_type: row.property_type,
+                    bedrooms: row.bedrooms,
+                    bathrooms: row.bathrooms,
+                    area: row.area,
+                    owner_name: row.owner_name, // <--- Name added here!
+                    listing_id: row.listing_id,
+                    purpose: row.purpose,
+                    price: row.price,
+                    status: row.status,
+                    views: row.views,
+                    city: row.city,
+                    address: row.address,
+                    images: [],
+                    features: []
+                };
+            }
+
+            if (row.image_url && !propertiesMap[row.property_id].images.includes(row.image_url)) {
+                propertiesMap[row.property_id].images.push(row.image_url);
+            }
+
+            if (row.feature_name && !propertiesMap[row.property_id].features.includes(row.feature_name)) {
+                propertiesMap[row.property_id].features.push(row.feature_name);
+            }
         }
 
-        // images
-        if (row.image_url && !propertiesMap[row.property_id].images.includes(row.image_url)) {
-            propertiesMap[row.property_id].images.push(row.image_url);
-        }
-
-        // features
-        if (row.feature_name && !propertiesMap[row.property_id].features.includes(row.feature_name)) {
-            propertiesMap[row.property_id].features.push(row.feature_name);
-        }
+        return Object.values(propertiesMap);
     }
 
-    return Object.values(propertiesMap);
-}
-
-    static async create(data) {
+static async create(data) {
         const connection = await db.getConnection();
 
         try {
@@ -120,7 +122,7 @@ class Property {
                 propertyId,
                 listing.purpose,
                 listing.price,
-                listing.status || 'Active',
+                'Pending', // <--- FIXED: Forces all new properties to await Admin approval
                 listing.views || 0
             ]);
 
@@ -151,7 +153,6 @@ class Property {
             connection.release();
         }
     }
-
     static async findByOwnerId(ownerId) {
     const [rows] = await db.execute(`
         SELECT 
@@ -279,6 +280,155 @@ static async findById(propertyId) {
 
         return property;
     }
+
+static async update(propertyId, ownerId, data) {
+        const connection = await db.getConnection();
+
+        try {
+            await connection.beginTransaction();
+
+            const existingProperty = await this.findById(propertyId);
+            if (!existingProperty) {
+                throw new Error('Property not found');
+            }
+
+            if (existingProperty.owner_id !== ownerId) {
+                throw new Error('Unauthorized');
+            }
+
+            const {
+                property,
+                location,
+                listing,
+                images = [],
+                feature_ids = []
+            } = data;
+
+            await connection.execute(`
+                UPDATE properties
+                SET title = ?, description = ?, property_type = ?, bedrooms = ?, bathrooms = ?, area = ?
+                WHERE property_id = ? AND owner_id = ?
+            `, [
+                property.title,
+                property.description,
+                property.type,
+                property.bedrooms || 0,
+                property.bathrooms || 0,
+                property.area || 0,
+                propertyId,
+                ownerId
+            ]);
+
+            await connection.execute(`
+                UPDATE property_locations
+                SET city = ?, address = ?
+                WHERE property_id = ?
+            `, [
+                location.city,
+                location.address || null,
+                propertyId
+            ]);
+
+            await connection.execute(`
+                UPDATE listings
+                SET purpose = ?, price = ?, status = ?, views = ?
+                WHERE property_id = ?
+            `, [
+                listing.purpose,
+                listing.price,
+                listing.status || existingProperty.status, // <--- FIXED: Keeps current status instead of auto-approving
+                listing.views || existingProperty.views,
+                propertyId
+            ]);
+
+            // Replace images
+            await connection.execute(`
+                DELETE FROM property_images
+                WHERE property_id = ?
+            `, [propertyId]);
+
+            if (Array.isArray(images) && images.length > 0) {
+                for (let i = 0; i < images.length; i++) {
+                    await connection.execute(`
+                        INSERT INTO property_images (property_id, image_url, is_primary)
+                        VALUES (?, ?, ?)
+                    `, [propertyId, images[i], i === 0]);
+                }
+            }
+
+            // Replace features
+            await connection.execute(`
+                DELETE FROM property_features
+                WHERE property_id = ?
+            `, [propertyId]);
+
+            if (Array.isArray(feature_ids) && feature_ids.length > 0) {
+                for (const featureId of feature_ids) {
+                    await connection.execute(`
+                        INSERT INTO property_features (property_id, feature_id)
+                        VALUES (?, ?)
+                    `, [propertyId, featureId]);
+                }
+            }
+
+            await connection.commit();
+            return await this.findById(propertyId);
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
+static async delete(propertyId, ownerId) {
+    const connection = await db.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        const existingProperty = await this.findById(propertyId);
+        if (!existingProperty) {
+            throw new Error('Property not found');
+        }
+
+        if (existingProperty.owner_id !== ownerId) {
+            throw new Error('Unauthorized');
+        }
+
+        await connection.execute(`
+            DELETE FROM property_features
+            WHERE property_id = ?
+        `, [propertyId]);
+
+        await connection.execute(`
+            DELETE FROM property_images
+            WHERE property_id = ?
+        `, [propertyId]);
+
+        await connection.execute(`
+            DELETE FROM property_locations
+            WHERE property_id = ?
+        `, [propertyId]);
+
+        await connection.execute(`
+            DELETE FROM listings
+            WHERE property_id = ?
+        `, [propertyId]);
+
+        await connection.execute(`
+            DELETE FROM properties
+            WHERE property_id = ? AND owner_id = ?
+        `, [propertyId, ownerId]);
+
+        await connection.commit();
+        return true;
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
+}
 }
 
 

@@ -34,12 +34,14 @@ declare global {
   const Contact: typeof import('lucide-react').Contact
   const Container: typeof import('lucide-react').Container
   const Cookie: typeof import('lucide-react').Cookie
+  const DollarSign: typeof import('lucide-react').DollarSign
   const Eye: typeof import('lucide-react').Eye
   const EyeOff: typeof import('lucide-react').EyeOff
   const Facebook: typeof import('lucide-react').Facebook
   const Focus: typeof import('lucide-react').Focus
   const Form: typeof import('lucide-react').Form
   const Fragment: typeof import('react').Fragment
+  const Grid: typeof import('lucide-react').Grid
   const GripVerticalIcon: typeof import('lucide-react').GripVerticalIcon
   const Heart: typeof import('lucide-react').Heart
   const Home: typeof import('lucide-react').Home
@@ -90,6 +92,7 @@ declare global {
   const TrendingUp: typeof import('lucide-react').TrendingUp
   const TriangleAlertIcon: typeof import('lucide-react').TriangleAlertIcon
   const Twitter: typeof import('lucide-react').Twitter
+  const Type: typeof import('lucide-react').Type
   const UploadCloud: typeof import('lucide-react').UploadCloud
   const User: typeof import('lucide-react').User
   const Users: typeof import('lucide-react').Users

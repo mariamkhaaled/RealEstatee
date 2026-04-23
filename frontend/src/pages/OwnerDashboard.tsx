@@ -28,6 +28,11 @@ import {
   MoreVertical,
   Pencil,
   Trash2,
+  MapPin,
+  Bed,
+  Bath,
+  Square,
+  DollarSign,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -675,14 +680,17 @@ const OwnerDashboard = () => {
       setSelectedPropertyId(filteredProperties[0].property_id);
     }
   }, [filteredProperties, selectedPropertyId]);
+  
   const totalViews = properties.reduce(
     (sum, p) => sum + Number(p.views || 0),
     0,
   );
+  
   const selectedPropertyUnread = selectedPropertyInquiries.reduce(
     (sum, inquiry) => sum + Number(unreadByInquiry[inquiry.inquiry_id] || 0),
     0,
   );
+  
   const totalInquiries = inquiries.length;
 
   useEffect(() => {
@@ -908,6 +916,7 @@ const OwnerDashboard = () => {
               <TabsContent value="properties" className="pt-2">
                 {/* 3-Column Layout: Left Navigator (25%) | Center Focus (50%) | Right Snapshots (25%) */}
                 <div className="grid h-[78vh] min-h-[680px] gap-4 lg:grid-cols-[1fr_2fr_1fr]">
+                  
                   {/* LEFT COLUMN: Property Navigator Sidebar */}
                   <section className="flex h-full flex-col overflow-hidden rounded-[34px] border border-white/65 bg-white/58 shadow-[0_18px_50px_rgba(15,23,42,0.06)] backdrop-blur-2xl">
                     <div className="sticky top-0 z-20 border-b border-slate-200/60 bg-white/88 px-5 py-4 backdrop-blur-xl">
@@ -962,6 +971,17 @@ const OwnerDashboard = () => {
                             const isSelected =
                               selectedProperty?.property_id ===
                               property.property_id;
+                            
+                            const getStatusConfig = (status: string) => {
+                              switch (status) {
+                                case 'Active': return { color: 'bg-emerald-500', label: 'Approved' };
+                                case 'Pending': return { color: 'bg-amber-500', label: 'Pending Approval' };
+                                case 'Closed': return { color: 'bg-rose-500', label: 'Rejected' };
+                                default: return { color: 'bg-slate-400', label: status };
+                              }
+                            };
+                            const statusInfo = getStatusConfig(property.status);
+
                             return (
                               <div
                                 key={property.property_id}
@@ -1026,11 +1046,9 @@ const OwnerDashboard = () => {
                                         {formatPrice(property.price)}
                                       </p>
                                       <div className="mt-1 flex items-center gap-1">
-                                        <span
-                                          className={`h-1.5 w-1.5 rounded-full ${property.status === "Active" ? "bg-emerald-500" : "bg-amber-500"}`}
-                                        />
+                                        <span className={`h-1.5 w-1.5 rounded-full ${statusInfo.color}`} />
                                         <span className="text-[10px] text-slate-500 uppercase tracking-[0.1em]">
-                                          {property.status}
+                                          {statusInfo.label}
                                         </span>
                                       </div>
                                     </div>
@@ -1047,9 +1065,10 @@ const OwnerDashboard = () => {
                   {/* CENTER COLUMN: Main Property Focus Area */}
                   <section className="flex flex-col gap-4 overflow-hidden rounded-[34px] border border-white/65 bg-white/58 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-2xl">
                     {selectedProperty ? (
-                      <>
+                      <div className="flex flex-col h-full overflow-y-auto pr-2 pb-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300/70 [&::-webkit-scrollbar-track]:bg-transparent">
+                        
                         {/* Large Cinematic Property Image with Glassmorphism Overlay */}
-                        <div className="relative overflow-hidden rounded-[30px] border border-white/70 bg-white/80 shadow-[0_20px_55px_rgba(15,23,42,0.08)] flex-1">
+                        <div className="relative h-[340px] flex-shrink-0 overflow-hidden rounded-[30px] border border-white/70 bg-white/80 shadow-[0_20px_55px_rgba(15,23,42,0.08)]">
                           {selectedPropertyImages.map((imageUrl, index) => (
                             <img
                               key={`${selectedProperty.property_id}-${imageUrl}-${index}`}
@@ -1106,9 +1125,21 @@ const OwnerDashboard = () => {
                           <div className="absolute bottom-14 right-4 w-fit max-w-[calc(100%-2rem)] min-w-[260px] rounded-[22px] border border-white/40 bg-white/28 px-4 py-3 shadow-[0_16px_40px_rgba(15,23,42,0.12)] backdrop-blur-3xl sm:min-w-[300px]">
                             <div className="flex items-center justify-between gap-3">
                               <div className="min-w-0 max-w-[clamp(180px,55vw,560px)]">
-                                <p className="text-[6px] uppercase tracking-[0.32em] text-slate-400 font-medium">
-                                  Property Focus
-                                </p>
+                                <div className="flex items-center gap-2">
+                                  <p className="text-[6px] uppercase tracking-[0.32em] text-slate-400 font-medium">
+                                    Property Focus
+                                  </p>
+                                  <Badge className={`text-[8px] px-2 py-0 h-4 border-transparent ${
+                                    selectedProperty.status === 'Active' ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100' : 
+                                    selectedProperty.status === 'Pending' ? 'bg-amber-100 text-amber-700 hover:bg-amber-100' : 
+                                    selectedProperty.status === 'Closed' ? 'bg-rose-100 text-rose-700 hover:bg-rose-100' :
+                                    'bg-slate-100 text-slate-700 hover:bg-slate-100'
+                                  }`}>
+                                    {selectedProperty.status === 'Active' ? 'Approved' : 
+                                     selectedProperty.status === 'Pending' ? 'Pending Approval' : 
+                                     selectedProperty.status === 'Closed' ? 'Rejected' : selectedProperty.status}
+                                  </Badge>
+                                </div>
                                 <h3 className="mt-1 text-lg font-bold tracking-tight text-slate-950 break-words leading-tight line-clamp-2">
                                   {selectedProperty.title}
                                 </h3>
@@ -1126,7 +1157,67 @@ const OwnerDashboard = () => {
                             </div>
                           </div>
                         </div>
-                      </>
+
+                        {/* NEW: Property Details Grid with Icons */}
+                        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                          {/* Price */}
+                          <div className="rounded-2xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur-md">
+                            <div className="flex items-center gap-2 text-slate-500 mb-1">
+                              <DollarSign className="h-3.5 w-3.5" />
+                              <span className="text-[10px] font-semibold uppercase tracking-wider">Price</span>
+                            </div>
+                            <p className="text-sm font-bold text-slate-900">{formatPrice(selectedProperty.price)}</p>
+                          </div>
+
+                          {/* Location */}
+                          <div className="rounded-2xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur-md">
+                            <div className="flex items-center gap-2 text-slate-500 mb-1">
+                              <MapPin className="h-3.5 w-3.5" />
+                              <span className="text-[10px] font-semibold uppercase tracking-wider">Location</span>
+                            </div>
+                            <p className="text-sm font-bold text-slate-900 truncate" title={selectedProperty.city}>
+                              {selectedProperty.city}
+                            </p>
+                          </div>
+
+                          {/* Type */}
+                          <div className="rounded-2xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur-md">
+                            <div className="flex items-center gap-2 text-slate-500 mb-1">
+                              <Home className="h-3.5 w-3.5" />
+                              <span className="text-[10px] font-semibold uppercase tracking-wider">Type</span>
+                            </div>
+                            <p className="text-sm font-bold text-slate-900">{selectedProperty.property_type}</p>
+                          </div>
+
+                          {/* Bedrooms */}
+                          <div className="rounded-2xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur-md">
+                            <div className="flex items-center gap-2 text-slate-500 mb-1">
+                              <Bed className="h-3.5 w-3.5" />
+                              <span className="text-[10px] font-semibold uppercase tracking-wider">Bedrooms</span>
+                            </div>
+                            <p className="text-sm font-bold text-slate-900">{selectedProperty.bedrooms}</p>
+                          </div>
+
+                          {/* Bathrooms */}
+                          <div className="rounded-2xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur-md">
+                            <div className="flex items-center gap-2 text-slate-500 mb-1">
+                              <Bath className="h-3.5 w-3.5" />
+                              <span className="text-[10px] font-semibold uppercase tracking-wider">Bathrooms</span>
+                            </div>
+                            <p className="text-sm font-bold text-slate-900">{selectedProperty.bathrooms}</p>
+                          </div>
+
+                          {/* Area */}
+                          <div className="rounded-2xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur-md">
+                            <div className="flex items-center gap-2 text-slate-500 mb-1">
+                              <Square className="h-3.5 w-3.5" />
+                              <span className="text-[10px] font-semibold uppercase tracking-wider">Area</span>
+                            </div>
+                            <p className="text-sm font-bold text-slate-900">{selectedProperty.area} sqft</p>
+                          </div>
+                        </div>
+
+                      </div>
                     ) : (
                       <div className="flex flex-1 items-center justify-center rounded-[30px] border border-dashed border-slate-200 bg-white/70 text-sm text-slate-500">
                         Select a property to view
