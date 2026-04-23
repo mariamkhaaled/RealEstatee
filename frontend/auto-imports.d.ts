@@ -23,6 +23,7 @@ declare global {
   const CheckCircle2: typeof import('lucide-react').CheckCircle2
   const CheckIcon: typeof import('lucide-react').CheckIcon
   const ChevronDownIcon: typeof import('lucide-react').ChevronDownIcon
+  const ChevronLeft: typeof import('lucide-react').ChevronLeft
   const ChevronLeftIcon: typeof import('lucide-react').ChevronLeftIcon
   const ChevronRight: typeof import('lucide-react').ChevronRight
   const ChevronRightIcon: typeof import('lucide-react').ChevronRightIcon
@@ -34,7 +35,9 @@ declare global {
   const Contact: typeof import('lucide-react').Contact
   const Container: typeof import('lucide-react').Container
   const Cookie: typeof import('lucide-react').Cookie
+  const Delete: typeof import('lucide-react').Delete
   const DollarSign: typeof import('lucide-react').DollarSign
+  const Download: typeof import('lucide-react').Download
   const Eye: typeof import('lucide-react').Eye
   const EyeOff: typeof import('lucide-react').EyeOff
   const Facebook: typeof import('lucide-react').Facebook
@@ -62,12 +65,15 @@ declare global {
   const LogOut: typeof import('lucide-react').LogOut
   const Mail: typeof import('lucide-react').Mail
   const MapPin: typeof import('lucide-react').MapPin
+  const Maximize: typeof import('lucide-react').Maximize
   const MessageSquare: typeof import('lucide-react').MessageSquare
   const MinusIcon: typeof import('lucide-react').MinusIcon
   const MoreHorizontal: typeof import('lucide-react').MoreHorizontal
   const MoreHorizontalIcon: typeof import('lucide-react').MoreHorizontalIcon
+  const MoreVertical: typeof import('lucide-react').MoreVertical
   const OctagonXIcon: typeof import('lucide-react').OctagonXIcon
   const PanelLeftIcon: typeof import('lucide-react').PanelLeftIcon
+  const Pencil: typeof import('lucide-react').Pencil
   const Phone: typeof import('lucide-react').Phone
   const Plus: typeof import('lucide-react').Plus
   const RotateCw: typeof import('lucide-react').RotateCw
@@ -89,6 +95,7 @@ declare global {
   const Suspense: typeof import('react').Suspense
   const Table: typeof import('lucide-react').Table
   const Timer: typeof import('lucide-react').Timer
+  const Trash2: typeof import('lucide-react').Trash2
   const TrendingUp: typeof import('lucide-react').TrendingUp
   const TriangleAlertIcon: typeof import('lucide-react').TriangleAlertIcon
   const Twitter: typeof import('lucide-react').Twitter

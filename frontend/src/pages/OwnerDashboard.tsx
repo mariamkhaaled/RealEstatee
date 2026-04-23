@@ -1038,7 +1038,7 @@ const OwnerDashboard = () => {
                                       alt={property.title}
                                       className="h-12 w-12 rounded-2xl object-cover shadow-sm"
                                     />
-                                    <div className="min-w-0 flex-1">
+                                    <div className="min-w-0 flex-1 text-left">
                                       <p className="truncate text-xs font-semibold text-slate-950">
                                         {property.title}
                                       </p>
