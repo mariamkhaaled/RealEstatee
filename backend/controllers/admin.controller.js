@@ -1,5 +1,6 @@
 const db = require('../config/db'); // Adjust if your db connection is located elsewhere
 
+
 const getPendingListings = async (req, res) => {
   try {
     const query = `
@@ -38,6 +39,34 @@ const getPendingListings = async (req, res) => {
   }
 };
 
+
+const getDashboardStats = async (req, res) => {
+  try {
+    // Get total users
+    const [totalUsersRes] = await db.query('SELECT COUNT(*) as count FROM users');
+    
+    // Get active owners
+    const [activeOwnersRes] = await db.query('SELECT COUNT(*) as count FROM users WHERE role = "owner"');
+
+    // Get 5 most recently registered users
+    const [recentUsers] = await db.query('SELECT full_name, role, created_at FROM users ORDER BY created_at DESC LIMIT 5');
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        // MUST wrap in Number() to prevent JSON crashes
+        totalUsers: Number(totalUsersRes[0].count),
+        activeOwners: Number(activeOwnersRes[0].count),
+        recentUsers: recentUsers
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching dashboard stats:", error);
+    res.status(500).json({ message: 'Server error retrieving dashboard stats' });
+  }
+};
+
 module.exports = {
-  getPendingListings
+  getPendingListings,
+  getDashboardStats // 2. Don't forget to export the new function here!
 };
