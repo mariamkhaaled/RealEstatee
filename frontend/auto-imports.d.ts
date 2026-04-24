@@ -64,6 +64,7 @@ declare global {
   const LogIn: typeof import('lucide-react').LogIn
   const LogOut: typeof import('lucide-react').LogOut
   const Mail: typeof import('lucide-react').Mail
+  const Map: typeof import('lucide-react').Map
   const MapPin: typeof import('lucide-react').MapPin
   const Maximize: typeof import('lucide-react').Maximize
   const MessageSquare: typeof import('lucide-react').MessageSquare
