@@ -41,6 +41,7 @@ declare global {
   const Eye: typeof import('lucide-react').Eye
   const EyeOff: typeof import('lucide-react').EyeOff
   const Facebook: typeof import('lucide-react').Facebook
+  const Filter: typeof import('lucide-react').Filter
   const Focus: typeof import('lucide-react').Focus
   const Form: typeof import('lucide-react').Form
   const Fragment: typeof import('react').Fragment
