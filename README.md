@@ -598,38 +598,62 @@ npm run preview  # preview the built app
 
 ## 🔐 Environment Variables
 
+### ⚠️ IMPORTANT: Security Notice
+**NEVER commit `.env` files to version control!** Add `.env` to `.gitignore`
+
+```bash
+# .gitignore
+.env
+.env.local
+.env.*.local
+```
+
 ### Backend (.env)
 
-Create a `.env` file in the backend directory:
+Create a `.env` file in the backend directory with these variables:
 
 ```env
 # Server Configuration
 PORT=5000
 NODE_ENV=development
 
-# Database Configuration
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=your_password
+# Database Configuration (use your actual credentials)
+DB_HOST=<your_mysql_host>
+DB_USER=<your_mysql_username>
+DB_PASSWORD=<your_mysql_password>
 DB_NAME=real_estate
 
-# JWT Configuration
-JWT_SECRET=your_super_secret_jwt_key
+# JWT Configuration (generate a strong secret key)
+JWT_SECRET=<generate_a_long_random_string>
 JWT_EXPIRE=7d
 
-# Email Service (Nodemailer)
+# Email Service (use Gmail App Password, not regular password)
 EMAIL_SERVICE=gmail
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASSWORD=your_app_password
+EMAIL_USER=<your_gmail@gmail.com>
+EMAIL_PASSWORD=<your_gmail_app_password>
 
-# CORS Configuration
+# CORS Configuration (update with your production domain)
 CORS_ORIGINS=http://localhost:5173,http://localhost:5174
 CLIENT_URL=http://localhost:5173
 
 # File Upload
-MAX_FILE_SIZE=5242880  # 5MB in bytes
+MAX_FILE_SIZE=5242880
 UPLOAD_DIR=./uploads
 ```
+
+**How to generate JWT_SECRET:**
+```bash
+# Linux/macOS
+openssl rand -base64 32
+
+# Windows PowerShell
+[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes([guid]::NewGuid().ToString()))
+```
+
+**For Gmail:**
+1. Enable 2-Factor Authentication on Gmail
+2. Generate App Password: [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
+3. Use the 16-character password in EMAIL_PASSWORD
 
 ### Frontend (.env)
 
@@ -639,6 +663,32 @@ Create a `.env` file in the frontend directory:
 VITE_API_URL=http://localhost:5000
 VITE_SOCKET_URL=http://localhost:5000
 ```
+
+**For Production:**
+```env
+VITE_API_URL=https://api.yourdomain.com
+VITE_SOCKET_URL=https://yourdomain.com
+```
+
+### Environment Variable Reference
+
+| Variable | Description | Required | Example |
+|----------|-------------|----------|---------|
+| `PORT` | Backend server port | Yes | `5000` |
+| `NODE_ENV` | Node environment | Yes | `development` or `production` |
+| `DB_HOST` | MySQL server host | Yes | `localhost` or IP |
+| `DB_USER` | MySQL username | Yes | `root` |
+| `DB_PASSWORD` | MySQL password | Yes | Your DB password |
+| `DB_NAME` | Database name | Yes | `real_estate` |
+| `JWT_SECRET` | JWT signing key | Yes | Generated random string |
+| `JWT_EXPIRE` | Token expiration | Yes | `7d` |
+| `EMAIL_SERVICE` | Email provider | Yes | `gmail` |
+| `EMAIL_USER` | Email sender address | Yes | Your Gmail |
+| `EMAIL_PASSWORD` | Email app password | Yes | Gmail App Password |
+| `CORS_ORIGINS` | Allowed frontend origins | Yes | URLs comma-separated |
+| `CLIENT_URL` | Frontend base URL | Yes | `http://localhost:5173` |
+| `MAX_FILE_SIZE` | Max upload size (bytes) | No | `5242880` (5MB) |
+| `UPLOAD_DIR` | File upload directory | No | `./uploads` |
 
 ## 📡 API Endpoints
 
