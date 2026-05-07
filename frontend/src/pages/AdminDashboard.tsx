@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { 
-  MoreHorizontal, Check, X, MapPin
+  MoreHorizontal, Check, X, MapPin, User
 } from 'lucide-react';
 import { Navigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -9,6 +9,9 @@ import { toast } from 'sonner';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+
+
+
 
 // Setup default marker icon pointing to external URLs to avoid bundler image issues
 const defaultPin = new L.Icon({
@@ -39,28 +42,55 @@ const AdminDashboard: React.FC = () => {
   const [recentListings, setRecentListings] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    activeOwners: 0,
+    recentUsers: [] as any[]
+  });
+
   // 🔐 Security Check
   if (!user || user.role !== 'admin') {
     return <Navigate to="/" replace />;
   }
 
+  // Inside AdminDashboard.tsx
   const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:5000/api/properties'); 
-      const data = await res.json();
+      const token = localStorage.getItem('token'); 
+
+      const [propertiesRes, statsRes] = await Promise.all([
+        fetch('http://localhost:5000/api/properties'),
+        fetch('http://localhost:5000/api/admin/stats', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+      ]);
       
-      if (res.ok) {
-        const all = data.data?.properties || [];
+      const propertiesData = await propertiesRes.json();
+      const statsData = await statsRes.json();
+      
+      // 👇 THIS WILL PRINT THE DB RESPONSE TO YOUR BROWSER CONSOLE 👇
+      console.log("Stats API Response:", statsData);
+      
+      if (propertiesRes.ok) {
+        const all = propertiesData.data?.properties || [];
         setPendingListings(all.filter((p: Property) => p.status === 'Pending'));
-        setRecentListings(all.filter((p: Property) => p.status === 'Active').slice(0, 2));
+        setRecentListings(all.filter((p: Property) => p.status === 'Active').slice(0, 5));
+      }
+
+      if (statsRes.ok) {
+        setStats(statsData.data);
+      } else {
+        console.error("Backend refused stats request:", statsData);
       }
     } catch (error) {
+      console.error("Network or Fetch Error:", error);
       toast.error("Failed to load dashboard data");
     } finally {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     fetchData();
@@ -242,6 +272,7 @@ const AdminDashboard: React.FC = () => {
 
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+<<<<<<< HEAD
 
               {/* Revenue */}
               <div className="lux-card lux-card-hover rounded-3xl p-7 flex flex-col justify-between min-h-[180px]">
@@ -249,6 +280,14 @@ const AdminDashboard: React.FC = () => {
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="lux-tag lux-muted mb-3">
+=======
+              {/* LEFT COLUMN: Revenue & Maintenance */}
+              <div className="space-y-6">
+                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between h-[130px]">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-2 text-slate-500 text-sm font-medium">
+                      <span className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-[10px]">💰</span>
+>>>>>>> 818d373718463272d37212891ab8ff924b34bb3e
                       Total Revenue
                     </p>
 
@@ -274,6 +313,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
               </div>
 
+<<<<<<< HEAD
               {/* Costs */}
               <div className="lux-card lux-card-hover rounded-3xl p-7 flex flex-col justify-between min-h-[180px]">
 
@@ -301,6 +341,61 @@ const AdminDashboard: React.FC = () => {
                     <p className="text-xs lux-muted mt-1">
                       Compared to last week
                     </p>
+=======
+              {/* RIGHT COLUMN: Users Box & Recent Activity */}
+              <div className="space-y-6 flex flex-col">
+                {/* Users Box */}
+                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between h-[130px]">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-2 text-slate-500 text-sm font-medium">
+                      <span className="w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-[10px]">👥</span>
+                      Total Users
+                    </div>
+                    <MoreHorizontal size={16} className="text-slate-400" />
+                  </div>
+                  <div className="flex items-end justify-between">
+                    <h3 className="text-3xl font-bold text-slate-800">{stats?.totalUsers?.toLocaleString() || 0}</h3>
+                    <div className="text-right">
+                      <span className="text-[10px] text-slate-400">From database</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recent Activity Box (Flex-1 to fill the remaining space neatly) */}
+                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex-1 flex flex-col min-h-[130px]">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-bold text-slate-800 text-lg">Recent Activity</h3>
+                  </div>
+                  
+                  <div className="flex-1 w-full overflow-y-auto pr-2 space-y-5 max-h-[160px] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200">
+                    
+                    {/* Map through recently active properties */}
+                    {recentListings.map((prop, idx) => (
+                      <div key={`prop-${idx}`} className="flex gap-3 items-start">
+                        <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Check size={14} className="text-emerald-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-700">Property <span className="font-semibold text-slate-900">{prop.title}</span> was approved.</p>
+                          <p className="text-xs text-slate-400 mt-0.5">Owner: {prop.owner_name} • Recently</p>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Map through recently registered users */}
+                    {stats?.recentUsers?.map((newUser, idx) => (
+                      <div key={`user-${idx}`} className="flex gap-3 items-start">
+                        <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <User size={14} className="text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-700">New user registration: <span className="font-semibold text-slate-900">{newUser.full_name}</span></p>
+                          <p className="text-xs text-slate-400 mt-0.5 capitalize">{newUser.role} Role</p>
+                        </div>
+                      </div>
+                    ))}
+
+>>>>>>> 818d373718463272d37212891ab8ff924b34bb3e
                   </div>
                 </div>
               </div>

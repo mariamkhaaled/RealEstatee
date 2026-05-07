@@ -41,6 +41,7 @@ declare global {
   const Eye: typeof import('lucide-react').Eye
   const EyeOff: typeof import('lucide-react').EyeOff
   const Facebook: typeof import('lucide-react').Facebook
+  const Filter: typeof import('lucide-react').Filter
   const Focus: typeof import('lucide-react').Focus
   const Form: typeof import('lucide-react').Form
   const Fragment: typeof import('react').Fragment
@@ -64,6 +65,7 @@ declare global {
   const LogIn: typeof import('lucide-react').LogIn
   const LogOut: typeof import('lucide-react').LogOut
   const Mail: typeof import('lucide-react').Mail
+  const Map: typeof import('lucide-react').Map
   const MapPin: typeof import('lucide-react').MapPin
   const Maximize: typeof import('lucide-react').Maximize
   const MessageSquare: typeof import('lucide-react').MessageSquare

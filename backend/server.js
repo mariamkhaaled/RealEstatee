@@ -14,6 +14,8 @@ const favoriteRouter = require("./routes/favoriteRoutes");
 const messageRoutes = require("./routes/message.routes");
 const inquiryRoutes = require("./routes/inquiry.routes");
 
+const adminRoutes = require('./routes/admin.routes');
+
 require("./config/db");
 
 const app = express();
@@ -81,6 +83,8 @@ app.use("/api/favorites", favoriteRouter);
 app.use("/api/messages", messageRoutes);
 app.use("/api/inquiries", inquiryRoutes);
 
+app.use('/api/admin', adminRoutes);
+
 app.get("/", (req, res) => {
   res.status(200).json({
     status: "success",
@@ -107,8 +111,6 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
-
-const adminRoutes = require('./routes/admin.routes');
 
 // Use the admin routes
 app.use('/api/admin', adminRoutes);
