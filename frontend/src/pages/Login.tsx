@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Home, ArrowLeft } from "lucide-react";
+import { Home } from "lucide-react";
 import { useFavorites } from "@/context/FavoritesContext";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { pendingFavoriteId, addPendingFavorite, loadFavorites } = useFavorites();
+  const { pendingFavoriteId, addPendingFavorite, loadFavorites } =
+    useFavorites();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,8 +31,13 @@ const Login: React.FC = () => {
 
       if (!res.ok) {
         const normalizedEmail = email.trim().toLowerCase();
-        if (res.status === 403 && String(data.message || "").toLowerCase().includes("verify")) {
-          navigate(`/verify-email?email=${encodeURIComponent(normalizedEmail)}`);
+        if (
+          res.status === 403 &&
+          String(data.message || "").toLowerCase().includes("verify")
+        ) {
+          navigate(
+            `/verify-email?email=${encodeURIComponent(normalizedEmail)}`
+          );
           return;
         }
         setError(data.message || "Login failed");
@@ -58,75 +63,105 @@ const Login: React.FC = () => {
       }
 
       if (normalizedUser.role === "admin") navigate("/admin-dashboard");
-      else if (normalizedUser.role === "owner") navigate("/owner-dashboard");
+      else if (normalizedUser.role === "owner")
+        navigate("/owner-dashboard");
       else navigate("/profile");
-      
-    } catch (err) {
+    } catch {
       setError("Server error");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#faf9f7] font-sans selection:bg-[#c8a96e]/20">
-      <div className="max-w-md w-full px-8 py-16">
-        
-        {/* Simple Brand Centering */}
-        <div className="text-center mb-12">
-          <Link to="/" className="inline-flex items-center gap-2 group">
-            <Home size={20} className="text-[#1a1814] group-hover:text-[#c8a96e] transition-colors" strokeWidth={1.5} />
-            <span className="text-lg font-serif tracking-[0.2em] uppercase text-[#1a1814]">LuxeEstates</span>
-          </Link>
+    <div className="min-h-screen flex items-center justify-center bg-[#f3f0ea] relative overflow-hidden font-sans">
+
+      {/* OUTER FRAME */}
+
+      {/* INNER RECTANGLE FRAME */}
+      <div className="relative w-full max-w-5xl h-[600px] border border-[rgba(200,169,110,0.35)] bg-[rgba(255,253,248,0.92)] backdrop-blur-xl shadow-[0_30px_80px_rgba(200,169,110,0.12)] flex">
+
+        {/* LEFT SIDE (Brand Panel) */}
+        <div className="hidden md:flex flex-1 items-center justify-center border-r border-[rgba(200,169,110,0.2)]">
+          <div className="text-center">
+            <Link to="/" className="inline-flex items-center gap-2">
+              <Home size={20} className="text-[#c8a96e]" />
+              <span className="text-lg font-serif tracking-[0.2em] uppercase text-[#1a1814]">
+                LuxeEstates
+              </span>
+            </Link>
+
+            <p className="mt-6 text-[11px] tracking-[0.3em] uppercase text-[#9a9489]">
+              Luxury Real Estate Platform
+            </p>
+          </div>
         </div>
 
-        <div className="space-y-8">
-          <div className="text-center">
-            <h1 className="text-3xl font-serif italic text-[#1a1814]">Welcome Back</h1>
-            <p className="text-[10px] uppercase tracking-[0.3em] text-[#9a9489] mt-3">Enter your credentials to continue</p>
-          </div>
+        {/* RIGHT SIDE (Login Form) */}
+        <div className="flex flex-1 items-center justify-center px-10">
+          <div className="w-full max-w-sm">
 
-          <form className="space-y-6" onSubmit={handleLogin}>
-            <div className="space-y-4">
-              <div className="group">
-                <input
-                  type="email"
-                  placeholder="Email"
-                  className="w-full bg-transparent border-b border-[#e5e1da] py-3 text-sm outline-none focus:border-[#c8a96e] transition-colors placeholder:text-[#b0aaa0] font-light"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="group">
-                <input
-                  type="password"
-                  placeholder="Password"
-                  className="w-full bg-transparent border-b border-[#e5e1da] py-3 text-sm outline-none focus:border-[#c8a96e] transition-colors placeholder:text-[#b0aaa0] font-light"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
+            <div className="text-center mb-10">
+              <h1 className="text-3xl font-serif italic text-[#1a1814]">
+                Welcome Back
+              </h1>
+              <p className="text-[10px] uppercase tracking-[0.3em] text-[#9a9489] mt-3">
+                Enter your credentials
+              </p>
             </div>
 
-            {error && <p className="text-[11px] text-red-400 italic text-center">{error}</p>}
+            <form className="space-y-6" onSubmit={handleLogin}>
+              <input
+                type="email"
+                placeholder="Email"
+                className="w-full bg-transparent border-b border-[#e5e1da] py-3 text-sm outline-none focus:border-[#c8a96e] placeholder:text-[#b0aaa0]"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
 
-            <button
-              type="submit"
-              className="w-full py-4 text-[11px] uppercase tracking-[0.3em] font-bold text-[#4e3b1f] transition-all duration-500 hover:scale-[1.01]"
-              style={{ background: "#ede4cc" }}
-              onMouseEnter={(e) => e.currentTarget.style.background = "linear-gradient(135deg,#c8a96e 0%,#e8d4a8 50%,#c8a96e 100%)"}
-              onMouseLeave={(e) => e.currentTarget.style.background = "#ede4cc"}
-            >
-              Sign In
-            </button>
-          </form>
+              <input
+                type="password"
+                placeholder="Password"
+                className="w-full bg-transparent border-b border-[#e5e1da] py-3 text-sm outline-none focus:border-[#c8a96e] placeholder:text-[#b0aaa0]"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
 
-          <div className="flex flex-col items-center gap-4 pt-4">
-            <Link to="/reset-password"  className="text-[10px] uppercase tracking-widest text-[#9a9489] hover:text-[#1a1814] transition-colors">
-              Forgotten Access?
-            </Link>
-            <p className="text-[11px] text-[#b0aaa0] font-light">
-              New to the estate? <Link to="/register" className="text-[#1a1814] font-medium underline underline-offset-4 decoration-[#c8a96e]/30 hover:decoration-[#c8a96e]">Register </Link>
-              
-            </p>
+              {error && (
+                <p className="text-[11px] text-red-400 text-center">
+                  {error}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                className="w-full py-4 text-[11px] uppercase tracking-[0.3em] font-bold text-[#2a1f0e] transition-all"
+                style={{
+                  background:
+                    "linear-gradient(135deg,#c8a96e,#e8d4a8)",
+                }}
+              >
+                Sign In
+              </button>
+            </form>
+
+            <div className="text-center mt-8 space-y-3">
+              <Link
+                to="/reset-password"
+                className="text-[10px] uppercase tracking-widest text-[#9a9489]"
+              >
+                Forgotten Access?
+              </Link>
+
+              <p className="text-[11px] text-[#b0aaa0]">
+                New here?{" "}
+                <Link
+                  to="/register"
+                  className="text-[#1a1814] underline"
+                >
+                  Register
+                </Link>
+              </p>
+            </div>
+
           </div>
         </div>
       </div>

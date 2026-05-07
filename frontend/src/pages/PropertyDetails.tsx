@@ -13,43 +13,27 @@ import {
   X,
 } from "lucide-react";
 import { createInquiry } from "@/api/inquiries";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useFavorites } from "@/context/FavoritesContext";
 
-type ListingType = {
-  property_id: number;
-  listing_id: number;
-  title: string;
-  description: string;
-  property_type: string;
-  bedrooms: number;
-  bathrooms: number;
-  area: number;
-  purpose: string;
-  price: number;
-  status: string;
-  views: number;
-  city: string;
-  address: string;
-  images?: string[];
-  features?: string[];
-};
+const gold =
+  "linear-gradient(135deg,#c8a96e 0%,#e8d4a8 50%,#c8a96e 100%)";
 
 const PropertyDetails: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [listing, setListing] = useState<ListingType | null>(null);
+
+  const [listing, setListing] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [savingFavorite, setSavingFavorite] = useState(false);
-  const [showGallery, setShowGallery] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(0);
 
   const { isFavorite, addFavorite, removeFavorite } = useFavorites();
   const propertyId = id || "";
   const isFav = isFavorite(propertyId);
+
+  const [showGallery, setShowGallery] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(0);
 
   const [requestForm, setRequestForm] = useState({
     name: "",
@@ -61,263 +45,89 @@ const PropertyDetails: React.FC = () => {
   const [submitMessage, setSubmitMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleToggleFavorite = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    try {
-      setSavingFavorite(true);
-
-      if (isFav) {
-        await fetch(`http://localhost:5000/api/favorites/${propertyId}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        removeFavorite(propertyId);
-      } else {
-        await fetch("http://localhost:5000/api/favorites", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            property_id: propertyId,
-          }),
-        });
-        addFavorite(propertyId);
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setSavingFavorite(false);
-    }
-  };
-
-  useEffect(() => {
-    const rawUser = localStorage.getItem("user");
-    if (!rawUser) return;
-
-    try {
-      const user = JSON.parse(rawUser);
-      const firstName = user?.firstName || "";
-      const lastName = user?.lastName || "";
-      const fullNameFromParts = `${firstName} ${lastName}`.trim();
-      const fullName =
-        fullNameFromParts ||
-        user?.full_name ||
-        user?.name ||
-        user?.username ||
-        "";
-      const email = user?.email || "";
-
-      setRequestForm((prev) => ({
-        ...prev,
-        name: prev.name || fullName,
-        email: prev.email || email,
-      }));
-    } catch {
-      // Ignore invalid localStorage user JSON
-    }
-  }, []);
-
   useEffect(() => {
     const fetchProperty = async () => {
       try {
-        console.log("params id =", id);
-
         const res = await fetch(`http://localhost:5000/api/properties/${id}`);
         const data = await res.json();
-
-        console.log("api response =", data);
-
-        if (!res.ok) {
-          throw new Error(data.message || "Failed to load property");
-        }
-
         setListing(data.data.property);
-      } catch (error) {
-        console.error("fetchProperty error:", error);
       } finally {
         setLoading(false);
       }
     };
-
-    if (id) {
-      fetchProperty();
-    } else {
-      setLoading(false);
-    }
+    if (id) fetchProperty();
   }, [id]);
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    const { name, value } = e.target;
-    setRequestForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-8">Loading property...</div>
-    );
-  }
-
-  if (!listing) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-8">Property not found.</div>
-    );
-  }
-
-  const safeImages =
-    listing.images && listing.images.length > 0
-      ? listing.images.map((img) =>
-        img.startsWith("http") ? img : `http://localhost:5000${img}`,
-      )
-      : ["https://via.placeholder.com/1200x700?text=No+Image"];
-
-  const imageCount = safeImages.length;
-
-  const safeFeatures = listing.features || [];
-
-  const isListingClosed =
-    listing.status === "Sold" ||
-    listing.status === "Rented" ||
-    listing.status === "Closed";
 
   const handleRequestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitMessage("");
-
-    if (
-      !requestForm.name.trim() ||
-      !requestForm.email.trim() ||
-      !requestForm.phone.trim() ||
-      !requestForm.message.trim()
-    ) {
-      setSubmitMessage("Please fill all fields before sending your request.");
-      return;
-    }
-
-    if (isListingClosed) {
-      setSubmitMessage("This listing is no longer accepting requests.");
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
-      if (!listing.listing_id) {
-        setSubmitMessage("Unable to send request for this property right now.");
-        return;
-      }
-
-      const response = await createInquiry({
+      await createInquiry({
         listing_id: Number(listing.listing_id),
-        name: requestForm.name.trim(),
-        email: requestForm.email.trim().toLowerCase(),
-        phone: requestForm.phone.trim(),
-        message: requestForm.message.trim(),
+        name: requestForm.name,
+        email: requestForm.email,
+        phone: requestForm.phone,
+        message: requestForm.message,
       });
 
-      if (response?.data && "reused" in response.data && response.data.reused) {
-        setSubmitMessage("You already sent a request for this listing.");
-        return;
-      }
-
-      setSubmitMessage("Your request has been sent successfully.");
-      setRequestForm({
-        name: "",
-        email: "",
-        phone: "",
-        message: "",
-      });
-    } catch (error: any) {
-      const message = error?.message || "";
-      if (message.toLowerCase().includes("authentication required")) {
-        setSubmitMessage(
-          "Please login first to send a request. Redirecting to login...",
-        );
-        setTimeout(() => navigate("/login"), 1200);
-      } else {
-        setSubmitMessage(
-          message || "Failed to send request. Please try again.",
-        );
-      }
+      setSubmitMessage("Request sent successfully.");
+    } catch {
+      setSubmitMessage("Failed to send request.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const getStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case "Active":
-        return "bg-green-50 text-green-700 border-green-200";
-      case "Pending":
-        return "bg-yellow-50 text-yellow-700 border-yellow-200";
-      case "Sold":
-      case "Rented":
-      case "Closed":
-        return "bg-red-50 text-red-700 border-red-200";
-      default:
-        return "bg-secondary text-secondary-foreground";
-    }
-  };
+  if (loading)
+    return <div className="p-10 text-[#7a6040]">Loading property...</div>;
+
+  if (!listing)
+    return <div className="p-10 text-[#7a6040]">Property not found.</div>;
+
+  const images =
+    listing.images?.length > 0
+      ? listing.images.map((img: string) =>
+        img.startsWith("http") ? img : `http://localhost:5000${img}`
+      )
+      : ["https://via.placeholder.com/1200x700"];
 
   return (
-    <>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
+    <div className="min-h-screen bg-[#f3f0ea] font-sans">
+
+      <div className="max-w-6xl mx-auto px-2 py-9 scale-[0.90] origin-top">
+
+        {/* HEADER */}
+        <div className="flex justify-between mb-6">
           <div>
-            <div className="flex gap-2 mb-2 flex-wrap">
-              <Badge className="bg-primary text-primary-foreground">
-                For {listing.purpose}
-              </Badge>
+            <Badge style={{ background: gold, color: "#2a1f0e" }}>
+              For {listing.purpose}
+            </Badge>
 
-              <Badge variant="outline" className="text-foreground">
-                {listing.property_type}
-              </Badge>
-
-              <Badge
-                variant="outline"
-                className={getStatusBadgeClass(listing.status)}
-              >
-                {listing.status}
-              </Badge>
-            </div>
-
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+            <h1 className="text-4xl font-serif text-[#1a1814] mt-3">
               {listing.title}
             </h1>
 
-            <div className="flex items-center text-muted-foreground">
-              <MapPin size={18} className="mr-1" />
-              <span>
-                {listing.city}
-                {listing.address ? `, ${listing.address}` : ""}
-              </span>
+            <div className="flex items-center text-[#7a6040] mt-2">
+              <MapPin size={16} className="mr-1" />
+              {listing.city}
             </div>
           </div>
 
-          <div className="text-left md:text-right">
-            <p className="text-3xl font-bold text-primary">
-              ${Number(listing.price).toLocaleString()}
-            </p>
-          </div>
+          <p className="text-3xl font-bold text-[#c8a96e] mt-6 md:mt-10">
+  ${Number(listing.price).toLocaleString()}
+</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10 h-[500px] rounded-2xl overflow-hidden">
+        {/* IMAGE GRID */}
+        {/* IMAGE GRID (click opens gallery) */}
+        {/* IMAGE GRID */}
+        <div className="grid grid-cols-4 gap-4 h-[500px] rounded-2xl overflow-hidden mb-10">
 
-          {/* Main image */}
-          <div className="md:col-span-3 h-full">
+          {/* MAIN IMAGE */}
+          <div className="col-span-3">
             <img
-              src={safeImages[0]}
-              alt="Main"
+              src={images[0]}
               onClick={() => {
                 setSelectedImage(0);
                 setShowGallery(true);
@@ -326,274 +136,183 @@ const PropertyDetails: React.FC = () => {
             />
           </div>
 
-          {/* Right side */}
-          {safeImages.length > 1 && (
-            <div className="hidden md:flex flex-col gap-4 h-full">
+          {/* RIGHT SIDE (always show up to 3 images safely) */}
+          <div className="flex flex-col gap-4 h-full">
 
-              {/* Second image */}
+            {/* image 1 */}
+            {images[1] && (
               <img
-                src={safeImages[1]}
-                alt="Sub 1"
+                src={images[1]}
                 onClick={() => {
                   setSelectedImage(1);
                   setShowGallery(true);
                 }}
-                className={`w-full ${safeImages.length === 2 ? "h-full" : "h-1/2"} object-cover cursor-pointer`}
+                className={`w-full object-cover cursor-pointer ${images.length === 2 ? "h-full" : "h-1/2"
+                  }`}
               />
+            )}
 
-              {/* Third image + overlay */}
-              {safeImages.length >= 3 && (
-                <div
-                  className="relative w-full h-1/2 cursor-pointer"
-                  onClick={() => {
-                    setSelectedImage(2);
-                    setShowGallery(true);
-                  }}
-                >
-                  <img
-                    src={safeImages[2]}
-                    alt="Sub 2"
-                    className="w-full h-full object-cover"
-                  />
+            {/* image 2 / 3rd visible slot */}
+            {images[2] && (
+              <div
+                className="relative w-full h-1/2 cursor-pointer"
+                onClick={() => {
+                  setSelectedImage(2);
+                  setShowGallery(true);
+                }}
+              >
+                <img
+                  src={images[2]}
+                  className="w-full h-full object-cover"
+                />
 
-                  {safeImages.length > 3 && (
-                    <div className="absolute inset-0 bg-black/45 flex items-start justify-center pt-15">
-                      <span className="text-white text-xl font-semibold">
-                        +{safeImages.length - 3} more
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
+                {/* +N overlay */}
+                {images.length > 3 && (
+                  <div className="absolute inset-0 bg-black/30 flex items-start justify-center pt-16">
+                    <span className="text-white text-2xl font-semibold">
+                      +{images.length - 3}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        {/* INFO */}
+        <div className="grid lg:grid-cols-3 gap-10">
+
           <div className="lg:col-span-2 space-y-8">
-            <div className="flex bg-card border border-border rounded-xl p-6 shadow-custom justify-around">
-              <div className="flex flex-col items-center">
-                <Bed size={28} className="text-primary mb-2" />
-                <span className="font-semibold text-foreground">
-                  {listing.bedrooms} Bedrooms
-                </span>
+
+            <div className="flex justify-around p-6 rounded-xl border border-[#e3dccf] bg-[#faf9f7]">
+              <div className="text-center">
+                <Bed className="mx-auto text-[#c8a96e]" />
+                <p>{listing.bedrooms} Beds</p>
               </div>
-
-              <div className="w-px bg-border"></div>
-
-              <div className="flex flex-col items-center">
-                <Bath size={28} className="text-primary mb-2" />
-                <span className="font-semibold text-foreground">
-                  {listing.bathrooms} Bathrooms
-                </span>
+              <div className="text-center">
+                <Bath className="mx-auto text-[#c8a96e]" />
+                <p>{listing.bathrooms} Baths</p>
               </div>
-
-              <div className="w-px bg-border"></div>
-
-              <div className="flex flex-col items-center">
-                <Square size={28} className="text-primary mb-2" />
-                <span className="font-semibold text-foreground">
-                  {listing.area.toLocaleString()} sqft
-                </span>
+              <div className="text-center">
+                <Square className="mx-auto text-[#c8a96e]" />
+                <p>{listing.area} sqft</p>
               </div>
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-foreground mb-4">
+              <h2 className="text-xl font-serif text-[#1a1814] mb-2">
                 Description
               </h2>
-              <p className="text-muted-foreground leading-relaxed">
-                {listing.description}
-              </p>
+              <p className="text-[#7a6040]">{listing.description}</p>
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-foreground mb-4">
-                Features & Amenities
+              <h2 className="text-xl font-serif text-[#1a1814] mb-3">
+                Features
               </h2>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {safeFeatures.map((feature) => (
-                  <div
-                    key={feature}
-                    className="flex items-center text-muted-foreground"
-                  >
-                    <div className="w-5 h-5 rounded-full bg-accent flex items-center justify-center mr-3 flex-shrink-0">
-                      <Check size={12} className="text-primary" />
-                    </div>
-                    <span className="text-sm">{feature}</span>
+              <div className="grid grid-cols-2 gap-3">
+                {listing.features?.map((f: string) => (
+                  <div key={f} className="flex items-center text-[#7a6040]">
+                    <Check size={14} className="text-[#c8a96e] mr-2" />
+                    {f}
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          <div className="space-y-6">
-            <div className="flex gap-4">
-              <Button
-                variant={isFav ? "default" : "outline"}
-                className="flex-1"
-                onClick={handleToggleFavorite}
-                disabled={savingFavorite}
+          {/* FORM */}
+          <Card className="bg-[#faf9f7] border border-[#e3dccf]">
+            <CardContent className="p-6 space-y-4">
+
+              <h3 className="font-serif text-xl text-[#1a1814]">
+                Request Property
+              </h3>
+
+              <Input placeholder="Name"
+                onChange={(e) =>
+                  setRequestForm({ ...requestForm, name: e.target.value })
+                } />
+
+              <Input placeholder="Email"
+                onChange={(e) =>
+                  setRequestForm({ ...requestForm, email: e.target.value })
+                } />
+
+              <Input placeholder="Phone"
+                onChange={(e) =>
+                  setRequestForm({ ...requestForm, phone: e.target.value })
+                } />
+
+              <textarea
+                className="w-full border p-2 rounded-md"
+                placeholder="Message"
+                onChange={(e) =>
+                  setRequestForm({ ...requestForm, message: e.target.value })
+                }
+              />
+
+              <button
+                onClick={handleRequestSubmit}
+                className="w-full py-3 text-[#2a1f0e] font-bold"
+                style={{ background: gold }}
               >
-                <Heart
-                  className={`mr-2 ${isFav ? "fill-current" : ""}`}
-                  size={18}
-                />
-                {isFav ? "Saved" : "Save"}
-              </Button>
+                Send Request
+              </button>
 
-              <Button variant="outline" className="flex-1">
-                <Share2 className="mr-2" size={18} /> Share
-              </Button>
-            </div>
+              {submitMessage && (
+                <p className="text-sm text-[#7a6040]">{submitMessage}</p>
+              )}
 
-            <Card className="shadow-custom border-border">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-bold text-foreground mb-2">
-                  Request This Property
-                </h3>
+              <button className="w-full border border-[#c8a96e] py-2 text-[#7a6040]">
+                <Heart className="inline mr-2" /> Save
+              </button>
 
-                <form className="space-y-4" onSubmit={handleRequestSubmit}>
-                  <Input
-                    name="name"
-                    placeholder="Your Name"
-                    value={requestForm.name}
-                    onChange={handleChange}
-                    disabled={isListingClosed || isSubmitting}
-                  />
-                  <Input
-                    name="email"
-                    placeholder="Email Address"
-                    type="email"
-                    value={requestForm.email}
-                    onChange={handleChange}
-                    disabled={isListingClosed || isSubmitting}
-                  />
-                  <Input
-                    name="phone"
-                    placeholder="Phone Number"
-                    type="tel"
-                    value={requestForm.phone}
-                    onChange={handleChange}
-                    disabled={isListingClosed || isSubmitting}
-                  />
-                  <textarea
-                    name="message"
-                    rows={4}
-                    value={requestForm.message}
-                    onChange={handleChange}
-                    disabled={isListingClosed || isSubmitting}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary resize-none disabled:opacity-60"
-                    placeholder="Write your request message..."
-                  ></textarea>
+            </CardContent>
+          </Card>
 
-                  {submitMessage && <p className="text-sm">{submitMessage}</p>}
-
-                  <Button
-                    className="w-full"
-                    disabled={isListingClosed || isSubmitting}
-                  >
-                    {isSubmitting ? "Sending..." : "Send Request"}
-                  </Button>
-                </form>
-
-                <div className="mt-6 pt-6 border-t border-border space-y-2">
-                  <Button
-                    variant="secondary"
-                    className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                  >
-                    <Phone className="mr-2" size={16} /> Contact Owner
-                  </Button>
-
-                  <Button
-                    variant="secondary"
-                    className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                  >
-                    <Mail className="mr-2" size={16} /> Send Email
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </div>
 
+      {/* GALLERY */}
       {showGallery && (
-        <div className="fixed inset-0 z-50 bg-black/95 flex flex-col">
-          {/* Top bar */}
-          <div className="flex items-center justify-between px-6 py-4 bg-black/40 backdrop-blur-sm">
-            <p className="text-white text-sm md:text-base font-medium">
-              {selectedImage + 1} / {safeImages.length}
-            </p>
+        <div className="fixed inset-0 z-50 flex flex-col"
+          style={{ background: "rgba(243,240,234,0.98)" }}>
 
-            <button
-              onClick={() => setShowGallery(false)}
-              className="text-white hover:text-gray-300 transition"
-            >
-              <X size={30} />
+          <div className="flex justify-between p-4 text-[#1a1814]">
+            <span>
+              {selectedImage + 1} / {images.length}
+            </span>
+
+            <button onClick={() => setShowGallery(false)}>
+              <X />
             </button>
           </div>
 
-          {/* Main preview */}
-          <div className="flex-1 flex items-center justify-center px-4 md:px-10 relative">
-            {safeImages.length > 1 && (
-              <button
-                onClick={() =>
-                  setSelectedImage((prev) =>
-                    prev === 0 ? safeImages.length - 1 : prev - 1
-                  )
-                }
-                className="absolute left-4 md:left-8 bg-black/40 hover:bg-black/60 text-white rounded-full p-3 transition"
-              >
-                ‹
-              </button>
-            )}
-
+          <div className="flex-1 flex items-center justify-center">
             <img
-              src={safeImages[selectedImage]}
-              alt={`Property ${selectedImage + 1}`}
-              className="max-h-[75vh] w-auto max-w-full object-contain rounded-2xl shadow-2xl"
+              src={images[selectedImage]}
+              className="max-h-[80vh] object-contain"
             />
-
-            {safeImages.length > 1 && (
-              <button
-                onClick={() =>
-                  setSelectedImage((prev) =>
-                    prev === safeImages.length - 1 ? 0 : prev + 1
-                  )
-                }
-                className="absolute right-4 md:right-8 bg-black/40 hover:bg-black/60 text-white rounded-full p-3 transition"
-              >
-                ›
-              </button>
-            )}
           </div>
 
-          {/* Thumbnails */}
-          <div className="px-4 md:px-8 pb-6">
-            <div className="flex gap-3 overflow-x-auto justify-start md:justify-center">
-              {safeImages.map((img, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImage(index)}
-                  className={`shrink-0 rounded-xl overflow-hidden border-2 transition ${selectedImage === index
-                      ? "border-white"
-                      : "border-transparent opacity-70 hover:opacity-100"
-                    }`}
-                >
-                  <img
-                    src={img}
-                    alt={`Thumb ${index + 1}`}
-                    className="w-24 h-20 object-cover"
-                  />
-                </button>
-              ))}
-            </div>
+          <div className="flex gap-2 justify-center p-4 overflow-x-auto">
+            {images.map((img: string, i: number) => (
+              <img
+                key={i}
+                src={img}
+                onClick={() => setSelectedImage(i)}
+                className={`w-20 h-16 object-cover cursor-pointer border ${selectedImage === i
+                    ? "border-[#c8a96e]"
+                    : "border-transparent"
+                  }`}
+              />
+            ))}
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

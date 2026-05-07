@@ -113,6 +113,7 @@ declare global {
   const Type: typeof import('lucide-react').Type
   const UploadCloud: typeof import('lucide-react').UploadCloud
   const User: typeof import('lucide-react').User
+  const UserPlus: typeof import('lucide-react').UserPlus
   const Users: typeof import('lucide-react').Users
   const Verified: typeof import('lucide-react').Verified
   const View: typeof import('lucide-react').View

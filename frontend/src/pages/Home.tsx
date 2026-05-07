@@ -131,10 +131,10 @@ const Home: React.FC = () => {
             typeof p["status"] === "string" ? p["status"] : "";
           const images = Array.isArray(p["images"])
             ? (p["images"] as unknown[])
-                .filter((img): img is string => typeof img === "string")
-                .map((img) =>
-                  img.startsWith("http") ? img : `http://localhost:5000${img}`
-                )
+              .filter((img): img is string => typeof img === "string")
+              .map((img) =>
+                img.startsWith("http") ? img : `http://localhost:5000${img}`
+              )
             : [];
 
           return {
@@ -143,11 +143,9 @@ const Home: React.FC = () => {
             description:
               typeof p["description"] === "string" ? p["description"] : "",
             price: Number(p["price"] ?? 0),
-            location: `${
-              typeof p["city"] === "string" ? p["city"] : ""
-            }${
-              typeof p["address"] === "string" ? `, ${p["address"]}` : ""
-            }`,
+            location: `${typeof p["city"] === "string" ? p["city"] : ""
+              }${typeof p["address"] === "string" ? `, ${p["address"]}` : ""
+              }`,
             type: ["Apartment", "Villa", "Office", "House"].includes(
               propertyType as string
             )
@@ -162,8 +160,8 @@ const Home: React.FC = () => {
             images,
             features: Array.isArray(p["features"])
               ? (p["features"] as unknown[]).filter(
-                  (f): f is string => typeof f === "string"
-                )
+                (f): f is string => typeof f === "string"
+              )
               : [],
             ownerId: String(p["owner_id"] ?? ""),
             status: ["Pending", "Approved", "Rejected"].includes(status)
@@ -195,7 +193,10 @@ const Home: React.FC = () => {
 
         .luxe-hero { font-family: 'Cormorant Garamond', Georgia, serif; }
         .luxe-body { font-family: 'DM Sans', system-ui, sans-serif; }
-
+.num {
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+  font-variant-numeric: tabular-nums;
+}
         .hero-line {
           opacity: 0;
           transform: translateY(28px);
@@ -374,7 +375,9 @@ const Home: React.FC = () => {
                   { n: "4.9★", l: "Rating" },
                 ].map((s) => (
                   <div key={s.l}>
-                    <p className="luxe-hero text-white text-2xl font-light">{s.n}</p>
+                    <p className="luxe-hero text-white text-2xl font-light num">
+                      {s.n}
+                    </p>
                     <p className="property-tag text-[#a09880] mt-0.5">{s.l}</p>
                   </div>
                 ))}
@@ -466,7 +469,12 @@ const Home: React.FC = () => {
                     style={{ background: "rgba(200,169,110,0.12)", border: "1px solid rgba(200,169,110,0.25)" }}>
                     <s.icon size={18} className="text-[#c8a96e]" />
                   </div>
-                  <p className="luxe-hero text-white font-light" style={{ fontSize: "2rem" }}>{s.value}</p>
+                  <p
+                    className="text-white font-light num"
+                    style={{ fontSize: "2rem" }}
+                  >
+                    {s.value}
+                  </p>
                   <p className="property-tag text-[#6b6254] mt-1">{s.label}</p>
                 </div>
               ))}
