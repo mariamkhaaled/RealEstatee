@@ -166,97 +166,215 @@ const Navbar: React.FC = () => {
     };
   }, [isLoggedIn, isAdmin, currentUserId]);
 
-  return (
-    <nav className="bg-card border-b border-border sticky top-0 z-50 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
+ return (
+  <>
+    {/* Luxury Navbar Styles */}
+    <style>{`
+      @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500;700&display=swap');
+
+      .lux-navbar {
+        font-family: 'DM Sans', sans-serif;
+        backdrop-filter: blur(18px);
+        background: rgba(250,249,247,0.82);
+        border-bottom: 1px solid rgba(200,169,110,0.18);
+      }
+
+      .lux-logo {
+        font-family: 'Cormorant Garamond', serif;
+      }
+
+      .lux-link {
+        position: relative;
+        transition: all 0.3s ease;
+      }
+
+      .lux-link::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -6px;
+        width: 0%;
+        height: 1px;
+        background: #c8a96e;
+        transition: width 0.35s ease;
+      }
+
+      .lux-link:hover::after,
+      .lux-link.active::after {
+        width: 100%;
+      }
+
+      .lux-link:hover {
+        color: #c8a96e;
+      }
+
+      .lux-btn-gold {
+        background: linear-gradient(
+          135deg,
+          #c8a96e 0%,
+          #e8d4a8 50%,
+          #c8a96e 100%
+        );
+        color: #1a1814;
+        transition: all 0.35s ease;
+      }
+
+      .lux-btn-gold:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 25px rgba(200,169,110,0.25);
+      }
+
+      .lux-profile {
+        background: rgba(255,255,255,0.65);
+        border: 1px solid rgba(200,169,110,0.16);
+        transition: all 0.35s ease;
+      }
+
+      .lux-profile:hover {
+        border-color: #c8a96e;
+        transform: translateY(-1px);
+      }
+
+      .lux-badge {
+        background: linear-gradient(135deg,#ff5f6d,#ff2d55);
+      }
+
+      .lux-role {
+        border-right: 1px solid rgba(200,169,110,0.15);
+      }
+    `}</style>
+
+    <nav className="lux-navbar sticky top-0 z-50">
+      <div className="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16">
+        <div className="h-20 flex items-center justify-between">
+
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <Home className="text-primary-foreground" size={20} />
+          <Link to="/" className="flex items-center gap-3">
+            <div
+              className="w-11 h-11 rounded-2xl flex items-center justify-center"
+              style={{
+                background:
+                  "linear-gradient(135deg,#c8a96e,#e8d4a8,#c8a96e)",
+              }}
+            >
+              <Home className="text-[#1a1814]" size={20} />
             </div>
-            <span className="text-xl font-bold text-foreground">
-              LuxeEstates
-            </span>
+
+            <div className="flex flex-col leading-none">
+              <span className="lux-logo text-[1.65rem] text-[#1a1814] font-light">
+                LuxeEstates
+              </span>
+              <span className="text-[10px] tracking-[0.25em] uppercase text-[#a09880]">
+                Premium Realty
+              </span>
+            </div>
           </Link>
 
-          {/* Main Links */}
-          <div className="hidden md:flex items-center space-x-8">
+          {/* Main Navigation */}
+          <div className="hidden lg:flex items-center gap-9">
+
             <Link
               to="/"
-              className={`text-sm font-medium flex items-center gap-1 ${isActive("/") ? "text-primary" : "text-muted-foreground hover:text-primary"}`}
+              className={`lux-link text-sm font-medium flex items-center gap-2 ${
+                isActive("/")
+                  ? "active text-[#c8a96e]"
+                  : "text-[#7a7060]"
+              }`}
             >
-              <Home size={16} />
+              <Home size={15} />
               Home
             </Link>
 
             <Link
               to="/properties"
-              className={`text-sm font-medium flex items-center gap-1 ${isActive("/properties") ? "text-primary" : "text-muted-foreground hover:text-primary"}`}
+              className={`lux-link text-sm font-medium flex items-center gap-2 ${
+                isActive("/properties")
+                  ? "active text-[#c8a96e]"
+                  : "text-[#7a7060]"
+              }`}
             >
-              <Building size={16} />
+              <Building size={15} />
               Properties
             </Link>
 
             <Link
               to="/favorites"
-              className={`text-sm font-medium flex items-center gap-1 ${isActive("/favorites") ? "text-primary" : "text-muted-foreground hover:text-primary"}`}
+              className={`lux-link text-sm font-medium flex items-center gap-2 ${
+                isActive("/favorites")
+                  ? "active text-[#c8a96e]"
+                  : "text-[#7a7060]"
+              }`}
             >
-              <Heart size={16} />
+              <Heart size={15} />
               Favorites
             </Link>
 
-            {/* Dashboard Links - Conditional Based on Role */}
             {showDashboardUnread && (
               <Link
                 to="/owner-dashboard"
-                className={`text-sm font-medium flex items-center gap-1 ${isActive("/owner-dashboard") ? "text-primary" : "text-muted-foreground hover:text-primary"}`}
+                className={`lux-link text-sm font-medium flex items-center gap-2 ${
+                  isActive("/owner-dashboard")
+                    ? "active text-[#c8a96e]"
+                    : "text-[#7a7060]"
+                }`}
               >
-                <LayoutDashboard size={16} />
-                My Dashboard
-                {unreadDashboard > 0 ? (
-                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[11px] font-semibold text-white">
+                <LayoutDashboard size={15} />
+                Dashboard
+
+                {unreadDashboard > 0 && (
+                  <span className="lux-badge inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-semibold text-white">
                     {unreadDashboard}
                   </span>
-                ) : null}
+                )}
               </Link>
             )}
 
             {isLoggedIn && user?.role === "admin" && (
               <Link
                 to="/admin-dashboard"
-                className={`text-sm font-medium flex items-center gap-1 ${isActive("/admin-dashboard") ? "text-primary" : "text-muted-foreground hover:text-primary"}`}
+                className={`lux-link text-sm font-medium flex items-center gap-2 ${
+                  isActive("/admin-dashboard")
+                    ? "active text-[#c8a96e]"
+                    : "text-[#7a7060]"
+                }`}
               >
-                <LayoutDashboard size={16} />
-                Admin Dashboard
+                <LayoutDashboard size={15} />
+                Admin
               </Link>
             )}
 
             {isLoggedIn && user?.role !== "admin" && (
               <Link
                 to="/my-inquiries"
-                className={`text-sm font-medium flex items-center gap-1 ${isActive("/my-inquiries") ? "text-primary" : "text-muted-foreground hover:text-primary"}`}
+                className={`lux-link text-sm font-medium flex items-center gap-2 ${
+                  isActive("/my-inquiries")
+                    ? "active text-[#c8a96e]"
+                    : "text-[#7a7060]"
+                }`}
               >
-                <MessageSquare size={16} />
-                My Inquiries
-                {showMyInquiriesUnread && unreadMyInquiries > 0 ? (
-                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[11px] font-semibold text-white">
+                <MessageSquare size={15} />
+                Inquiries
+
+                {showMyInquiriesUnread && unreadMyInquiries > 0 && (
+                  <span className="lux-badge inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-semibold text-white">
                     {unreadMyInquiries}
                   </span>
-                ) : null}
+                )}
               </Link>
             )}
           </div>
 
           {/* Right Side */}
-          <div className="flex items-center space-x-3">
-            {/* 👇 Role INFO ONLY (no navigation links) */}
+          <div className="flex items-center gap-4">
+
+            {/* Role */}
             {isLoggedIn && (
-              <div className="hidden lg:flex flex-col items-end mr-3 pr-3 border-r border-border">
-                <span className="text-xs text-muted-foreground">
+              <div className="lux-role hidden xl:flex flex-col items-end pr-5">
+                <span className="text-[11px] uppercase tracking-[0.18em] text-[#a09880]">
                   Logged in as
                 </span>
-                <span className="text-sm font-semibold text-foreground capitalize">
+
+                <span className="text-sm font-medium capitalize text-[#1a1814]">
                   {normalizedRole || "customer"}
                 </span>
               </div>
@@ -267,48 +385,50 @@ const Navbar: React.FC = () => {
                 {/* Profile */}
                 <Link
                   to="/profile"
-                  className={`flex items-center gap-3 rounded-full border border-border bg-secondary/80 px-3 py-2 text-sm font-medium ${
+                  className={`lux-profile flex items-center gap-3 rounded-full px-3 py-2 ${
                     isActive("/profile")
-                      ? "border-primary text-primary"
-                      : "text-muted-foreground hover:border-primary hover:text-primary"
+                      ? "border-[#c8a96e]"
+                      : ""
                   }`}
                 >
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="h-9 w-9 border border-[#e8e0d4]">
                     {userPhoto ? (
                       <AvatarImage src={userPhoto} />
                     ) : (
-                      <AvatarFallback>{initials}</AvatarFallback>
+                      <AvatarFallback className="bg-[#f5f2ed] text-[#1a1814]">
+                        {initials}
+                      </AvatarFallback>
                     )}
                   </Avatar>
 
-                  <span className="hidden sm:inline">Profile</span>
+                  <span className="hidden sm:inline text-sm font-medium text-[#1a1814]">
+                    Profile
+                  </span>
                 </Link>
 
                 {/* Logout */}
-                <Button
+                <button
                   onClick={handleLogout}
-                  variant="ghost"
-                  size="sm"
-                  className="hidden sm:flex"
+                  className="hidden sm:flex items-center gap-2 rounded-full border border-[#e8e0d4] px-5 py-2.5 text-sm text-[#7a7060] hover:border-[#c8a96e] hover:text-[#c8a96e] transition-all"
                 >
-                  <LogOut size={16} className="mr-2" />
+                  <LogOut size={15} />
                   Logout
-                </Button>
+                </button>
               </>
             ) : (
               <>
                 <Link to="/login">
-                  <Button variant="ghost" size="sm">
-                    <LogIn size={16} className="mr-2" />
+                  <button className="rounded-full border border-[#e8e0d4] px-5 py-2.5 text-sm text-[#7a7060] hover:border-[#c8a96e] hover:text-[#c8a96e] transition-all flex items-center gap-2">
+                    <LogIn size={15} />
                     Sign In
-                  </Button>
+                  </button>
                 </Link>
 
                 <Link to="/register">
-                  <Button size="sm">
-                    <User size={16} className="mr-2" />
+                  <button className="lux-btn-gold rounded-full px-6 py-2.5 text-sm font-medium flex items-center gap-2">
+                    <User size={15} />
                     Register
-                  </Button>
+                  </button>
                 </Link>
               </>
             )}
@@ -316,7 +436,8 @@ const Navbar: React.FC = () => {
         </div>
       </div>
     </nav>
-  );
+  </>
+);
 };
 
 export default Navbar;

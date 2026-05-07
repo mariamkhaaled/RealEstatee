@@ -1,5 +1,15 @@
 import React from 'react';
-import { Home as HomeIcon, Facebook, Twitter, Linkedin, Instagram, Mail, Phone, MapPin } from 'lucide-react';
+import {
+  Home as HomeIcon,
+  Facebook,
+  Twitter,
+  Linkedin,
+  Instagram,
+  Mail,
+  Phone,
+  MapPin,
+  ArrowRight
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -37,70 +47,129 @@ const Footer: React.FC = () => {
   ];
 
   return (
-    <footer className="bg-card border-t border-border mt-20">
-      {/* Newsletter Section */}
-      <div className="bg-gradient-to-r from-primary/10 to-accent/10 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-6">
-            <h3 className="text-2xl font-bold text-foreground mb-2">
-              Stay Updated with New Listings
-            </h3>
-            <p className="text-muted-foreground max-w-md mx-auto">
-              Subscribe to our newsletter and get notified about the latest properties and exclusive deals.
+    <footer className="mt-24 border-t border-white/10 bg-[#0f0f11] text-[#f5f1eb]">
+      
+      {/* Newsletter */}
+      <div className="border-b border-white/10 bg-gradient-to-r from-[#151517] to-[#1b1b1f]">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-20">
+          <div className="max-w-3xl mx-auto text-center">
+            
+            <p className="uppercase tracking-[0.35em] text-[11px] text-[#c6a77d] mb-4 font-medium">
+              Exclusive Updates
             </p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
-            <Input
-              type="email"
-              placeholder="Enter your email"
-              className="h-11 bg-card border-border"
-            />
-            <Button className="h-11 px-6 whitespace-nowrap">Subscribe</Button>
+
+            <h3 className="text-4xl md:text-5xl font-light leading-tight tracking-tight text-white">
+              Discover New Luxury Listings
+            </h3>
+
+            <p className="mt-5 text-[#b7b1a8] leading-relaxed text-sm md:text-base max-w-xl mx-auto">
+              Subscribe to receive curated premium properties, market insights,
+              and exclusive investment opportunities.
+            </p>
+
+            <div className="mt-10 flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
+              <Input
+                type="email"
+                placeholder="Enter your email"
+                className="
+                  h-14
+                  bg-[#18181b]
+                  border border-white/10
+                  text-white
+                  placeholder:text-[#8f8b84]
+                  rounded-none
+                  focus-visible:ring-0
+                  focus-visible:border-[#c6a77d]
+                "
+              />
+
+              <Button
+                className="
+                  h-14
+                  px-8
+                  rounded-none
+                  bg-[#c6a77d]
+                  hover:bg-[#d4b48a]
+                  text-black
+                  font-medium
+                  tracking-wide
+                  transition-all
+                  duration-300
+                "
+              >
+                Subscribe
+                <ArrowRight size={16} className="ml-2" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
-      <Separator />
+      {/* Main Footer */}
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-14">
 
-      {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
-          {/* Brand Column */}
-          <div className="lg:col-span-1">
-            <Link to="/" className="flex items-center space-x-2 mb-4">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <HomeIcon className="text-primary-foreground" size={24} />
+          {/* Brand */}
+          <div className="lg:col-span-2">
+            <Link to="/" className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 border border-[#c6a77d]/40 bg-[#18181b] flex items-center justify-center">
+                <HomeIcon size={24} className="text-[#c6a77d]" />
               </div>
-              <span className="text-xl font-bold text-foreground">LuxeEstates</span>
+
+              <div>
+                <h2 className="text-2xl font-light tracking-[0.18em] text-white">
+                  LUXEESTATES
+                </h2>
+                <p className="text-[10px] uppercase tracking-[0.3em] text-[#8f8b84] mt-1">
+                  Luxury Real Estate
+                </p>
+              </div>
             </Link>
-            <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
-              Your trusted partner in finding the perfect property. We connect buyers, sellers, and renters in real estate.
+
+            <p className="text-[#b7b1a8] leading-loose max-w-md text-sm">
+              We redefine luxury living by connecting discerning buyers with
+              exceptional properties in the world’s most sought-after locations.
             </p>
-            <div className="flex gap-3">
+
+            <div className="flex gap-3 mt-8">
               {socialLinks.map((social) => (
                 <a
                   key={social.label}
                   href={social.href}
                   title={social.label}
-                  className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all duration-300 hover:scale-110"
+                  className="
+                    w-11 h-11
+                    border border-white/10
+                    bg-[#18181b]
+                    flex items-center justify-center
+                    text-[#c6a77d]
+                    hover:bg-[#c6a77d]
+                    hover:text-black
+                    transition-all duration-300
+                  "
                 >
-                  <social.icon size={18} />
+                  <social.icon size={17} />
                 </a>
               ))}
             </div>
           </div>
 
-          {/* Company Links */}
+          {/* Company */}
           <div>
-            <h4 className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wide">
+            <h4 className="text-sm tracking-[0.25em] uppercase text-white mb-6">
               Company
             </h4>
-            <ul className="space-y-3">
+
+            <ul className="space-y-4">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
                   <a
                     href={link.href}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                    className="
+                      text-sm text-[#b7b1a8]
+                      hover:text-[#c6a77d]
+                      transition-colors
+                    "
                   >
                     {link.label}
                   </a>
@@ -111,15 +180,20 @@ const Footer: React.FC = () => {
 
           {/* Properties */}
           <div>
-            <h4 className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wide">
+            <h4 className="text-sm tracking-[0.25em] uppercase text-white mb-6">
               Properties
             </h4>
-            <ul className="space-y-3">
+
+            <ul className="space-y-4">
               {footerLinks.properties.map((link) => (
                 <li key={link.label}>
                   <Link
                     to={link.href}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                    className="
+                      text-sm text-[#b7b1a8]
+                      hover:text-[#c6a77d]
+                      transition-colors
+                    "
                   >
                     {link.label}
                   </Link>
@@ -128,70 +202,82 @@ const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Support */}
+          {/* Contact */}
           <div>
-            <h4 className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wide">
-              Support
+            <h4 className="text-sm tracking-[0.25em] uppercase text-white mb-6">
+              Contact
             </h4>
-            <ul className="space-y-3">
-              {footerLinks.support.map((link) => (
-                <li key={link.label}>
-                  <a
-                    href={link.href}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
 
-          {/* Contact Info */}
-          <div>
-            <h4 className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wide">
-              Get in Touch
-            </h4>
-            <ul className="space-y-4">
-              <li className="flex gap-3 text-sm text-muted-foreground group">
-                <Mail size={18} className="text-primary flex-shrink-0 mt-0.5" />
+            <ul className="space-y-5">
+              <li className="flex gap-3">
+                <Mail
+                  size={17}
+                  className="text-[#c6a77d] flex-shrink-0 mt-0.5"
+                />
                 <a
                   href="mailto:support@luxeestates.com"
-                  className="hover:text-primary transition-colors"
+                  className="text-sm text-[#b7b1a8] hover:text-[#c6a77d] transition-colors"
                 >
                   support@luxeestates.com
                 </a>
               </li>
-              <li className="flex gap-3 text-sm text-muted-foreground group">
-                <Phone size={18} className="text-primary flex-shrink-0 mt-0.5" />
-                <a href="tel:+1234567890" className="hover:text-primary transition-colors">
+
+              <li className="flex gap-3">
+                <Phone
+                  size={17}
+                  className="text-[#c6a77d] flex-shrink-0 mt-0.5"
+                />
+                <a
+                  href="tel:+1234567890"
+                  className="text-sm text-[#b7b1a8] hover:text-[#c6a77d] transition-colors"
+                >
                   +1 (234) 567-8900
                 </a>
               </li>
-              <li className="flex gap-3 text-sm text-muted-foreground">
-                <MapPin size={18} className="text-primary flex-shrink-0 mt-0.5" />
-                <span>123 Real Estate Ave, NY 10001</span>
+
+              <li className="flex gap-3">
+                <MapPin
+                  size={17}
+                  className="text-[#c6a77d] flex-shrink-0 mt-0.5"
+                />
+                <span className="text-sm text-[#b7b1a8] leading-relaxed">
+                  123 Luxury Avenue,
+                  <br />
+                  New York, NY 10001
+                </span>
               </li>
             </ul>
           </div>
         </div>
 
-        <Separator />
+        <Separator className="bg-white/10 my-12" />
 
-        {/* Bottom Section */}
-        <div className="pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-muted-foreground text-center md:text-left">
-            © {currentYear} LuxeEstates. All rights reserved.
+        {/* Bottom */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-5">
+          <p className="text-xs tracking-[0.18em] uppercase text-[#7d7972]">
+            © {currentYear} LuxeEstates — All Rights Reserved
           </p>
-          <div className="flex gap-6">
-            <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Terms of Service
+
+          <div className="flex flex-wrap justify-center gap-8">
+            <a
+              href="#"
+              className="text-xs tracking-[0.15em] uppercase text-[#9f9a92] hover:text-[#c6a77d] transition-colors"
+            >
+              Terms
             </a>
-            <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Privacy Policy
+
+            <a
+              href="#"
+              className="text-xs tracking-[0.15em] uppercase text-[#9f9a92] hover:text-[#c6a77d] transition-colors"
+            >
+              Privacy
             </a>
-            <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Cookie Settings
+
+            <a
+              href="#"
+              className="text-xs tracking-[0.15em] uppercase text-[#9f9a92] hover:text-[#c6a77d] transition-colors"
+            >
+              Cookies
             </a>
           </div>
         </div>

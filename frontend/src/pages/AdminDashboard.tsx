@@ -98,130 +98,360 @@ const AdminDashboard: React.FC = () => {
     return raw.startsWith('http') ? raw : `http://localhost:5000${raw}`;
   };
 
-  return (
-    <div className="min-h-[calc(100vh-64px)] bg-[#f8f9fa] font-sans text-slate-800">
-      <main className="max-w-[1600px] mx-auto p-6 lg:p-8">
-        
-        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-blue-100 border-2 border-white shadow-sm overflow-hidden hidden sm:block">
-               <img src={`https://ui-avatars.com/api/?name=${user.full_name}&background=eff6ff&color=1e40af`} alt="Admin" className="w-full h-full object-cover"/>
+ return (
+  <>
+    {/* Luxury Editorial Dashboard Theme */}
+    <style>{`
+      @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500;700&display=swap');
+
+      .lux-dashboard {
+        font-family: 'DM Sans', sans-serif;
+        background: #faf9f7;
+        color: #1a1814;
+      }
+
+      .lux-title {
+        font-family: 'Cormorant Garamond', serif;
+      }
+
+      .lux-card {
+        background: rgba(255,255,255,0.78);
+        backdrop-filter: blur(18px);
+        border: 1px solid rgba(200,169,110,0.14);
+        box-shadow:
+          0 10px 40px rgba(0,0,0,0.04),
+          inset 0 1px 0 rgba(255,255,255,0.5);
+      }
+
+      .lux-card-hover {
+        transition:
+          transform .35s cubic-bezier(.16,1,.3,1),
+          box-shadow .35s ease,
+          border-color .35s ease;
+      }
+
+      .lux-card-hover:hover {
+        transform: translateY(-4px);
+        border-color: rgba(200,169,110,0.35);
+        box-shadow:
+          0 22px 60px rgba(0,0,0,0.08),
+          inset 0 1px 0 rgba(255,255,255,0.6);
+      }
+
+      .lux-gold {
+        color: #c8a96e;
+      }
+
+      .lux-muted {
+        color: #8b8173;
+      }
+
+      .lux-btn-gold {
+        background: linear-gradient(
+          135deg,
+          #c8a96e 0%,
+          #e8d4a8 50%,
+          #c8a96e 100%
+        );
+        color: #1a1814;
+        transition: all .35s ease;
+      }
+
+      .lux-btn-gold:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 28px rgba(200,169,110,0.28);
+      }
+
+      .lux-btn-outline {
+        border: 1px solid rgba(200,169,110,0.2);
+        transition: all .3s ease;
+      }
+
+      .lux-btn-outline:hover {
+        border-color: #c8a96e;
+        color: #c8a96e;
+      }
+
+      .lux-table-row {
+        transition: background .25s ease;
+      }
+
+      .lux-table-row:hover {
+        background: rgba(200,169,110,0.04);
+      }
+
+      .lux-tag {
+        letter-spacing: .18em;
+        text-transform: uppercase;
+        font-size: .66rem;
+        font-weight: 600;
+      }
+
+      .lux-map .leaflet-container {
+        border-radius: 1rem;
+        font-family: 'DM Sans', sans-serif;
+      }
+
+      .lux-chart-line-1 {
+        stroke: #c8a96e;
+      }
+
+      .lux-chart-line-2 {
+        stroke: #d8c4a0;
+      }
+    `}</style>
+
+    <div className="lux-dashboard min-h-screen">
+      <main className="max-w-[1600px] mx-auto px-6 lg:px-10 py-10">
+
+        {/* Header */}
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+
+          <div className="flex items-center gap-5">
+            <div className="w-14 h-14 rounded-2xl overflow-hidden border border-[#e8e0d4] shadow-sm">
+              <img
+                src={`https://ui-avatars.com/api/?name=${user.full_name}&background=f5f2ed&color=1a1814`}
+                alt="Admin"
+                className="w-full h-full object-cover"
+              />
             </div>
+
             <div>
-              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Welcome Back</p>
-              <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                Good Morning {user.full_name?.split(' ')[0] || 'Admin'} 👋
+              <p className="lux-tag lux-gold mb-2">
+                Admin Dashboard
+              </p>
+
+              <h1 className="lux-title text-5xl font-light text-[#1a1814] leading-none">
+                Welcome back,
+                <em className="ml-2">
+                  {user.full_name?.split(" ")[0] || "Admin"}
+                </em>
               </h1>
+
+              <p className="text-sm lux-muted mt-3">
+                Manage listings, approvals, analytics, and regional activity.
+              </p>
             </div>
           </div>
         </header>
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+
+          {/* LEFT */}
           <div className="xl:col-span-2 space-y-8">
+
+            {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-6">
-                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between h-[130px]">
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-2 text-slate-500 text-sm font-medium">
-                      <span className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-[10px]">💰</span>
+
+              {/* Revenue */}
+              <div className="lux-card lux-card-hover rounded-3xl p-7 flex flex-col justify-between min-h-[180px]">
+
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="lux-tag lux-muted mb-3">
                       Total Revenue
-                    </div>
-                    <MoreHorizontal size={16} className="text-slate-400" />
+                    </p>
+
+                    <h3 className="text-5xl font-light tracking-tight text-[#1a1814]">
+                      $783K
+                    </h3>
                   </div>
-                  <div className="flex items-end justify-between">
-                    <h3 className="text-3xl font-bold text-slate-800">$783,156</h3>
-                    <div className="text-right">
-                      <span className="text-emerald-500 text-sm font-bold block">+28%</span>
-                      <span className="text-[10px] text-slate-400">From last week</span>
-                    </div>
+
+                  <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-[#c8a96e]/10 border border-[#c8a96e]/20">
+                    💰
                   </div>
                 </div>
 
-                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between h-[130px]">
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-2 text-slate-500 text-sm font-medium">
-                      <span className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-[10px]">🔧</span>
-                      Maintenance Cost
-                    </div>
-                    <MoreHorizontal size={16} className="text-slate-400" />
-                  </div>
-                  <div className="flex items-end justify-between">
-                    <h3 className="text-3xl font-bold text-slate-800">$582,473</h3>
-                    <div className="text-right">
-                      <span className="text-emerald-500 text-sm font-bold block">+15%</span>
-                      <span className="text-[10px] text-slate-400">From last week</span>
-                    </div>
+                <div className="flex items-end justify-between mt-8">
+                  <div>
+                    <p className="text-sm text-emerald-600 font-medium">
+                      +28% Growth
+                    </p>
+                    <p className="text-xs lux-muted mt-1">
+                      Compared to last week
+                    </p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm h-full flex flex-col">
-                <div className="flex justify-between items-center mb-6">
+              {/* Costs */}
+              <div className="lux-card lux-card-hover rounded-3xl p-7 flex flex-col justify-between min-h-[180px]">
+
+                <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-bold text-slate-800">Total Revenue</h3>
-                    <div className="flex gap-3 text-[10px] font-medium mt-1">
-                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-indigo-600"></span>Income</span>
-                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-400"></span>Expense</span>
-                    </div>
+                    <p className="lux-tag lux-muted mb-3">
+                      Maintenance Cost
+                    </p>
+
+                    <h3 className="text-5xl font-light tracking-tight text-[#1a1814]">
+                      $582K
+                    </h3>
                   </div>
-                  <select className="text-xs border-none bg-slate-50 rounded-lg px-2 py-1 text-slate-500 outline-none">
-                    <option>Last 5 years</option>
-                  </select>
+
+                  <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-[#c8a96e]/10 border border-[#c8a96e]/20">
+                    🔧
+                  </div>
                 </div>
-                <div className="flex-1 w-full relative min-h-[140px]">
-                  <svg viewBox="0 0 400 150" className="w-full h-full overflow-visible">
-                    <path d="M0,80 Q50,30 100,70 T200,50 T300,90 T400,20" fill="none" stroke="#4f46e5" strokeWidth="3" strokeLinecap="round" />
-                    <path d="M0,100 Q50,120 100,90 T200,110 T300,60 T400,90" fill="none" stroke="#34d399" strokeWidth="3" strokeLinecap="round" />
-                  </svg>
+
+                <div className="flex items-end justify-between mt-8">
+                  <div>
+                    <p className="text-sm text-emerald-600 font-medium">
+                      +15% Growth
+                    </p>
+                    <p className="text-xs lux-muted mt-1">
+                      Compared to last week
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-              <div className="p-6 border-b border-slate-50">
-                <h3 className="font-bold text-slate-800 text-lg">Listings Offers <span className="text-sm font-normal text-slate-400 ml-2">(Pending Approvals)</span></h3>
+            {/* Chart */}
+            <div className="lux-card rounded-3xl p-8">
+              <div className="flex justify-between items-center mb-10">
+                <div>
+                  <p className="lux-tag lux-gold mb-2">
+                    Performance
+                  </p>
+
+                  <h3 className="lux-title text-3xl font-light">
+                    Revenue Overview
+                  </h3>
+                </div>
+
+                <select className="bg-[#f5f2ed] border border-[#e8e0d4] rounded-xl px-4 py-2 text-sm outline-none">
+                  <option>Last 5 Years</option>
+                </select>
               </div>
+
+              <div className="h-[220px]">
+                <svg
+                  viewBox="0 0 400 150"
+                  className="w-full h-full overflow-visible"
+                >
+                  <path
+                    d="M0,80 Q50,30 100,70 T200,50 T300,90 T400,20"
+                    fill="none"
+                    className="lux-chart-line-1"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                  />
+
+                  <path
+                    d="M0,100 Q50,120 100,90 T200,110 T300,60 T400,90"
+                    fill="none"
+                    className="lux-chart-line-2"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            {/* Pending Listings */}
+            <div className="lux-card rounded-3xl overflow-hidden">
+
+              <div className="px-8 py-7 border-b border-[#f1ece4]">
+                <p className="lux-tag lux-gold mb-2">
+                  Moderation
+                </p>
+
+                <h3 className="lux-title text-3xl font-light">
+                  Pending Listings
+                </h3>
+              </div>
+
               <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left whitespace-nowrap">
-                  <thead className="text-slate-400 font-medium bg-slate-50/50">
-                    <tr>
-                      <th className="px-6 py-4 font-medium">Owner</th>
-                      <th className="px-6 py-4 font-medium">Location</th>
-                      <th className="px-6 py-4 font-medium">Sales Type</th>
-                      <th className="px-6 py-4 font-medium">Price</th>
-                      <th className="px-6 py-4 font-medium">Action</th>
+                <table className="w-full text-sm">
+
+                  <thead className="bg-[#faf7f2]">
+                    <tr className="text-left text-[#8b8173]">
+                      <th className="px-8 py-5 font-medium">Owner</th>
+                      <th className="px-8 py-5 font-medium">Location</th>
+                      <th className="px-8 py-5 font-medium">Type</th>
+                      <th className="px-8 py-5 font-medium">Price</th>
+                      <th className="px-8 py-5 font-medium">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-50">
+
+                  <tbody>
                     {loading ? (
-                      <tr><td colSpan={5} className="text-center py-8 text-slate-400">Loading pending offers...</td></tr>
+                      <tr>
+                        <td
+                          colSpan={5}
+                          className="text-center py-12 lux-muted"
+                        >
+                          Loading listings...
+                        </td>
+                      </tr>
                     ) : pendingListings.length === 0 ? (
-                      <tr><td colSpan={5} className="text-center py-8 text-slate-400">No pending approvals at the moment.</td></tr>
+                      <tr>
+                        <td
+                          colSpan={5}
+                          className="text-center py-12 lux-muted"
+                        >
+                          No pending approvals.
+                        </td>
+                      </tr>
                     ) : (
                       pendingListings.map((prop) => (
-                        <tr key={prop.listing_id} className="hover:bg-slate-50/50 transition">
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-3">
-                              <img src={`https://ui-avatars.com/api/?name=${prop.owner_name}&background=f1f5f9&color=475569`} className="w-8 h-8 rounded-full" alt="avatar" />
-                              <span className="font-medium text-slate-700">{prop.owner_name || 'Unknown'}</span>
+                        <tr
+                          key={prop.listing_id}
+                          className="lux-table-row border-t border-[#f5f2ed]"
+                        >
+                          <td className="px-8 py-6">
+                            <div className="flex items-center gap-4">
+                              <img
+                                src={`https://ui-avatars.com/api/?name=${prop.owner_name}&background=f5f2ed&color=1a1814`}
+                                className="w-10 h-10 rounded-full border border-[#e8e0d4]"
+                                alt="avatar"
+                              />
+
+                              <span className="font-medium text-[#1a1814]">
+                                {prop.owner_name}
+                              </span>
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-slate-500">{prop.city}</td>
-                          <td className="px-6 py-4 text-slate-500">{prop.purpose}</td>
-                          <td className="px-6 py-4 font-semibold text-slate-700">${Number(prop.price).toLocaleString()}</td>
-                          <td className="px-6 py-4">
-                            <div className="flex gap-2">
-                              <button 
-                                onClick={() => handleDecision(prop.listing_id, 'Active')}
-                                className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 text-xs font-bold transition flex items-center gap-1 border border-emerald-100"
+
+                          <td className="px-8 py-6 lux-muted">
+                            {prop.city}
+                          </td>
+
+                          <td className="px-8 py-6 lux-muted">
+                            {prop.purpose}
+                          </td>
+
+                          <td className="px-8 py-6 font-semibold text-[#1a1814]">
+                            ${Number(prop.price).toLocaleString()}
+                          </td>
+
+                          <td className="px-8 py-6">
+                            <div className="flex gap-3">
+
+                              <button
+                                onClick={() =>
+                                  handleDecision(
+                                    prop.listing_id,
+                                    "Active"
+                                  )
+                                }
+                                className="lux-btn-gold rounded-full px-5 py-2 text-xs font-semibold flex items-center gap-2"
                               >
-                                <Check size={14} /> Approve
+                                <Check size={13} />
+                                Approve
                               </button>
-                              <button 
-                                onClick={() => handleDecision(prop.listing_id, 'Closed')}
-                                className="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold transition flex items-center gap-1 border border-rose-100"
+
+                              <button
+                                onClick={() =>
+                                  handleDecision(
+                                    prop.listing_id,
+                                    "Closed"
+                                  )
+                                }
+                                className="lux-btn-outline rounded-full px-5 py-2 text-xs font-semibold text-[#7a7060] flex items-center gap-2"
                               >
-                                <X size={14} /> Reject
+                                <X size={13} />
+                                Reject
                               </button>
                             </div>
                           </td>
@@ -229,70 +459,133 @@ const AdminDashboard: React.FC = () => {
                       ))
                     )}
                   </tbody>
+
                 </table>
               </div>
             </div>
           </div>
 
+          {/* RIGHT */}
           <div className="space-y-8">
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="font-bold text-slate-800 text-lg">Property List</h3>
-                  <Link to="/properties" className="text-xs text-indigo-600 font-semibold cursor-pointer hover:underline">
-                    See All Listing
-                   </Link> 
-          </div>
-              
-              <div className="space-y-5">
-                {recentListings.length > 0 ? recentListings.map((prop, idx) => (
-                  <div key={idx} className="group cursor-pointer">
-                    <div className="relative h-32 rounded-xl overflow-hidden mb-3">
-                      <img src={getPropertyImage(prop.images)} alt={prop.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                      <div className="absolute top-2 left-2 bg-white/90 backdrop-blur text-slate-800 text-[10px] font-bold px-2 py-1 rounded-md shadow-sm">
-                        {idx + 1} New Offers
+
+            {/* Property List */}
+            <div className="lux-card rounded-3xl p-7">
+
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <p className="lux-tag lux-gold mb-2">
+                    Featured
+                  </p>
+
+                  <h3 className="lux-title text-3xl font-light">
+                    Recent Listings
+                  </h3>
+                </div>
+
+                <Link
+                  to="/properties"
+                  className="text-sm font-medium lux-gold hover:opacity-70"
+                >
+                  View All
+                </Link>
+              </div>
+
+              <div className="space-y-6">
+                {recentListings.length > 0 ? (
+                  recentListings.map((prop, idx) => (
+                    <div
+                      key={idx}
+                      className="group cursor-pointer"
+                    >
+                      <div className="relative h-40 rounded-2xl overflow-hidden mb-4">
+
+                        <img
+                          src={getPropertyImage(prop.images)}
+                          alt={prop.title}
+                          className="w-full h-full object-cover transition duration-700 group-hover:scale-105"
+                        />
+
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+
+                        <div className="absolute top-3 left-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold text-[#1a1814]">
+                          #{idx + 1} Featured
+                        </div>
                       </div>
+
+                      <h4 className="font-semibold text-[#1a1814] text-sm truncate">
+                        {prop.title}
+                      </h4>
+
+                      <p className="text-xs lux-muted mt-1 flex items-center gap-1">
+                        <MapPin size={12} />
+                        {prop.city}
+                      </p>
+
+                      <p className="lux-title text-2xl font-light mt-2">
+                        ${Number(prop.price).toLocaleString()}
+                      </p>
                     </div>
-                    <h4 className="font-bold text-slate-800 text-sm truncate">{prop.title}</h4>
-                    <p className="text-xs text-slate-400 mt-0.5 truncate">{prop.city}</p>
-                    <p className="font-bold text-slate-800 mt-1">${Number(prop.price).toLocaleString()}</p>
-                  </div>
-                )) : (
-                   <p className="text-sm text-slate-400">No active properties available.</p>
+                  ))
+                ) : (
+                  <p className="text-sm lux-muted">
+                    No active listings available.
+                  </p>
                 )}
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-    <h3 className="font-bold text-slate-800 text-lg mb-4">Sales by Region</h3>
-    {/* z-0 ensures the map doesn't overlap any sticky navbars */}
-    <div className="w-full h-64 bg-slate-100 rounded-xl overflow-hidden relative border border-slate-100 z-0">
-      <MapContainer 
-        center={[30.0444, 31.2357]} 
-        zoom={6} 
-        scrollWheelZoom={false} 
-        style={{ height: '100%', width: '100%' }}
-      >
-        {/* Using CartoDB Voyager tiles for a clean, light aesthetic that matches your dashboard */}
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-        />
-        
-        {/* Example Pins corresponding to common listing areas */}
-        <Marker position={[30.0444, 31.2357]} icon={defaultPin}>
-          <Popup className="font-sans font-medium text-slate-800">High Activity: Cairo</Popup>
-        </Marker>
-        <Marker position={[31.2001, 29.9187]} icon={defaultPin}>
-          <Popup className="font-sans font-medium text-slate-800">High Activity: Alexandria</Popup>
-        </Marker>
-      </MapContainer>
-  </div>
-</div>
+            {/* Region Map */}
+            <div className="lux-card rounded-3xl p-7 lux-map">
+
+              <div className="mb-6">
+                <p className="lux-tag lux-gold mb-2">
+                  Analytics
+                </p>
+
+                <h3 className="lux-title text-3xl font-light">
+                  Sales by Region
+                </h3>
+              </div>
+
+              <div className="w-full h-72 overflow-hidden rounded-2xl border border-[#e8e0d4]">
+
+                <MapContainer
+                  center={[30.0444, 31.2357]}
+                  zoom={6}
+                  scrollWheelZoom={false}
+                  style={{ height: "100%", width: "100%" }}
+                >
+                  <TileLayer
+                    attribution='&copy; OpenStreetMap contributors &copy; CARTO'
+                    url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                  />
+
+                  <Marker
+                    position={[30.0444, 31.2357]}
+                    icon={defaultPin}
+                  >
+                    <Popup>
+                      High Activity: Cairo
+                    </Popup>
+                  </Marker>
+
+                  <Marker
+                    position={[31.2001, 29.9187]}
+                    icon={defaultPin}
+                  >
+                    <Popup>
+                      High Activity: Alexandria
+                    </Popup>
+                  </Marker>
+                </MapContainer>
+              </div>
+            </div>
           </div>
         </div>
       </main>
     </div>
-  );
+  </>
+);
 };
 
 export default AdminDashboard;
