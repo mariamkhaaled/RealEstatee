@@ -164,8 +164,8 @@ const Home: React.FC = () => {
               )
               : [],
             ownerId: String(p["owner_id"] ?? ""),
-            status: ["Pending", "Approved", "Rejected"].includes(status)
-              ? (status as "Pending" | "Approved" | "Rejected")
+            status: ["Pending", "Active", "Closed"].includes(status)
+              ? (status as "Pending" | "Active" | "Closed")
               : "Pending",
             createdAt:
               typeof p["created_at"] === "string"

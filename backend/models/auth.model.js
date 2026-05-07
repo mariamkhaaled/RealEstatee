@@ -50,3 +50,13 @@ exports.updatePassword = async (userId, newPasswordHash) => {
   `;
   return db.execute(sql, [newPasswordHash, userId]);
 };
+
+
+exports.updatePhoto = async (userId, photoPath) => {
+  const sql = `
+    UPDATE users
+    SET photo = ?
+    WHERE user_id = ?
+  `;
+  return db.execute(sql, [photoPath, userId]);
+};

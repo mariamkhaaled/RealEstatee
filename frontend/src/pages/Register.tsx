@@ -11,6 +11,7 @@ const Register: React.FC = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [role, setRole] = useState("customer");
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +36,7 @@ const Register: React.FC = () => {
           email: email.trim().toLowerCase(),
           password,
           phone: "0000000000",
-          role: "customer",
+          role: role,
         }),
       });
 
@@ -133,6 +134,32 @@ const Register: React.FC = () => {
                   {error}
                 </p>
               )}
+
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.3em] text-[#9a9489] mb-3">
+                  Account Type
+                </p>
+
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { value: "owner", label: "User" },
+                    { value: "admin", label: "Admin" },
+                  ].map((r) => (
+                    <button
+                      key={r.value}
+                      type="button"
+                      onClick={() => setRole(r.value)}
+                      className={`py-2 text-[11px] uppercase tracking-widest border transition-all duration-300
+          ${role === r.value
+                          ? "bg-[#c8a96e] text-[#2a1f0e] border-[#c8a96e]"
+                          : "bg-transparent text-[#8a7050] border-[#e5e1da] hover:border-[#c8a96e]"
+                        }`}
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               <button
                 type="submit"

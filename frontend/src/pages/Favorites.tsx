@@ -78,35 +78,51 @@ const Favorites: React.FC = () => {
     );
   }
 
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-[calc(100vh-64px)]">
+ return (
+  <>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-2 py-8 min-h-[calc(100vh-64px)] bg-[#faf9f7]">
 
-      <div className="mb-8 border-b border-border pb-6">
-        <h1 className="text-3xl font-bold text-foreground">
+      {/* Header */}
+      <div className="mb-10 border-b border-black/10 pb-6">
+        <h1
+          className="text-4xl font-semibold text-[#1a1814]"
+          style={{ fontFamily: "'Cormorant Garamond', serif" }}
+        >
           Saved Properties
         </h1>
-        <p className="text-muted-foreground mt-2">
-          Your personal collection of favorite homes.
-        </p>
+
       </div>
 
+      {/* Empty state */}
       {properties.length === 0 ? (
-        <p className="text-center text-muted-foreground mt-10">
+        <p className="text-center text-black/50 mt-16 font-[DM Sans]">
           No favorites yet
         </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+            gap: 20,
+          }}
+        >
           {properties.map((property) => (
-            <PropertyCard
+            <div
               key={property.id}
-              property={property}
-              onFavoriteToggle={handleRemoveFavorite}
-            />
+              className="h-[420px] transition-all duration-500 hover:-translate-y-1"
+            >
+              <PropertyCard
+                property={property}
+                onFavoriteToggle={handleRemoveFavorite}
+              />
+            </div>
           ))}
         </div>
       )}
+
     </div>
-  );
+  </>
+);
 };
 
 export default Favorites;

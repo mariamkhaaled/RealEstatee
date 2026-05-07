@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import ChangePassword from "@/components/ChangePassword";
 import { useFavorites } from "@/context/FavoritesContext";
+import { useUser } from "@/context/UserContext";
 
 /* ───────── Fonts ───────── */
 const FontLink = () => (
@@ -23,13 +24,22 @@ const FontLink = () => (
 );
 
 interface UserData {
+  id: number;
   firstName: string;
   lastName: string;
   email: string;
-  password: string;
+  phone?: string;
   role: string;
   photo?: string;
 }
+
+const getPhotoUrl = (photoPath?: string | null) => {
+  if (!photoPath) return null;
+  if (photoPath.startsWith("http://") || photoPath.startsWith("https://")) {
+    return photoPath;
+  }
+  return `http://localhost:5000${photoPath}`;
+};
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
@@ -37,17 +47,11 @@ const Profile: React.FC = () => {
 
   const [showChangePassword, setShowChangePassword] = useState(false);
 
-  const [user, setUser] = useState<UserData | null>(() => {
-    const stored = localStorage.getItem("user");
-    if (!stored) return null;
-    try {
-      return JSON.parse(stored);
-    } catch {
-      return null;
-    }
-  });
+  const { user, setUser } = useUser();
 
-  const [photo, setPhoto] = useState<string | null>(user?.photo || null);
+  const [photo, setPhoto] = useState<string | null>(() =>
+    getPhotoUrl(user?.photo || null),
+  );
 
   const { clearFavorites } = useFavorites();
 
@@ -69,9 +73,13 @@ const Profile: React.FC = () => {
 
         if (data.status === "success") {
           const u = data.data as UserData;
-          setUser(u);
-          setPhoto(u.photo || null);
-          localStorage.setItem("user", JSON.stringify(u));
+          const normalizedUser = {
+            ...u,
+            photo: getPhotoUrl(u.photo) || undefined,
+          };
+
+          setUser(normalizedUser);
+          setPhoto(normalizedUser.photo);
         }
       } catch (err) {
         console.error(err);
@@ -107,21 +115,38 @@ const Profile: React.FC = () => {
     navigate("/login");
   };
 
-  const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handlePhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = reader.result as string;
-      setPhoto(img);
+  const formData = new FormData();
+  formData.append("photo", file);
 
-      const updated = { ...user, photo: img };
-      setUser(updated);
-      localStorage.setItem("user", JSON.stringify(updated));
-    };
-    reader.readAsDataURL(file);
-  };
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await fetch("http://localhost:5000/api/auth/photo", {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.message);
+
+    const imgUrl = getPhotoUrl(data.photo);
+
+    setPhoto(imgUrl);
+
+    const updated = { ...user!, photo: imgUrl };
+    setUser(updated);
+  } catch (err) {
+    console.error("Upload failed:", err);
+  }
+};
 
   if (showChangePassword) {
     return (

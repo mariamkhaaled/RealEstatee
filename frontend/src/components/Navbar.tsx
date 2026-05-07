@@ -16,16 +16,16 @@ import { getUnreadCounts } from "@/api/messages";
 import { connectSocket } from "@/lib/socket";
 import { getInquiries, getMyInquiries } from "@/api/inquiries";
 import { useFavorites } from "@/context/FavoritesContext";
+import { useUser } from "@/context/UserContext";
 
 type InquiryRef = { inquiry_id: number };
 
-const readStoredUser = () => {
-  try {
-    const storedUser = localStorage.getItem("user");
-    return storedUser ? JSON.parse(storedUser) : null;
-  } catch {
-    return null;
+const getPhotoUrl = (photoPath?: string | null) => {
+  if (!photoPath) return null;
+  if (photoPath.startsWith("http://") || photoPath.startsWith("https://")) {
+    return photoPath;
   }
+  return `http://localhost:5000${photoPath}`;
 };
 
 const Navbar: React.FC = () => {
@@ -33,23 +33,9 @@ const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const [unreadDashboard, setUnreadDashboard] = useState(0);
   const [unreadMyInquiries, setUnreadMyInquiries] = useState(0);
-  const [user, setUser] = useState(readStoredUser);
+  const { user, setUser } = useUser();
 
-  useEffect(() => {
-    const syncUser = () => {
-      setUser(readStoredUser());
-    };
-
-    window.addEventListener("storage", syncUser);
-    window.addEventListener("user-updated", syncUser as EventListener);
-
-    return () => {
-      window.removeEventListener("storage", syncUser);
-      window.removeEventListener("user-updated", syncUser as EventListener);
-    };
-  }, []);
-
-  const userPhoto = user?.photo || null;
+  const userPhoto = getPhotoUrl(user?.photo || null);
   const normalizedRole = String(user?.role || "").toLowerCase();
 
   const initials = user
@@ -58,7 +44,7 @@ const Navbar: React.FC = () => {
 
   const { clearFavorites } = useFavorites();
   const isLoggedIn = Boolean(localStorage.getItem("token"));
-  const currentUserId = Number(user?.id || user?.user_id || 0);
+  const currentUserId = Number(user?.id || 0);
   const isOwner = normalizedRole === "owner";
   const isCustomer = normalizedRole === "customer" || normalizedRole === "user";
   const isAdmin = normalizedRole === "admin";
@@ -69,7 +55,7 @@ const Navbar: React.FC = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    setUser(null);
     window.dispatchEvent(new Event("user-updated"));
     clearFavorites();
     navigate("/login");

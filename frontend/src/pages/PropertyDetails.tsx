@@ -63,17 +63,17 @@ const PropertyDetails: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      await createInquiry({
-        listing_id: Number(listing.listing_id),
+      const response = await createInquiry({
+        listing_id: listing.listing_id,
         name: requestForm.name,
         email: requestForm.email,
         phone: requestForm.phone,
         message: requestForm.message,
       });
 
-      setSubmitMessage("Request sent successfully.");
-    } catch {
-      setSubmitMessage("Failed to send request.");
+      setSubmitMessage(response.message || "Request sent successfully.");
+    } catch (error: any) {
+      setSubmitMessage(error?.message || "Failed to send request.");
     } finally {
       setIsSubmitting(false);
     }
@@ -224,53 +224,63 @@ const PropertyDetails: React.FC = () => {
 
           {/* FORM */}
           <Card className="bg-[#faf9f7] border border-[#e3dccf]">
-            <CardContent className="p-6 space-y-4">
+  <CardContent className="p-6 space-y-4">
 
-              <h3 className="font-serif text-xl text-[#1a1814]">
-                Request Property
-              </h3>
+    <form onSubmit={handleRequestSubmit} className="space-y-4">
 
-              <Input placeholder="Name"
-                onChange={(e) =>
-                  setRequestForm({ ...requestForm, name: e.target.value })
-                } />
+      <h3 className="font-serif text-xl text-[#1a1814]">
+        Request Property
+      </h3>
 
-              <Input placeholder="Email"
-                onChange={(e) =>
-                  setRequestForm({ ...requestForm, email: e.target.value })
-                } />
+      <Input
+        placeholder="Name"
+        onChange={(e) =>
+          setRequestForm({ ...requestForm, name: e.target.value })
+        }
+      />
 
-              <Input placeholder="Phone"
-                onChange={(e) =>
-                  setRequestForm({ ...requestForm, phone: e.target.value })
-                } />
+      <Input
+        placeholder="Email"
+        onChange={(e) =>
+          setRequestForm({ ...requestForm, email: e.target.value })
+        }
+      />
 
-              <textarea
-                className="w-full border p-2 rounded-md"
-                placeholder="Message"
-                onChange={(e) =>
-                  setRequestForm({ ...requestForm, message: e.target.value })
-                }
-              />
+      <Input
+        placeholder="Phone"
+        onChange={(e) =>
+          setRequestForm({ ...requestForm, phone: e.target.value })
+        }
+      />
 
-              <button
-                onClick={handleRequestSubmit}
-                className="w-full py-3 text-[#2a1f0e] font-bold"
-                style={{ background: gold }}
-              >
-                Send Request
-              </button>
+      <textarea
+        className="w-full border p-2 rounded-md"
+        placeholder="Message"
+        onChange={(e) =>
+          setRequestForm({ ...requestForm, message: e.target.value })
+        }
+      />
 
-              {submitMessage && (
-                <p className="text-sm text-[#7a6040]">{submitMessage}</p>
-              )}
+      <button
+        type="submit"
+        className="w-full py-3 text-[#2a1f0e] font-bold"
+        style={{ background: gold }}
+      >
+        Send Request
+      </button>
 
-              <button className="w-full border border-[#c8a96e] py-2 text-[#7a6040]">
-                <Heart className="inline mr-2" /> Save
-              </button>
+    </form>
 
-            </CardContent>
-          </Card>
+    {submitMessage && (
+      <p className="text-sm text-[#7a6040]">{submitMessage}</p>
+    )}
+
+    <button className="w-full border border-[#c8a96e] py-2 text-[#7a6040]">
+      <Heart className="inline mr-2" /> Save
+    </button>
+
+  </CardContent>
+</Card>
 
         </div>
       </div>

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { UploadCloud, X, ImagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 type PropertyFormData = {
   title: string;
@@ -161,6 +162,8 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({
     }));
   };
 
+ 
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
@@ -305,12 +308,23 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({
         payload.append("images", file);
       });
 
-      if (mode === "update" && initialProperty) {
-        const retainedImages = previewUrls.filter(
-          (url) => !url.startsWith("blob:"),
-        );
-        payload.append("retained_images", JSON.stringify(retainedImages));
-      }
+     // NEW images (uploaded files)
+selectedFiles.forEach((file) => {
+  payload.append("images", file);
+});
+
+// EXISTING images (important in update)
+if (mode === "update" && initialProperty) {
+  const existingImages = previewUrls.filter(
+    (url) => !url.startsWith("blob:")
+  );
+
+  // send them properly as JSON string
+  payload.append(
+    "existing_images",
+    JSON.stringify(existingImages)
+  );
+}
 
       const endpoint =
         mode === "update" && initialProperty
@@ -354,6 +368,9 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({
   };
 
   return (
+    <Dialog open={true} onOpenChange={onClose}>
+    <DialogContent className="max-w-4xl">
+      <div className="max-h-[85vh] overflow-y-auto pr-1">
     <div className="max-h-[85vh] overflow-y-auto pr-1">
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-foreground">
@@ -637,6 +654,9 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({
         </div>
       </form>
     </div>
+        </div>
+    </DialogContent>
+  </Dialog>
   );
 };
 

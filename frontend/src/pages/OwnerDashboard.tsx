@@ -34,6 +34,7 @@ import {
   Maximize,
   DollarSign,
 } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -818,8 +819,8 @@ const OwnerDashboard = () => {
           method: "DELETE",
           headers: token
             ? {
-                Authorization: `Bearer ${token}`,
-              }
+              Authorization: `Bearer ${token}`,
+            }
             : undefined,
         },
       );
@@ -851,29 +852,39 @@ const OwnerDashboard = () => {
   }
 
   return (
-    <div className="relative min-h-[calc(100vh-64px)] overflow-hidden bg-white px-0 py-0">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.98),_transparent_32%),linear-gradient(135deg,_#f7f3ed_0%,_#edf4fb_46%,_#f8f2ea_100%)]" />
+    <div className="relative min-h-[calc(100vh-64px)] overflow-hidden bg-[#f8f5ef]">
+      {/* Luxury Background */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.95),_transparent_30%),linear-gradient(135deg,_#f8f5ef_0%,_#f4efe6_45%,_#efe7db_100%)]" />
+
+      {/* Ambient Blurs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-24 left-10 h-72 w-72 rounded-full bg-[#cfe2ef]/40 blur-3xl" />
-        <div className="absolute right-0 top-20 h-[28rem] w-[28rem] rounded-full bg-[#eadfce]/40 blur-3xl" />
-        <div className="absolute bottom-[-6rem] left-1/4 h-64 w-64 rounded-full bg-[#d8e8dd]/30 blur-3xl" />
+        <div className="absolute -top-24 left-10 h-72 w-72 rounded-full bg-[#d9c2a0]/25 blur-3xl" />
+        <div className="absolute right-0 top-20 h-[28rem] w-[28rem] rounded-full bg-[#efe3d0]/30 blur-3xl" />
+        <div className="absolute bottom-[-6rem] left-1/4 h-64 w-64 rounded-full bg-[#c8a96e]/15 blur-3xl" />
       </div>
 
       <div className="relative mx-auto flex max-w-full flex-col gap-6 px-10 py-8">
-        {/* SLIM TOP BAR HEADER */}
+        {/* HEADER */}
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.24em] text-slate-400 mb-1.5">
+            <p className="text-[11px] uppercase tracking-[0.26em] text-[#b8aa93] mb-1.5">
               LuxeEstates Owner Workspace
             </p>
-            <h2 className="text-2xl font-light italic text-slate-700">
-              A calmer, more cinematic control room.
+
+            <h2
+              className="text-3xl font-light text-[#2b2218]"
+              style={{
+                fontFamily: "'Cormorant Garamond', serif",
+              }}
+            >
+              Elegant Property Management
             </h2>
           </div>
+
           <Button
             onClick={handleExportData}
             disabled={exporting || properties.length === 0}
-            className="rounded-full bg-slate-950 text-white shadow-[0_16px_35px_rgba(15,23,42,0.22)] hover:bg-slate-800 h-11 px-6"
+            className="rounded-full bg-[#6b5230] text-white hover:bg-[#2b241c] h-11 px-6 shadow-[0_18px_35px_rgba(31,26,20,0.18)]"
           >
             <Download className="mr-2 h-4 w-4" />
             {exporting ? "Exporting..." : "Export Data"}
@@ -881,476 +892,370 @@ const OwnerDashboard = () => {
         </div>
 
         {error && (
-          <div className="rounded-2xl border border-rose-200 bg-rose-50/90 px-4 py-3 text-sm text-rose-700 shadow-sm backdrop-blur">
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 shadow-sm">
             {error}
           </div>
         )}
 
-        <Card className="relative overflow-hidden border border-white/60 bg-white/55 shadow-[0_28px_90px_rgba(15,23,42,0.08)] backdrop-blur-2xl">
+        {/* MAIN CONTAINER */}
+        <Card className="relative overflow-hidden border border-[#eadfce] bg-white/85 backdrop-blur-2xl shadow-[0_35px_80px_rgba(95,74,47,0.08)] rounded-[36px]">
           <CardContent className="p-6">
             <Tabs
               value={activeTab}
               onValueChange={setActiveTab}
               className="gap-6"
             >
-              <div className="flex flex-col gap-4 border-b border-slate-200/70 pb-4 sm:flex-row sm:items-center sm:justify-between">
-                <TabsList className="h-12 rounded-full border border-white/80 bg-white/75 p-1.5 shadow-[0_10px_30px_rgba(15,23,42,0.05)] backdrop-blur">
+              {/* TOP TABS */}
+              <div className="flex flex-col gap-4 border-b border-[#ede4d7] pb-5 sm:flex-row sm:items-center sm:justify-between">
+                <TabsList className="h-12 rounded-full border border-[#eadfce] bg-[#fcfaf7] p-1.5 shadow-sm">
                   <TabsTrigger
                     value="properties"
-                    className="rounded-full px-4 text-sm data-[state=active]:bg-slate-900 data-[state=active]:text-white flex items-center gap-2"
+                    className="rounded-full px-5 text-sm data-[state=active]:bg-[#6b5230] data-[state=active]:text-white flex items-center gap-2"
                   >
                     <Home className="h-4 w-4" />
                     My Properties
                   </TabsTrigger>
+
                   <TabsTrigger
                     value="inquiries"
-                    className="rounded-full px-4 text-sm data-[state=active]:bg-slate-900 data-[state=active]:text-white flex items-center gap-2"
+                    className="rounded-full px-5 text-sm data-[state=active]:bg-[#6b5230] data-[state=active]:text-white flex items-center gap-2"
                   >
                     <Activity className="h-4 w-4" />
                     Inquiry Requests
-                    {totalUnread > 0 ? (
-                      <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[11px] font-semibold text-white">
+
+                    {totalUnread > 0 && (
+                      <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#c8a96e] px-1.5 text-[11px] font-semibold text-white">
                         {totalUnread}
                       </span>
-                    ) : null}
+                    )}
                   </TabsTrigger>
                 </TabsList>
               </div>
 
+              {/* PROPERTIES TAB */}
               <TabsContent value="properties" className="pt-2">
-                {/* 3-Column Layout: Left Navigator (25%) | Center Focus (50%) | Right Snapshots (25%) */}
-                <div className="grid h-[78vh] min-h-[680px] gap-4 lg:grid-cols-[1fr_2fr_1fr]">
-                  {/* LEFT COLUMN: Property Navigator Sidebar */}
-                  <section className="flex h-full flex-col overflow-hidden rounded-[34px] border border-white/65 bg-white/58 shadow-[0_18px_50px_rgba(15,23,42,0.06)] backdrop-blur-2xl">
-                    <div className="sticky top-0 z-20 border-b border-slate-200/60 bg-white/88 px-5 py-4 backdrop-blur-xl">
+                <div className="grid h-[78vh] min-h-[680px] gap-5 lg:grid-cols-[1fr_2fr_1fr]">
+                  {/* LEFT SIDEBAR */}
+                  <section className="flex h-full flex-col overflow-hidden rounded-[34px] border border-[#eadfce] bg-white/75 backdrop-blur-xl shadow-[0_18px_50px_rgba(95,74,47,0.06)]">
+                    <div className="sticky top-0 z-20 border-b border-[#f1e7d8] bg-white/85 px-5 py-4">
                       <div className="flex items-center justify-between gap-3 mb-4">
                         <div>
-                          <p className="text-[10px] uppercase tracking-[0.24em] text-slate-400">
+                          <p className="text-[10px] uppercase tracking-[0.24em] text-[#b7a58c]">
                             Navigator
                           </p>
-                          <h2 className="text-lg font-semibold text-slate-900">
+
+                          <h2
+                            className="text-xl text-[#2b2218]"
+                            style={{
+                              fontFamily: "'Cormorant Garamond', serif",
+                            }}
+                          >
                             Properties
                           </h2>
                         </div>
+
                         <Button
                           variant={showActiveOnly ? "default" : "outline"}
                           onClick={() => setShowActiveOnly((prev) => !prev)}
-                          className="rounded-full shadow-sm text-xs h-8"
+                          className="rounded-full text-xs h-8 border-[#e5d8c4]"
                         >
                           {showActiveOnly ? "Active" : "All"}
                         </Button>
                       </div>
+
                       <div className="relative">
-                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#b8aa93]" />
+
                         <Input
                           value={propertySearch}
                           onChange={(e) => setPropertySearch(e.target.value)}
                           placeholder="Search..."
-                          className="rounded-full border-slate-200/70 bg-white/88 pl-9 text-sm"
+                          className="rounded-full border-[#eadfce] bg-[#faf7f2] pl-9 text-sm"
                         />
                       </div>
 
                       <Button
                         onClick={() => setOpenAddModal(true)}
-                        className="mt-3 w-full rounded-full bg-slate-950 text-white shadow-[0_12px_28px_rgba(15,23,42,0.18)] hover:bg-slate-800 text-sm h-9"
+                        className="mt-3 w-full rounded-full bg-[#6b5230] text-white hover:bg-[#2b241c] text-sm h-9"
                       >
                         <Plus className="mr-2 h-4 w-4" />
                         Add Property
                       </Button>
+
                     </div>
 
-                    <div className="min-h-0 h-full flex-1 overflow-y-auto custom-scrollbar p-3">
-                      {loadingProperties ? (
-                        <div className="px-3 py-6 text-sm text-slate-500">
-                          Loading...
-                        </div>
-                      ) : filteredProperties.length === 0 ? (
-                        <div className="px-3 py-6 text-sm text-slate-500">
-                          No properties.
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          {filteredProperties.map((property) => {
-                            const isSelected =
-                              selectedProperty?.property_id ===
-                              property.property_id;
+                    {/* PROPERTY LIST */}
+                    <div className="min-h-0 h-full flex-1 overflow-y-auto p-3">
+                      {filteredProperties.map((property) => {
+                        const isSelected =
+                          selectedProperty?.property_id === property.property_id;
 
-                            const getStatusConfig = (status: string) => {
-                              switch (status) {
-                                case "Active":
-                                  return {
-                                    color: "bg-emerald-500",
-                                    label: "Approved",
-                                  };
-                                case "Pending":
-                                  return {
-                                    color: "bg-amber-500",
-                                    label: "Pending Approval",
-                                  };
-                                case "Closed":
-                                  return {
-                                    color: "bg-rose-500",
-                                    label: "Rejected",
-                                  };
-                                default:
-                                  return {
-                                    color: "bg-slate-400",
-                                    label: status,
-                                  };
-                              }
-                            };
-                            const statusInfo = getStatusConfig(property.status);
+                        return (
+                          <div
+                            key={property.property_id}
+                            className={`mb-3 rounded-[24px] border p-3 transition-all duration-300 ${isSelected
+                              ? "border-[#d7b98f] bg-[#f8f3ea] shadow-[0_14px_30px_rgba(200,169,110,0.12)]"
+                              : "border-[#eee4d7] bg-white hover:bg-[#fdfaf5]"
+                              }`}
+                          >
+                            {/* FULL CARD ROW */}
+                            <div className="flex items-center justify-between gap-3">
 
-                            return (
-                              <div
-                                key={property.property_id}
-                                className={`relative w-full rounded-[20px] border p-2.5 text-left transition-all duration-300 ${
-                                  isSelected
-                                    ? "border-blue-300/50 bg-[radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_28%),linear-gradient(90deg,_rgba(239,246,255,0.96),_rgba(255,255,255,0.95))] shadow-[0_12px_28px_rgba(59,130,246,0.10)]"
-                                    : "border-slate-200/65 bg-white/72 hover:border-slate-300/70 hover:bg-white/88"
-                                }`}
+                              {/* LEFT (SELECT AREA) */}
+                              <button
+                                type="button"
+                                onClick={() => setSelectedPropertyId(property.property_id)}
+                                className="flex flex-1 items-center gap-3 text-left min-w-0"
                               >
-                                <div className="absolute right-2 top-2 z-10">
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-7 w-7 rounded-full bg-white/75 text-slate-600 hover:bg-white"
-                                        onClick={(event) => {
-                                          event.stopPropagation();
-                                        }}
-                                      >
-                                        <MoreVertical className="h-4 w-4" />
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent
-                                      align="end"
-                                      className="w-44"
-                                    >
-                                      <DropdownMenuItem
-                                        onClick={() =>
-                                          openEditPropertyModal(property)
-                                        }
-                                      >
-                                        <Pencil className="h-4 w-4" />
-                                        Update Property
-                                      </DropdownMenuItem>
-                                      <DropdownMenuSeparator />
-                                      <DropdownMenuItem
-                                        variant="destructive"
-                                        onClick={() =>
-                                          setPropertyToDelete(property)
-                                        }
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                        Delete Property
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                </div>
+                                <img
+                                  src={getPropertyImage(property.images)}
+                                  alt={property.title}
+                                  className="h-14 w-14 shrink-0 rounded-2xl object-cover"
+                                />
 
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    setSelectedPropertyId(property.property_id)
-                                  }
-                                  className="w-full"
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-sm font-semibold text-[#2b2218]">
+                                    {property.title}
+                                  </p>
+
+                                  <p className="text-sm font-semibold text-[#7b5e3b]">
+                                    {formatPrice(property.price)}
+                                  </p>
+
+                                  <p className="mt-1 text-[10px] uppercase tracking-[0.15em] text-[#b7a58c]">
+                                    {property.status}
+                                  </p>
+                                </div>
+                              </button>
+
+                              {/* RIGHT ACTIONS */}
+                              <div className="flex shrink-0 items-center gap-2">
+                                <Button
+                                  size="icon"
+                                  variant="outline"
+                                  className="rounded-full"
+                                  onClick={(e) => {
+                                    e.stopPropagation(); // IMPORTANT: prevents card selection
+                                    openEditPropertyModal(property);
+                                  }}
                                 >
-                                  <div className="flex items-center gap-2.5 pr-8">
-                                    <img
-                                      src={getPropertyImage(property.images)}
-                                      alt={property.title}
-                                      className="h-12 w-12 rounded-2xl object-cover shadow-sm"
-                                    />
-                                    <div className="min-w-0 flex-1 text-left">
-                                      <p className="truncate text-xs font-semibold text-slate-950">
-                                        {property.title}
-                                      </p>
-                                      <p className="text-xs font-semibold text-slate-900">
-                                        {formatPrice(property.price)}
-                                      </p>
-                                      <div className="mt-1 flex items-center gap-1">
-                                        <span
-                                          className={`h-1.5 w-1.5 rounded-full ${statusInfo.color}`}
-                                        />
-                                        <span className="text-[10px] text-slate-500 uppercase tracking-[0.1em]">
-                                          {statusInfo.label}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </button>
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
                               </div>
-                            );
-                          })}
-                        </div>
-                      )}
+
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </section>
 
-                  {/* CENTER COLUMN: Main Property Focus Area */}
-                  <section className="flex flex-col gap-4 overflow-hidden rounded-[34px] border border-white/65 bg-white/58 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-2xl">
+                  {/* CENTER AREA */}
+                  <section className="flex flex-col gap-4 overflow-hidden rounded-[34px] border border-[#eadfce] bg-white/75 p-5 backdrop-blur-xl shadow-[0_20px_60px_rgba(95,74,47,0.08)]">
                     {selectedProperty ? (
                       <div className="flex h-full min-h-0 flex-col justify-between gap-4">
-                        {/* Large Cinematic Property Image with Glassmorphism Overlay */}
-                        <div className="relative h-[580px] max-h-[calc(100%-11rem)] min-h-[420px] flex-shrink-0 overflow-hidden rounded-[30px] border border-white/70 bg-white/80 shadow-[0_20px_55px_rgba(15,23,42,0.08)]">
+                        {/* IMAGE */}
+                        <div className="relative h-[580px] overflow-hidden rounded-[30px] border border-[#eadfce]">
                           {selectedPropertyImages.map((imageUrl, index) => (
                             <img
-                              key={`${selectedProperty.property_id}-${imageUrl}-${index}`}
+                              key={index}
                               src={imageUrl}
-                              alt={`${selectedProperty.title} - image ${index + 1}`}
-                              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ease-out ${
-                                activeImageIndex === index
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              }`}
+                              alt=""
+                              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${activeImageIndex === index
+                                ? "opacity-100"
+                                : "opacity-0"
+                                }`}
                             />
                           ))}
-                          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/20 via-transparent to-transparent" />
 
-                          {selectedPropertyImages.length > 1 ? (
-                            <>
-                              <button
-                                type="button"
-                                onClick={showPreviousImage}
-                                aria-label="Previous property image"
-                                className="absolute left-3 top-1/2 z-20 -translate-y-1/2 rounded-full border border-white/40 bg-slate-950/45 p-2 text-white backdrop-blur-sm transition hover:bg-slate-950/65"
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/35 to-transparent" />
+
+                          {/* OVERLAY CARD */}
+                          {/* OVERLAY CARD */}
+                          <div className="absolute bottom-2 left-2 flex items-center justify-between gap-2 rounded-xl border border-white/30 bg-white/20 backdrop-blur-xl px-3 py-2 shadow-[0_10px_25px_rgba(0,0,0,0.15)] max-w-[260px]">
+                            <div className="min-w-0">
+                              <p className="text-[9px] uppercase tracking-[0.2em] text-white/70">
+                                Property Focus
+                              </p>
+
+                              <h3
+                                className="mt-0.5 text-lg text-white leading-tight truncate"
+                                style={{ fontFamily: "'Cormorant Garamond', serif" }}
                               >
-                                <ChevronLeft className="h-4 w-4" />
-                              </button>
+                                {selectedProperty.title}
+                              </h3>
 
-                              <button
-                                type="button"
-                                onClick={showNextImage}
-                                aria-label="Next property image"
-                                className="absolute right-3 top-1/2 z-20 -translate-y-1/2 rounded-full border border-white/40 bg-slate-950/45 p-2 text-white backdrop-blur-sm transition hover:bg-slate-950/65"
-                              >
-                                <ChevronRight className="h-4 w-4" />
-                              </button>
-
-                              <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-white/35 bg-slate-900/30 px-2.5 py-1.5 backdrop-blur-sm">
-                                {selectedPropertyImages.map((_, index) => (
-                                  <button
-                                    key={`dot-${selectedProperty.property_id}-${index}`}
-                                    type="button"
-                                    aria-label={`Go to image ${index + 1}`}
-                                    onClick={() => setActiveImageIndex(index)}
-                                    className={`h-2 w-2 rounded-full transition-all duration-300 ${
-                                      index === activeImageIndex
-                                        ? "bg-white scale-110"
-                                        : "bg-white/55 hover:bg-white/80"
-                                    }`}
-                                  />
-                                ))}
-                              </div>
-                            </>
-                          ) : null}
-
-                          {/* Glassmorphism Overlay Card - Left Side Centered */}
-                          <div className="absolute bottom-14 right-4 w-fit max-w-[calc(100%-2rem)] min-w-[260px] rounded-[22px] border border-white/40 bg-white/28 px-4 py-3 shadow-[0_16px_40px_rgba(15,23,42,0.12)] backdrop-blur-3xl sm:min-w-[300px]">
-                            <div className="flex items-center justify-between gap-3">
-                              <div className="min-w-0 max-w-[clamp(180px,55vw,560px)]">
-                                <div className="flex items-center gap-2">
-                                  <p className="text-[6px] uppercase tracking-[0.32em] text-slate-400 font-medium">
-                                    Property Focus
-                                  </p>
-                                  <Badge
-                                    className={`text-[8px] px-2 py-0 h-4 border-transparent ${
-                                      selectedProperty.status === "Active"
-                                        ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
-                                        : selectedProperty.status === "Pending"
-                                          ? "bg-amber-100 text-amber-700 hover:bg-amber-100"
-                                          : selectedProperty.status === "Closed"
-                                            ? "bg-rose-100 text-rose-700 hover:bg-rose-100"
-                                            : "bg-slate-100 text-slate-700 hover:bg-slate-100"
-                                    }`}
-                                  >
-                                    {selectedProperty.status === "Active"
-                                      ? "Approved"
-                                      : selectedProperty.status === "Pending"
-                                        ? "Pending Approval"
-                                        : selectedProperty.status === "Closed"
-                                          ? "Rejected"
-                                          : selectedProperty.status}
-                                  </Badge>
-                                </div>
-                                <h3 className="mt-1 text-lg font-bold tracking-tight text-slate-950 break-words leading-tight line-clamp-2">
-                                  {selectedProperty.title}
-                                </h3>
-                              </div>
-                              <Link
-                                to={`/property-details/${selectedProperty.property_id}`}
-                              >
-                                <Button
-                                  size="sm"
-                                  className="rounded-full bg-slate-950/65 text-white border border-white/35 shadow-[0_10px_25px_rgba(15,23,42,0.14)] hover:bg-slate-950/85 hover:border-white/55 backdrop-blur-sm transition-all flex-shrink-0"
-                                >
-                                  <ArrowUpRight className="h-3.5 w-3.5" />
-                                </Button>
-                              </Link>
+                              <p className="mt-0.5 text-xs text-white/70 truncate">
+                                {selectedProperty.city}
+                              </p>
                             </div>
+
+                            <Link to={`/property-details/${selectedProperty.property_id}`}>
+                              <Button
+                                size="icon"
+                                className="h-9 w-9 rounded-full border border-white/30 bg-white/20 text-white backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:bg-white hover:text-[#2b2218]"
+                              >
+                                <ArrowUpRight className="h-4 w-4" />
+                              </Button>
+                            </Link>
                           </div>
                         </div>
 
-                        {/* Property Details Grid */}
+                        {/* DETAILS GRID */}
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                          {/* Price */}
-                          <div className="rounded-2xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur-md">
-                            <div className="flex items-center gap-2 text-slate-500 mb-1">
-                              <DollarSign className="h-3.5 w-3.5" />
-                              <span className="text-[10px] font-semibold uppercase tracking-wider">
-                                Price
-                              </span>
-                            </div>
-                            <p className="text-sm font-bold text-slate-900">
-                              {formatPrice(selectedProperty.price)}
-                            </p>
-                          </div>
-
-                          {/* Location */}
-                          <div className="rounded-2xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur-md">
-                            <div className="flex items-center gap-2 text-slate-500 mb-1">
-                              <MapPin className="h-3.5 w-3.5" />
-                              <span className="text-[10px] font-semibold uppercase tracking-wider">
-                                Location
-                              </span>
-                            </div>
-                            <p
-                              className="text-sm font-bold text-slate-900 truncate"
-                              title={selectedProperty.city}
+                          {[
+                            {
+                              label: "Price",
+                              value: formatPrice(selectedProperty.price),
+                              icon: DollarSign,
+                            },
+                            {
+                              label: "Location",
+                              value: selectedProperty.city,
+                              icon: MapPin,
+                            },
+                            {
+                              label: "Type",
+                              value: selectedProperty.property_type,
+                              icon: Home,
+                            },
+                            {
+                              label: "Bedrooms",
+                              value: selectedProperty.bedrooms,
+                              icon: Bed,
+                            },
+                            {
+                              label: "Bathrooms",
+                              value: selectedProperty.bathrooms,
+                              icon: Bath,
+                            },
+                            {
+                              label: "Area",
+                              value: `${Number(
+                                selectedProperty.area || 0
+                              ).toFixed(2)} sqft`,
+                              icon: Maximize,
+                            },
+                          ].map((item) => (
+                            <div
+                              key={item.label}
+                              className="rounded-2xl border border-[#eadfce] bg-[#fcfaf7] p-4"
                             >
-                              {selectedProperty.city}
-                            </p>
-                          </div>
+                              <div className="flex items-center gap-2 text-[#b59b75] mb-1">
+                                <item.icon className="h-3.5 w-3.5" />
 
-                          {/* Type */}
-                          <div className="rounded-2xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur-md">
-                            <div className="flex items-center gap-2 text-slate-500 mb-1">
-                              <Home className="h-3.5 w-3.5" />
-                              <span className="text-[10px] font-semibold uppercase tracking-wider">
-                                Type
-                              </span>
-                            </div>
-                            <p className="text-sm font-bold text-slate-900">
-                              {selectedProperty.property_type}
-                            </p>
-                          </div>
+                                <span className="text-[10px] uppercase tracking-[0.15em]">
+                                  {item.label}
+                                </span>
+                              </div>
 
-                          {/* Bedrooms */}
-                          <div className="rounded-2xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur-md">
-                            <div className="mb-1 flex items-center gap-2 text-slate-500">
-                              <Bed className="h-3.5 w-3.5" />
-                              <span className="text-[10px] font-semibold uppercase tracking-wider">
-                                Bedrooms
-                              </span>
+                              <p className="text-sm font-semibold text-[#2b2218]">
+                                {item.value}
+                              </p>
                             </div>
-                            <p className="text-sm font-bold text-slate-900">
-                              {selectedProperty.bedrooms}
-                            </p>
-                          </div>
-
-                          {/* Bathrooms */}
-                          <div className="rounded-2xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur-md">
-                            <div className="mb-1 flex items-center gap-2 text-slate-500">
-                              <Bath className="h-3.5 w-3.5" />
-                              <span className="text-[10px] font-semibold uppercase tracking-wider">
-                                Bathrooms
-                              </span>
-                            </div>
-                            <p className="text-sm font-bold text-slate-900">
-                              {selectedProperty.bathrooms}
-                            </p>
-                          </div>
-
-                          {/* Area */}
-                          <div className="rounded-2xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur-md">
-                            <div className="flex items-center gap-2 text-slate-500 mb-1">
-                              <Maximize className="h-3.5 w-3.5" />
-                              <span className="text-[10px] font-semibold uppercase tracking-wider">
-                                Area
-                              </span>
-                            </div>
-                            <p className="text-sm font-bold text-slate-900">
-                              {Number(selectedProperty.area || 0).toFixed(2)}{" "}
-                              sqft
-                            </p>
-                          </div>
+                          ))}
                         </div>
                       </div>
                     ) : (
-                      <div className="flex flex-1 items-center justify-center rounded-[30px] border border-dashed border-slate-200 bg-white/70 text-sm text-slate-500">
+                      <div className="flex flex-1 items-center justify-center text-[#9f907c]">
                         Select a property to view
                       </div>
                     )}
                   </section>
 
+                  {/* RIGHT PANEL */}
+
                   {/* RIGHT COLUMN: Data Clarity + Live Activity */}
-                  <section className="flex min-h-0 flex-col overflow-hidden rounded-[34px] border border-white/65 bg-white/58 shadow-[0_18px_50px_rgba(15,23,42,0.06)] backdrop-blur-2xl">
+                  <section className="flex min-h-0 flex-col overflow-hidden rounded-[30px] border border-[#eadfce] bg-white/75 backdrop-blur-xl shadow-[0_14px_40px_rgba(95,74,47,0.05)]">
                     {selectedProperty ? (
                       <div className="flex min-h-0 flex-1 flex-col gap-3 p-4">
-                        {/* TOP: Global Insights */}
-                        <div className="rounded-[24px] border border-white/70 bg-[linear-gradient(135deg,_rgba(255,255,255,0.95),_rgba(242,248,255,0.86))] p-3 shadow-[0_10px_24px_rgba(15,23,42,0.05)]">
+
+                        {/* TOP */}
+                        <div className="rounded-[24px] border border-[#eadfce] bg-[linear-gradient(135deg,_rgba(255,255,255,0.96),_rgba(248,243,234,0.92))] p-3 shadow-[0_8px_20px_rgba(95,74,47,0.05)]">
                           <div className="flex items-center justify-between gap-2">
-                            <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-slate-400">
-                              Global Insights
-                            </p>
-                            <TrendingUp className="h-4 w-4 text-blue-500/75" />
-                          </div>
-                          <div className="mt-3 grid grid-cols-2 gap-2">
-                            <div className="rounded-full border border-white/75 bg-white/72 px-3 py-2 shadow-[0_6px_16px_rgba(59,130,246,0.06)] backdrop-blur-xl">
-                              <p className="text-[9px] uppercase tracking-[0.2em] text-slate-400">
-                                Total Views
+                            <div>
+                              <p className="text-[9px] uppercase tracking-[0.22em] text-[#b7a58c]">
+                                Global Insights
                               </p>
-                              <p className="mt-1 text-lg font-black text-slate-950">
+
+                              <h3
+                                className="mt-0.5 text-lg text-[#2b2218]"
+                                style={{
+                                  fontFamily: "'Cormorant Garamond', serif",
+                                }}
+                              >
+                                Portfolio Snapshot
+                              </h3>
+                            </div>
+
+                            <TrendingUp className="h-4 w-4 text-[#c8a96e]" />
+                          </div>
+
+                          <div className="mt-3 grid grid-cols-2 gap-2">
+                            <div className="rounded-xl border border-[#eadfce] bg-[#fcfaf7] px-3 py-2.5">
+                              <p className="text-[9px] uppercase tracking-[0.16em] text-[#b7a58c]">
+                                Views
+                              </p>
+
+                              <p className="mt-1 text-xl font-bold text-[#2b2218]">
                                 {totalViews}
                               </p>
                             </div>
-                            <div className="rounded-full border border-white/75 bg-white/72 px-3 py-2 shadow-[0_6px_16px_rgba(59,130,246,0.06)] backdrop-blur-xl">
-                              <p className="text-[9px] uppercase tracking-[0.2em] text-slate-400">
+
+                            <div className="rounded-xl border border-[#eadfce] bg-[#fcfaf7] px-3 py-2.5">
+                              <p className="text-[9px] uppercase tracking-[0.16em] text-[#b7a58c]">
                                 Properties
                               </p>
-                              <p className="mt-1 text-lg font-black text-slate-950">
+
+                              <p className="mt-1 text-xl font-bold text-[#2b2218]">
                                 {properties.length}
                               </p>
                             </div>
                           </div>
                         </div>
 
-                        {/* MIDDLE: Property Performance */}
-                        <div className="rounded-[24px] border border-white/70 bg-[radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_30%),linear-gradient(135deg,_rgba(255,255,255,0.95),_rgba(239,246,255,0.9))] p-3 shadow-[0_12px_28px_rgba(59,130,246,0.08)]">
-                          <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-slate-400">
+                        {/* PERFORMANCE */}
+                        <div className="rounded-[24px] border border-[#eadfce] bg-[radial-gradient(circle_at_top_right,_rgba(200,169,110,0.14),_transparent_28%),linear-gradient(135deg,_rgba(255,255,255,0.96),_rgba(248,243,234,0.92))] p-3 shadow-[0_10px_24px_rgba(95,74,47,0.05)]">
+                          <p className="text-[9px] uppercase tracking-[0.22em] text-[#b7a58c]">
                             Property Performance
                           </p>
-                          <p className="mt-1 truncate text-xs font-medium text-slate-600">
+
+                          <p className="mt-1 truncate text-xs font-medium text-[#7b6a58]">
                             {selectedProperty.title}
                           </p>
 
                           <div className="mt-3 space-y-2">
-                            <div className="rounded-[18px] border border-white/70 bg-white/70 px-3 py-2.5">
+
+                            {/* Views */}
+                            <div className="rounded-[18px] border border-[#eadfce] bg-[#fcfaf7] px-3 py-2.5">
                               <div className="flex items-center justify-between gap-2">
-                                <div className="flex items-center gap-2">
-                                  <Eye className="h-4 w-4 text-blue-500/80" />
+
+                                <div className="flex items-center gap-2.5">
+                                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#efe3d0]">
+                                    <Eye className="h-3.5 w-3.5 text-[#7b5e3b]" />
+                                  </div>
+
                                   <div>
-                                    <p className="text-[9px] uppercase tracking-[0.18em] text-slate-400">
-                                      Villa Views
+                                    <p className="text-[9px] uppercase tracking-[0.16em] text-[#b7a58c]">
+                                      Views
                                     </p>
-                                    <p className="text-base font-black text-slate-950">
+
+                                    <p className="text-sm font-bold text-[#2b2218]">
                                       {selectedProperty.views || 0}
                                     </p>
                                   </div>
                                 </div>
+
                                 <svg
-                                  className="h-7 w-14"
+                                  className="h-6 w-12"
                                   viewBox="0 0 100 32"
                                   preserveAspectRatio="none"
                                 >
                                   <polyline
                                     points="0,24 18,22 36,19 54,14 72,16 100,9"
                                     fill="none"
-                                    stroke="rgba(59,130,246,0.85)"
-                                    strokeWidth="2.2"
+                                    stroke="rgba(123,94,59,0.85)"
+                                    strokeWidth="2"
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
                                   />
@@ -1358,29 +1263,36 @@ const OwnerDashboard = () => {
                               </div>
                             </div>
 
-                            <div className="rounded-[18px] border border-white/70 bg-white/70 px-3 py-2.5">
+                            {/* Inquiries */}
+                            <div className="rounded-[18px] border border-[#eadfce] bg-[#fcfaf7] px-3 py-2.5">
                               <div className="flex items-center justify-between gap-2">
-                                <div className="flex items-center gap-2">
-                                  <MessageSquare className="h-4 w-4 text-blue-500/80" />
+
+                                <div className="flex items-center gap-2.5">
+                                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#efe3d0]">
+                                    <MessageSquare className="h-3.5 w-3.5 text-[#7b5e3b]" />
+                                  </div>
+
                                   <div>
-                                    <p className="text-[9px] uppercase tracking-[0.18em] text-slate-400">
+                                    <p className="text-[9px] uppercase tracking-[0.16em] text-[#b7a58c]">
                                       Inquiries
                                     </p>
-                                    <p className="text-base font-black text-slate-950">
+
+                                    <p className="text-sm font-bold text-[#2b2218]">
                                       {selectedPropertyInquiries.length}
                                     </p>
                                   </div>
                                 </div>
+
                                 <svg
-                                  className="h-7 w-14"
+                                  className="h-6 w-12"
                                   viewBox="0 0 100 32"
                                   preserveAspectRatio="none"
                                 >
                                   <polyline
                                     points="0,25 20,21 42,20 60,14 80,13 100,8"
                                     fill="none"
-                                    stroke="rgba(37,99,235,0.85)"
-                                    strokeWidth="2.2"
+                                    stroke="rgba(200,169,110,0.85)"
+                                    strokeWidth="2"
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
                                   />
@@ -1388,29 +1300,36 @@ const OwnerDashboard = () => {
                               </div>
                             </div>
 
-                            <div className="rounded-[18px] border border-white/70 bg-white/70 px-3 py-2.5">
+                            {/* Unread */}
+                            <div className="rounded-[18px] border border-[#eadfce] bg-[#fcfaf7] px-3 py-2.5">
                               <div className="flex items-center justify-between gap-2">
-                                <div className="flex items-center gap-2">
-                                  <Building className="h-4 w-4 text-blue-500/80" />
+
+                                <div className="flex items-center gap-2.5">
+                                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#efe3d0]">
+                                    <Building className="h-3.5 w-3.5 text-[#7b5e3b]" />
+                                  </div>
+
                                   <div>
-                                    <p className="text-[9px] uppercase tracking-[0.18em] text-slate-400">
+                                    <p className="text-[9px] uppercase tracking-[0.16em] text-[#b7a58c]">
                                       Unread
                                     </p>
-                                    <p className="text-base font-black text-slate-950">
+
+                                    <p className="text-sm font-bold text-[#2b2218]">
                                       {selectedPropertyUnread}
                                     </p>
                                   </div>
                                 </div>
+
                                 <svg
-                                  className="h-7 w-14"
+                                  className="h-6 w-12"
                                   viewBox="0 0 100 32"
                                   preserveAspectRatio="none"
                                 >
                                   <polyline
                                     points="0,23 20,24 40,20 60,18 80,11 100,12"
                                     fill="none"
-                                    stroke="rgba(30,64,175,0.85)"
-                                    strokeWidth="2.2"
+                                    stroke="rgba(107,82,48,0.85)"
+                                    strokeWidth="2"
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
                                   />
@@ -1420,72 +1339,78 @@ const OwnerDashboard = () => {
                           </div>
                         </div>
 
-                        {/* BOTTOM: Live Activity Stream */}
-                        <div className="min-h-0 flex flex-1 flex-col overflow-hidden rounded-[24px] border border-white/70 bg-[linear-gradient(135deg,_rgba(255,255,255,0.95),_rgba(242,248,255,0.87))] shadow-[0_10px_24px_rgba(15,23,42,0.05)]">
-                          <div className="flex items-center justify-between border-b border-slate-200/60 px-3 py-2.5">
+                        {/* LIVE ACTIVITY */}
+                        <div className="min-h-0 flex flex-1 flex-col overflow-hidden rounded-[24px] border border-[#eadfce] bg-[linear-gradient(135deg,_rgba(255,255,255,0.96),_rgba(248,243,234,0.92))] shadow-[0_8px_20px_rgba(95,74,47,0.05)]">
+
+                          <div className="flex items-center justify-between border-b border-[#efe4d4] px-3 py-2.5">
                             <div className="flex items-center gap-2">
-                              <Bell className="h-3.5 w-3.5 text-blue-500" />
-                              <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-slate-400">
-                                Live Activity Stream
+                              <Bell className="h-3.5 w-3.5 text-[#c8a96e]" />
+
+                              <p className="text-[9px] uppercase tracking-[0.22em] text-[#b7a58c]">
+                                Live Activity
                               </p>
                             </div>
-                            <span className="text-[10px] text-slate-400">
-                              Recent Updates
+
+                            <span className="text-[10px] text-[#b7a58c]">
+                              Recent
                             </span>
                           </div>
 
-                          <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-3 pr-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300/70 [&::-webkit-scrollbar-track]:bg-transparent">
+                          <div className="min-h-0 flex-1 overflow-y-auto px-2.5 pb-2.5 pt-2 space-y-2">
+
                             {selectedPropertyInquiries.length === 0 ? (
-                              <div className="mt-3 flex items-center justify-center rounded-[18px] border border-dashed border-slate-200 bg-white/75 px-4 py-6 text-xs text-slate-500">
-                                No recent updates for this villa.
+                              <div className="flex items-center justify-center rounded-[16px] border border-dashed border-[#eadfce] bg-[#fcfaf7] px-3 py-5 text-xs text-[#8f7d68]">
+                                No inquiries yet.
                               </div>
                             ) : (
-                              <div className="space-y-2 pt-2">
-                                {[...selectedPropertyInquiries]
-                                  .sort(
-                                    (a, b) =>
-                                      new Date(b.created_at).getTime() -
-                                      new Date(a.created_at).getTime(),
-                                  )
-                                  .map((inquiry) => (
-                                    <div
-                                      key={inquiry.inquiry_id}
-                                      className="flex items-center gap-2.5 rounded-[16px] border border-white/70 bg-white/72 px-2.5 py-2 shadow-[0_6px_18px_rgba(59,130,246,0.05)]"
-                                    >
-                                      <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border border-white/80 bg-gradient-to-br from-blue-400/25 to-blue-500/18 text-[9px] font-bold text-blue-700">
-                                        {inquiry.name?.charAt(0) || "U"}
-                                      </div>
-                                      <div className="min-w-0 flex-1">
-                                        <p className="truncate text-[11px] font-semibold text-slate-900">
-                                          {inquiry.name || "Unknown user"}
-                                        </p>
-                                        <p className="text-[10px] text-slate-500">
-                                          Sent a message •{" "}
-                                          {formatDate(inquiry.created_at)}
-                                        </p>
-                                      </div>
-                                      <Badge
-                                        variant="outline"
-                                        className={`rounded-full px-2 py-0 text-[9px] font-medium ${getStatusBadgeClass(inquiry.status)}`}
-                                      >
-                                        {inquiry.status}
-                                      </Badge>
+                              [...selectedPropertyInquiries]
+                                .sort(
+                                  (a, b) =>
+                                    new Date(b.created_at).getTime() -
+                                    new Date(a.created_at).getTime(),
+                                )
+                                .map((inquiry) => (
+                                  <div
+                                    key={inquiry.inquiry_id}
+                                    className="flex items-center gap-2 rounded-[16px] border border-[#eadfce] bg-[#fcfaf7] px-2.5 py-2"
+                                  >
+                                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#efe3d0] text-[10px] font-bold text-[#7b5e3b]">
+                                      {inquiry.name?.charAt(0) || "U"}
                                     </div>
-                                  ))}
-                              </div>
+
+                                    <div className="min-w-0 flex-1">
+                                      <p className="truncate text-[11px] font-semibold text-[#2b2218]">
+                                        {inquiry.name || "Unknown"}
+                                      </p>
+
+                                      <p className="text-[10px] text-[#8f7d68]">
+                                        {formatDate(inquiry.created_at)}
+                                      </p>
+                                    </div>
+
+                                    <Badge
+                                      variant="outline"
+                                      className={`rounded-full px-2 py-0 text-[9px] ${getStatusBadgeClass(
+                                        inquiry.status,
+                                      )}`}
+                                    >
+                                      {inquiry.status}
+                                    </Badge>
+                                  </div>
+                                ))
                             )}
                           </div>
                         </div>
                       </div>
                     ) : (
-                      <div className="flex flex-1 items-center justify-center px-4 py-6 text-center text-sm text-slate-500">
+                      <div className="flex flex-1 items-center justify-center px-5 py-6 text-center">
                         <div>
-                          <p className="mb-2 text-[10px] uppercase tracking-[0.24em] text-slate-400">
+                          <p className="mb-2 text-[9px] uppercase tracking-[0.22em] text-[#b7a58c]">
                             Select Property
                           </p>
-                          <p>
-                            Choose a villa to view global insights, performance,
-                            and activity.
+
+                          <p className="text-xs text-[#8f7d68]">
+                            Choose a property to view insights.
                           </p>
                         </div>
                       </div>
@@ -1494,382 +1419,266 @@ const OwnerDashboard = () => {
                 </div>
               </TabsContent>
 
+
+
               <TabsContent value="inquiries" className="pt-2">
-                <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_440px]">
-                  <section className="flex flex-col overflow-hidden rounded-[34px] border border-white/65 bg-white/58 shadow-[0_18px_50px_rgba(15,23,42,0.06)] h-[70vh] min-h-[560px] max-h-[760px] backdrop-blur-2xl">
-                    <div className="border-b border-slate-200/60 bg-white/58 px-5 py-4">
-                      <h2 className="text-lg font-semibold text-slate-900">
-                        Inquiry Requests
-                      </h2>
-                      <p className="text-sm text-slate-500">
-                        Track each request status and start a live conversation
-                        in one place.
+  <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_440px]">
+    
+    {/* LEFT PANEL */}
+    <section className="flex flex-col overflow-hidden rounded-[34px] border border-[#e7dfd2] bg-[rgba(255,255,255,0.72)] shadow-[0_25px_70px_rgba(0,0,0,0.08)] backdrop-blur-2xl h-[70vh] min-h-[560px] max-h-[760px]">
+
+      {/* HEADER */}
+      <div className="border-b border-[#ece5da] bg-[linear-gradient(180deg,#faf7f2_0%,#f7f2ea_100%)] px-5 py-4">
+        <h2 className="text-lg font-semibold text-[#2d2923]">
+          Inquiry Requests
+        </h2>
+
+        <p className="text-sm text-[#8a8175]">
+          Track each request status and start a live conversation in one place.
+        </p>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          {(["All", "Pending", "Accepted", "Rejected"] as const).map((status) => (
+            <Button
+              key={status}
+              size="sm"
+              variant={inquiryStatusFilter === status ? "default" : "outline"}
+              className={`rounded-full shadow-sm ${
+                inquiryStatusFilter === status
+                  ? "bg-[#b8955f] text-white hover:bg-[#a7844d]"
+                  : "border-[#e7dfd2] text-[#6e6253] hover:bg-[#faf7f2]"
+              }`}
+              onClick={() => setInquiryStatusFilter(status)}
+            >
+              {status}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      {/* LIST */}
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {loadingInquiries ? (
+          <div className="px-5 py-8 text-sm text-[#8a8175]">
+            Loading inquiries...
+          </div>
+        ) : filteredInquiries.length === 0 ? (
+          <div className="px-5 py-8 text-sm text-[#8a8175]">
+            No inquiries yet.
+          </div>
+        ) : (
+          <div className="space-y-3 p-3 pb-8">
+            {filteredInquiries.map((inquiry) => {
+              const isSelected =
+                selectedInquiry?.inquiry_id === inquiry.inquiry_id;
+
+              const snippet =
+                inquiry.message.length > 90
+                  ? `${inquiry.message.slice(0, 90)}...`
+                  : inquiry.message;
+
+              return (
+                <div
+                  key={inquiry.inquiry_id}
+                  className={`rounded-[28px] border p-4 transition-all duration-300 ${
+                    isSelected
+                      ? "border-[#d4c0a1] bg-[linear-gradient(135deg,rgba(255,255,255,0.92),rgba(248,242,232,0.96))] shadow-[0_16px_35px_rgba(185,149,95,0.14)]"
+                      : "border-[#ece5da] bg-white/70 hover:bg-white hover:border-[#dcc8a8]"
+                  }`}
+                >
+
+                  {/* TOP ROW */}
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-[#2d2923]">
+                        {inquiry.property_title}
                       </p>
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {(
-                          ["All", "Pending", "Accepted", "Rejected"] as const
-                        ).map((status) => (
-                          <Button
-                            key={status}
-                            size="sm"
-                            variant={
-                              inquiryStatusFilter === status
-                                ? "default"
-                                : "outline"
-                            }
-                            className="rounded-full shadow-sm"
-                            onClick={() => setInquiryStatusFilter(status)}
-                          >
-                            {status}
-                          </Button>
-                        ))}
-                      </div>
+
+                      <p className="mt-1 text-xs text-[#8a8175]">
+                        #{inquiry.inquiry_id} • {formatDate(inquiry.created_at)}
+                      </p>
                     </div>
 
-                    <div className="min-h-0 flex-1 overflow-y-auto">
-                      {loadingInquiries ? (
-                        <div className="px-5 py-8 text-sm text-slate-500">
-                          Loading inquiries...
-                        </div>
-                      ) : filteredInquiries.length === 0 ? (
-                        <div className="px-5 py-8 text-sm text-slate-500">
-                          No inquiries yet.
-                        </div>
-                      ) : (
-                        <div className="space-y-3 p-3 pb-8">
-                          {filteredInquiries.map((inquiry) => {
-                            const isSelected =
-                              selectedInquiry?.inquiry_id ===
-                              inquiry.inquiry_id;
-                            const snippet =
-                              inquiry.message.length > 90
-                                ? `${inquiry.message.slice(0, 90)}...`
-                                : inquiry.message;
-
-                            return (
-                              <div
-                                key={inquiry.inquiry_id}
-                                className={`rounded-[28px] border p-4 transition-all duration-300 ${
-                                  isSelected
-                                    ? "border-blue-300/45 bg-[radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_28%),linear-gradient(90deg,_rgba(239,246,255,0.96),_rgba(255,255,255,0.95))] shadow-[0_16px_35px_rgba(59,130,246,0.12)]"
-                                    : "border-slate-200/65 bg-white/72 hover:border-slate-300/70 hover:bg-white/92 hover:shadow-[0_10px_28px_rgba(15,23,42,0.06)]"
-                                }`}
-                              >
-                                <div className="flex flex-wrap items-start justify-between gap-3">
-                                  <div>
-                                    <p className="font-semibold text-slate-900">
-                                      {inquiry.property_title}
-                                    </p>
-                                    <p className="mt-1 text-xs text-slate-500">
-                                      #{inquiry.inquiry_id} •{" "}
-                                      {formatDate(inquiry.created_at)}
-                                    </p>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    {(unreadByInquiry[inquiry.inquiry_id] ||
-                                      0) > 0 ? (
-                                      <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[11px] font-semibold text-white">
-                                        {unreadByInquiry[inquiry.inquiry_id]}
-                                      </span>
-                                    ) : null}
-                                    <Badge
-                                      className={getStatusBadgeClass(
-                                        inquiry.status,
-                                      )}
-                                    >
-                                      {inquiry.status}
-                                    </Badge>
-                                  </div>
-                                </div>
-
-                                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
-                                  <span>{inquiry.name}</span>
-                                  <span>{inquiry.email}</span>
-                                  <span>{formatPrice(inquiry.price)}</span>
-                                </div>
-
-                                {inquiry.last_message_content ? (
-                                  <div className="mt-3 space-y-1">
-                                    <p className="text-sm text-slate-700 line-clamp-2 italic">
-                                      "
-                                      {inquiry.last_message_content.length > 90
-                                        ? `${inquiry.last_message_content.slice(0, 90)}...`
-                                        : inquiry.last_message_content}
-                                      "
-                                    </p>
-                                    <p className="text-xs text-slate-400">
-                                      {inquiry.last_message_sender_name ||
-                                        "Requester"}{" "}
-                                      •{" "}
-                                      {inquiry.last_message_date
-                                        ? formatDate(inquiry.last_message_date)
-                                        : ""}
-                                    </p>
-                                  </div>
-                                ) : (
-                                  <p className="mt-3 text-sm text-slate-600">
-                                    {snippet}
-                                  </p>
-                                )}
-
-                                <div className="mt-4 flex flex-wrap gap-2">
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => openInquiryChat(inquiry)}
-                                    className="rounded-full"
-                                    type="button"
-                                  >
-                                    Open Chat
-                                  </Button>
-
-                                  {inquiry.status === "Pending" ? (
-                                    <>
-                                      <Button
-                                        size="sm"
-                                        onClick={() =>
-                                          handleStatusUpdate(
-                                            inquiry.inquiry_id,
-                                            "Accepted",
-                                          )
-                                        }
-                                        className="rounded-full bg-emerald-600 text-white hover:bg-emerald-700"
-                                        type="button"
-                                      >
-                                        <CheckCircle2 className="mr-1 h-4 w-4" />
-                                        Accept
-                                      </Button>
-
-                                      <Button
-                                        size="sm"
-                                        onClick={() =>
-                                          handleStatusUpdate(
-                                            inquiry.inquiry_id,
-                                            "Rejected",
-                                          )
-                                        }
-                                        className="rounded-full bg-rose-600 text-white hover:bg-rose-700"
-                                        type="button"
-                                      >
-                                        <XCircle className="mr-1 h-4 w-4" />
-                                        Reject
-                                      </Button>
-                                    </>
-                                  ) : (
-                                    <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-500">
-                                      Status finalized
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
+                    <div className="flex items-center gap-2">
+                      {(unreadByInquiry[inquiry.inquiry_id] || 0) > 0 && (
+                        <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#b8955f] px-1.5 text-[11px] font-semibold text-white">
+                          {unreadByInquiry[inquiry.inquiry_id]}
+                        </span>
                       )}
+
+                      <Badge className={getStatusBadgeClass(inquiry.status)}>
+                        {inquiry.status}
+                      </Badge>
                     </div>
-                  </section>
+                  </div>
 
-                  <aside className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)] h-[70vh] min-h-[560px] max-h-[760px] lg:sticky lg:top-24">
-                    {selectedInquiry ? (
-                      <div className="flex h-full min-h-[520px] flex-col">
-                        <div className="border-b border-slate-200 bg-gradient-to-r from-[#f8f6f2] via-white to-[#f4f7fb] px-5 py-4">
-                          <div className="flex items-center justify-between gap-3">
-                            <div>
-                              <h2 className="text-lg font-semibold text-slate-900">
-                                {selectedInquiry.name}
-                              </h2>
-                              <p className="text-sm text-slate-500">
-                                {selectedInquiry.property_title}
-                              </p>
-                              <p className="mt-1 inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.15em] text-slate-400">
-                                <Sparkles className="h-3.5 w-3.5" /> Live thread
-                              </p>
-                            </div>
-                            <Badge
-                              className={getStatusBadgeClass(
-                                selectedInquiry.status,
-                              )}
-                            >
-                              {selectedInquiry.status}
-                            </Badge>
-                          </div>
-                        </div>
+                  {/* META */}
+                  <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#8a8175]">
+                    <span>{inquiry.name}</span>
+                    <span>{inquiry.email}</span>
+                    <span className="text-[#b8955f] font-semibold">
+                      {formatPrice(inquiry.price)}
+                    </span>
+                  </div>
 
-                        <div
-                          ref={chatScrollRef}
-                          className="flex-1 space-y-4 overflow-y-auto bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-5 py-5"
+                  {/* MESSAGE */}
+                  {inquiry.last_message_content ? (
+                    <div className="mt-3 space-y-1">
+                      <p className="text-sm text-[#5f574c] line-clamp-2 italic">
+                        "{inquiry.last_message_content.length > 90
+                          ? `${inquiry.last_message_content.slice(0, 90)}...`
+                          : inquiry.last_message_content}"
+                      </p>
+
+                      <p className="text-xs text-[#a89b8b]">
+                        {inquiry.last_message_sender_name || "Requester"} •{" "}
+                        {inquiry.last_message_date
+                          ? formatDate(inquiry.last_message_date)
+                          : ""}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="mt-3 text-sm text-[#6e6253]">
+                      {snippet}
+                    </p>
+                  )}
+
+                  {/* ACTIONS */}
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => openInquiryChat(inquiry)}
+                      className="rounded-full border-[#e7dfd2] text-[#6e6253] hover:bg-[#faf7f2]"
+                      type="button"
+                    >
+                      Open Chat
+                    </Button>
+
+                    {inquiry.status === "Pending" ? (
+                      <>
+                        <Button
+                          size="sm"
+                          onClick={() =>
+                            handleStatusUpdate(inquiry.inquiry_id, "Accepted")
+                          }
+                          className="rounded-full bg-emerald-600 text-white hover:bg-emerald-700"
                         >
-                          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600 shadow-sm">
-                            <p className="font-medium text-slate-900">
-                              Inquiry details
-                            </p>
-                            <p className="mt-2">{selectedInquiry.message}</p>
-                            <p className="mt-3 text-xs text-slate-400">
-                              {selectedInquiry.email} | {selectedInquiry.phone}{" "}
-                              | {formatDate(selectedInquiry.created_at)}
-                            </p>
-                          </div>
+                          <CheckCircle2 className="mr-1 h-4 w-4" />
+                          Accept
+                        </Button>
 
-                          {loadingMessages ? (
-                            <div className="text-sm text-slate-500">
-                              Loading chat...
-                            </div>
-                          ) : messages.length === 0 ? (
-                            <div className="flex items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-10 text-center text-sm text-slate-500">
-                              <div>
-                                <MessageSquare className="mx-auto mb-3 h-6 w-6" />
-                                <p>No messages yet. Start the conversation.</p>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="space-y-3">
-                              {messages.map((message) => {
-                                const isMine =
-                                  Number(message.sender_id) === currentUserId;
-                                const isLastOutgoingMessage =
-                                  isMine &&
-                                  message.message_id === lastOutgoingMessageId;
-                                const senderName =
-                                  message.sender_name ||
-                                  selectedInquiry.name ||
-                                  "Requester";
-                                const messageTime = new Date(
-                                  message.created_at,
-                                ).toLocaleTimeString("en-US", {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                });
-                                const deliveryLabel = isLastOutgoingMessage
-                                  ? Number(message.is_read) === 1
-                                    ? "Seen"
-                                    : "Sent"
-                                  : "";
-                                return (
-                                  <div
-                                    key={message.message_id}
-                                    className={`flex ${isMine ? "justify-end" : "justify-start gap-2.5"}`}
-                                  >
-                                    {!isMine && (
-                                      <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-full border border-[#E5E7EB] bg-white text-[11px] font-semibold text-slate-600">
-                                        {senderName.charAt(0)}
-                                      </div>
-                                    )}
-                                    <div
-                                      className={`max-w-[72%] flex flex-col ${isMine ? "items-end" : "items-start"}`}
-                                    >
-                                      {!isMine && (
-                                        <p className="mb-1.5 text-[12px] font-bold text-slate-700">
-                                          {senderName}
-                                        </p>
-                                      )}
-                                      <div
-                                        className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                                          isMine
-                                            ? "bg-gradient-to-br from-slate-900 to-slate-700 text-white shadow-[0_12px_30px_rgba(15,23,42,0.22)]"
-                                            : "border border-[#dbe4f3] bg-white text-slate-800 shadow-sm"
-                                        }`}
-                                      >
-                                        <p>{message.content}</p>
-                                      </div>
-                                      <p
-                                        className={`mt-1.5 text-[10px] ${isMine ? "text-slate-500" : "text-slate-400"}`}
-                                      >
-                                        {messageTime}
-                                        {deliveryLabel
-                                          ? ` | ${deliveryLabel}`
-                                          : ""}
-                                      </p>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="border-t border-slate-200 bg-white p-4">
-                          {typingLabel && (
-                            <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[12px] font-medium text-slate-500">
-                              <span>{typingLabel}</span>
-                              <span className="h-1.5 w-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:-0.2s]" />
-                              <span className="h-1.5 w-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:-0.1s]" />
-                              <span className="h-1.5 w-1.5 rounded-full bg-slate-400 animate-bounce" />
-                            </div>
-                          )}
-                          {selectedInquiry.customer_id ? (
-                            <div className="flex gap-2">
-                              <Input
-                                ref={messageInputRef}
-                                value={messageText}
-                                onChange={(e) => {
-                                  const nextValue = e.target.value;
-                                  setMessageText(nextValue);
-
-                                  const hasContent =
-                                    nextValue.trim().length > 0;
-
-                                  if (hasContent && !isTypingRef.current) {
-                                    emitTyping(true);
-                                    isTypingRef.current = true;
-                                  }
-
-                                  if (typingTimeoutRef.current) {
-                                    clearTimeout(typingTimeoutRef.current);
-                                    typingTimeoutRef.current = null;
-                                  }
-
-                                  if (!hasContent && isTypingRef.current) {
-                                    emitTyping(false);
-                                    isTypingRef.current = false;
-                                    return;
-                                  }
-
-                                  if (hasContent) {
-                                    typingTimeoutRef.current = setTimeout(
-                                      () => {
-                                        if (isTypingRef.current) {
-                                          emitTyping(false);
-                                          isTypingRef.current = false;
-                                        }
-                                      },
-                                      1200,
-                                    );
-                                  }
-                                }}
-                                placeholder="Write a reply..."
-                                className="rounded-2xl border-slate-200 bg-white shadow-sm"
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter") {
-                                    e.preventDefault();
-                                    handleSend();
-                                  }
-                                }}
-                              />
-                              <Button
-                                onClick={handleSend}
-                                disabled={sending || !messageText.trim()}
-                                className="rounded-xl"
-                              >
-                                <Send className="mr-2 h-4 w-4" />
-                                {sending ? "Sending..." : "Send"}
-                              </Button>
-                            </div>
-                          ) : (
-                            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                              This inquiry has no linked requester account, so
-                              chat is read-only.
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                        <Button
+                          size="sm"
+                          onClick={() =>
+                            handleStatusUpdate(inquiry.inquiry_id, "Rejected")
+                          }
+                          className="rounded-full bg-rose-600 text-white hover:bg-rose-700"
+                        >
+                          <XCircle className="mr-1 h-4 w-4" />
+                          Reject
+                        </Button>
+                      </>
                     ) : (
-                      <div className="flex min-h-[520px] items-center justify-center px-6 text-center text-sm text-slate-500">
-                        Select an inquiry to open the side chat panel.
-                      </div>
+                      <span className="inline-flex items-center rounded-full border border-[#e7dfd2] bg-[#faf7f2] px-3 py-1 text-xs text-[#8a8175]">
+                        Status finalized
+                      </span>
                     )}
-                  </aside>
+                  </div>
                 </div>
-              </TabsContent>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </section>
+
+    {/* RIGHT CHAT */}
+    <aside className="overflow-hidden rounded-[34px] border border-[#e7dfd2] bg-[rgba(255,255,255,0.72)] shadow-[0_25px_70px_rgba(0,0,0,0.08)] backdrop-blur-2xl h-[70vh] min-h-[560px] max-h-[760px] lg:sticky lg:top-24">
+
+      {selectedInquiry ? (
+        <div className="flex h-full flex-col">
+
+          {/* HEADER */}
+          <div className="border-b border-[#ece5da] bg-[linear-gradient(180deg,#faf7f2_0%,#ffffff_100%)] px-5 py-4">
+            <h2 className="text-lg font-semibold text-[#2d2923]">
+              {selectedInquiry.name}
+            </h2>
+
+            <p className="text-sm text-[#8a8175]">
+              {selectedInquiry.property_title}
+            </p>
+          </div>
+
+          {/* CHAT */}
+          <div className="flex-1 overflow-y-auto px-5 py-5 space-y-3">
+
+            {messages.map((message) => {
+              const isMine = Number(message.sender_id) === currentUserId;
+
+              return (
+                <div
+                  key={message.message_id}
+                  className={`flex ${isMine ? "justify-end" : "justify-start gap-2.5"}`}
+                >
+                  {!isMine && (
+                    <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-full border border-[#e7dfd2] bg-[#faf7f2] text-[11px] font-semibold text-[#7b6d59]">
+                      {message.sender_name?.charAt(0) || "U"}
+                    </div>
+                  )}
+
+                  <div className={`max-w-[75%] flex flex-col ${isMine ? "items-end" : "items-start"}`}>
+                    <div
+                      className={`rounded-2xl px-4 py-2.5 text-sm shadow-sm ${
+                        isMine
+                          ? "bg-[#b8955f] text-white"
+                          : "border border-[#e7dfd2] bg-white text-[#2d2923]"
+                      }`}
+                    >
+                      {message.content}
+                    </div>
+
+                    <p className="mt-1 text-[10px] text-[#a89b8b]">
+                      {new Date(message.created_at).toLocaleTimeString("en-US", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* INPUT */}
+          <div className="border-t border-[#ece5da] bg-[#faf7f2] p-4">
+            <div className="flex gap-2">
+              <Input
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+                placeholder="Write a message..."
+                className="rounded-2xl border-[#e7dfd2] bg-white"
+              />
+
+              <Button
+                onClick={handleSend}
+                className="rounded-2xl bg-[#b8955f] text-white hover:bg-[#a7844d]"
+              >
+                Send
+              </Button>
+            </div>
+          </div>
+
+        </div>
+      ) : (
+        <div className="flex h-full items-center justify-center text-[#8a8175]">
+          Select an inquiry
+        </div>
+      )}
+
+    </aside>
+  </div>
+</TabsContent>
             </Tabs>
           </CardContent>
         </Card>
@@ -1955,3 +1764,4 @@ const OwnerDashboard = () => {
 };
 
 export default OwnerDashboard;
+

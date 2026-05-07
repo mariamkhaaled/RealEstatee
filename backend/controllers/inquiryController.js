@@ -67,12 +67,7 @@ exports.createInquiry = async (req, res, next) => {
       });
     }
 
-    if (listing.listing_status !== "Active") {
-      return res.status(400).json({
-        status: "fail",
-        message: "This listing is not accepting new inquiries",
-      });
-    }
+    // Removed status check to allow inquiries on any listing
 
     if (Number(listing.owner_id) === Number(customer_id)) {
       return res.status(400).json({
@@ -88,8 +83,8 @@ exports.createInquiry = async (req, res, next) => {
       );
 
     if (existingInquiryRows.length > 0) {
-      return res.status(200).json({
-        status: "success",
+      return res.status(409).json({
+        status: "fail",
         message: "Inquiry already exists for this listing",
         data: {
           inquiry_id: existingInquiryRows[0].inquiry_id,

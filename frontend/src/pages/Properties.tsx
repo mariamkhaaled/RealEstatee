@@ -58,8 +58,10 @@ export default function Properties() {
           status: p.status,
           createdAt: new Date().toISOString(),
         }));
-        setAll(mapped);
-        setFiltered(mapped);
+
+        const activeOnly = mapped.filter(p => p.status === "Active");
+        setAll(activeOnly);
+        setFiltered(activeOnly);
       } finally {
         setLoading(false);
       }

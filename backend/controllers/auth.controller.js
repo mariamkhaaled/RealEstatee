@@ -117,6 +117,7 @@ exports.login = async (req, res, next) => {
         lastName: lastName,
         email: user.email,
         role: user.role,
+        photo: user.photo || null,
       },
     });
   } catch (err) {
@@ -128,6 +129,31 @@ exports.login = async (req, res, next) => {
 // =======================
 // GET PROFILE
 // =======================
+exports.updatePhoto = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+
+    if (!req.file) {
+      return res.status(400).json({
+        status: "fail",
+        message: "No file uploaded",
+      });
+    }
+
+    const photoPath = `/uploads/${req.file.filename}`;
+
+    await User.updatePhoto(userId, photoPath);
+
+    res.status(200).json({
+      status: "success",
+      photo: photoPath,
+    });
+  } catch (err) {
+    next(err);
+  }
+  console.log("FILE:", req.file);
+};
+
 exports.getProfile = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -157,6 +183,7 @@ exports.getProfile = async (req, res, next) => {
         email: user.email,
         phone: user.phone,
         role: user.role,
+        photo: user.photo || null   // 🔥 ADD THIS
       },
     });
   } catch (err) {

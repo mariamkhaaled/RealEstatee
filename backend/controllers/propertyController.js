@@ -103,61 +103,80 @@ exports.getPropertyById = async (req, res, next) => {
     }
 };
 
-    exports.updateProperty = async (req, res, next) => {
-    try {
-        const propertyId = Number(req.params.id);
+  exports.updateProperty = async (req, res, next) => {
+  try {
+    const propertyId = Number(req.params.id);
 
-        const uploadedImages = (req.files || []).map(
-            (file) => `/uploads/${file.filename}`
-        );
+    // 🔥 1. Get existing property (IMPORTANT)
+    const existingProperty = await Property.findById(propertyId);
 
-        const bodyImages = Array.isArray(req.body.images)
-            ? req.body.images
-            : req.body.images
-                ? JSON.parse(req.body.images)
-                : [];
+    const uploadedImages = (req.files || []).map(
+      (file) => `/uploads/${file.filename}`
+    );
 
-        const parsedData = {
-            owner_id: Number(req.body.owner_id),
+    const bodyImages = Array.isArray(req.body.images)
+      ? req.body.images
+      : req.body.images
+        ? JSON.parse(req.body.images)
+        : [];
 
-            property:
-                typeof req.body.property === "string"
-                    ? JSON.parse(req.body.property)
-                    : req.body.property,
+    // 🔥 2. MERGE LOGIC (FIX)
+    let finalImages = [];
 
-            location:
-                typeof req.body.location === "string"
-                    ? JSON.parse(req.body.location)
-                    : req.body.location,
-
-            listing:
-                typeof req.body.listing === "string"
-                    ? JSON.parse(req.body.listing)
-                    : req.body.listing,
-
-            feature_ids:
-                typeof req.body.feature_ids === "string"
-                    ? JSON.parse(req.body.feature_ids)
-                    : req.body.feature_ids || [],
-
-            images: uploadedImages.length > 0 ? uploadedImages : bodyImages
-        };
-
-        const updatedProperty = await Property.update(
-            propertyId,
-            parsedData.owner_id,
-            parsedData
-        );
-
-        res.status(200).json({
-            status: 'success',
-            message: 'Property updated successfully',
-            data: { property: updatedProperty }
-        });
-    } catch (err) {
-        next(err);
+    if (uploadedImages.length > 0) {
+      // New upload replaces or adds
+      finalImages = uploadedImages;
+    } else if (bodyImages.length > 0) {
+      // If frontend sends existing images
+      finalImages = bodyImages;
+    } else {
+      // 🔥 fallback → KEEP OLD IMAGES (CRITICAL FIX)
+      finalImages = existingProperty.images || [];
     }
+
+    const parsedData = {
+      owner_id: Number(req.body.owner_id),
+
+      property:
+        typeof req.body.property === "string"
+          ? JSON.parse(req.body.property)
+          : req.body.property,
+
+      location:
+        typeof req.body.location === "string"
+          ? JSON.parse(req.body.location)
+          : req.body.location,
+
+      listing:
+        typeof req.body.listing === "string"
+          ? JSON.parse(req.body.listing)
+          : req.body.listing,
+
+      feature_ids:
+        typeof req.body.feature_ids === "string"
+          ? JSON.parse(req.body.feature_ids)
+          : req.body.feature_ids || [],
+
+      images: finalImages
+    };
+
+    const updatedProperty = await Property.update(
+      propertyId,
+      parsedData.owner_id,
+      parsedData
+    );
+
+    res.status(200).json({
+      status: "success",
+      message: "Property updated successfully",
+      data: { property: updatedProperty }
+    });
+
+  } catch (err) {
+    next(err);
+  }
 };
+
 
 exports.deleteProperty = async (req, res, next) => {
     try {

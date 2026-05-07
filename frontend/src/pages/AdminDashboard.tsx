@@ -286,7 +286,7 @@ const AdminDashboard: React.FC = () => {
                       Total Revenue
                     </p>
 
-                    <h3 className="lux-title text-5xl font-light num ">
+                    <h3 className="lux-title text-4xl font-light num ">
                       $783K
                     </h3>
                   </div>
@@ -315,7 +315,7 @@ const AdminDashboard: React.FC = () => {
                       Maintenance Cost
                     </p>
 
-                    <h3 className="lux-title text-5xl font-light num">
+                    <h3 className="lux-title text-4xl font-light num">
                       $582K
                     </h3>
                   </div>

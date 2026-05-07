@@ -12,7 +12,7 @@ export interface Property {
   images: string[];
   features: string[];
   ownerId: string;
-  status: 'Pending' | 'Approved' | 'Rejected';
+ status: "Pending" | "Active" | "Closed";
   createdAt: string;
 }
 
