@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -20,76 +20,84 @@ import Favorites from "@/pages/Favorites";
 
 const queryClient = new QueryClient();
 
+const AppContent = () => {
+  const location = useLocation();
+
+  // القائمة السوداء للصفحات اللي مش عايزين فيها Navbar أو Footer
+  // ضفت لك الـ register و الـ verify عشان التصميم يفضل متناسق
+  const hideLayoutPaths = ["/login", "/register", "/verify-email", "/reset-password"];
+  const shouldHideLayout = hideLayoutPaths.includes(location.pathname);
+
+  return (
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
+      {/* مش هيظهروا لو المسار الحالي موجود في القائمة */}
+      {!shouldHideLayout && <Navbar />}
+
+      <div className="flex-1">
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Home />} />
+          <Route path="/properties" element={<Properties />} />
+          <Route path="/property-details/:id" element={<PropertyDetails />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/verify-email" element={<VerifyOTP />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+
+          {/* Protected Routes */}
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute allowedRoles={["customer", "owner", "admin"]}>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/owner-dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["owner"]}>
+                <OwnerDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin-dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-inquiries"
+            element={
+              <ProtectedRoute allowedRoles={["owner", "customer"]}>
+                <MyInquiries />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/favorites"
+            element={
+              <ProtectedRoute allowedRoles={["customer", "owner", "admin"]}>
+                <Favorites />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </div>
+
+      {!shouldHideLayout && <Footer />}
+    </div>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <FavoritesProvider>
       <BrowserRouter>
-        <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
-          <Navbar />
-
-          <div className="flex-1">
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/properties" element={<Properties />} />
-              <Route
-                path="/property-details/:id"
-                element={<PropertyDetails />}
-              />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/verify-email" element={<VerifyOTP />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-
-              {/* Protected Routes */}
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute allowedRoles={["customer", "owner", "admin"]}>
-                    <Profile />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/owner-dashboard"
-                element={
-                  <ProtectedRoute allowedRoles={["owner"]}>
-                    <OwnerDashboard />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/admin-dashboard"
-                element={
-                  <ProtectedRoute allowedRoles={["admin"]}>
-                    <AdminDashboard />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/my-inquiries"
-                element={
-                  <ProtectedRoute allowedRoles={["owner", "customer"]}>
-                    <MyInquiries />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/favorites"
-                element={
-                  <ProtectedRoute allowedRoles={["customer", "owner", "admin"]}>
-                    <Favorites />
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
-          </div>
-          <Footer />
-        </div>
+        <AppContent />
       </BrowserRouter>
     </FavoritesProvider>
   </QueryClientProvider>

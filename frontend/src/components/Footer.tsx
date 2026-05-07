@@ -18,6 +18,9 @@ import { Separator } from '@/components/ui/separator';
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
 
+  // Shiny Gold Gradient Constant
+  const shinyGoldGradient = "bg-gradient-to-tr from-[#c5a367] via-[#f3d39a] to-[#b88a44]";
+
   const footerLinks = {
     company: [
       { label: 'About Us', href: '#' },
@@ -47,55 +50,58 @@ const Footer: React.FC = () => {
   ];
 
   return (
-    <footer className="mt-24 border-t border-white/10 bg-[#0f0f11] text-[#f5f1eb]">
+    <footer className="mt-24 border-t border-white/5 bg-[#0a0a0b] text-[#f5f1eb]">
       
-      {/* Newsletter */}
-      <div className="border-b border-white/10 bg-gradient-to-r from-[#151517] to-[#1b1b1f]">
+      {/* Newsletter - High-Contrast Dark Luxury */}
+      <div className="border-b border-white/5 bg-[#0f0f11]">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 py-20">
           <div className="max-w-3xl mx-auto text-center">
             
-            <p className="uppercase tracking-[0.35em] text-[11px] text-[#c6a77d] mb-4 font-medium">
-              Exclusive Updates
+            <p className="uppercase tracking-[0.4em] text-[10px] text-[#d4af37] mb-4 font-semibold">
+              Exclusive Access
             </p>
 
-            <h3 className="text-4xl md:text-5xl font-light leading-tight tracking-tight text-white">
+            <h3 className="text-4xl md:text-5xl font-serif font-light leading-tight tracking-tight text-white">
               Discover New Luxury Listings
             </h3>
 
-            <p className="mt-5 text-[#b7b1a8] leading-relaxed text-sm md:text-base max-w-xl mx-auto">
-              Subscribe to receive curated premium properties, market insights,
-              and exclusive investment opportunities.
+            <p className="mt-5 text-[#8f8b84] leading-relaxed text-sm md:text-base max-w-xl mx-auto">
+              Subscribe to receive curated premium properties and exclusive investment opportunities.
             </p>
 
-            <div className="mt-10 flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
+            <div className="mt-10 flex flex-col sm:flex-row gap-4 max-w-xl mx-auto">
               <Input
                 type="email"
                 placeholder="Enter your email"
                 className="
                   h-14
-                  bg-[#18181b]
-                  border border-white/10
+                  bg-[#161618]
+                  border-white/10
                   text-white
-                  placeholder:text-[#8f8b84]
-                  rounded-none
-                  focus-visible:ring-0
-                  focus-visible:border-[#c6a77d]
+                  placeholder:text-[#5a5650]
+                  rounded-xl
+                  focus-visible:ring-1
+                  focus-visible:ring-[#d4af37]/50
+                  focus-visible:border-[#d4af37]
                 "
               />
 
               <Button
-                className="
+                className={`
                   h-14
                   px-8
-                  rounded-none
-                  bg-[#c6a77d]
-                  hover:bg-[#d4b48a]
-                  text-black
-                  font-medium
-                  tracking-wide
+                  rounded-xl
+                  ${shinyGoldGradient}
+                  hover:brightness-110
+                  text-[#1a1814]
+                  font-bold
+                  tracking-wider
+                  uppercase
+                  text-[11px]
+                  shadow-[0_0_20px_rgba(197,163,103,0.2)]
                   transition-all
                   duration-300
-                "
+                `}
               >
                 Subscribe
                 <ArrowRight size={16} className="ml-2" />
@@ -109,176 +115,111 @@ const Footer: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-14">
 
-          {/* Brand */}
+          {/* Brand Area */}
           <div className="lg:col-span-2">
-            <Link to="/" className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 border border-[#c6a77d]/40 bg-[#18181b] flex items-center justify-center">
-                <HomeIcon size={24} className="text-[#c6a77d]" />
+            <Link to="/" className="flex items-center gap-4 mb-8 group">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${shinyGoldGradient} shadow-lg shadow-black`}>
+                <HomeIcon size={24} className="text-[#1a1814]" />
               </div>
 
               <div>
-                <h2 className="text-2xl font-light tracking-[0.18em] text-white">
+                <h2 className="text-2xl font-serif tracking-[0.1em] text-white">
                   LUXEESTATES
                 </h2>
-                <p className="text-[10px] uppercase tracking-[0.3em] text-[#8f8b84] mt-1">
-                  Luxury Real Estate
+                <p className="text-[10px] uppercase tracking-[0.35em] text-[#d4af37] mt-1 font-medium">
+                  Premium Realty
                 </p>
               </div>
             </Link>
 
-            <p className="text-[#b7b1a8] leading-loose max-w-md text-sm">
-              We redefine luxury living by connecting discerning buyers with
-              exceptional properties in the world’s most sought-after locations.
+            <p className="text-[#8f8b84] leading-loose max-w-md text-sm font-light">
+              We redefine high-end living by connecting discerning buyers with
+              exceptional properties across the globe.
             </p>
 
-            <div className="flex gap-3 mt-8">
+            <div className="flex gap-4 mt-8">
               {socialLinks.map((social) => (
                 <a
                   key={social.label}
                   href={social.href}
-                  title={social.label}
                   className="
-                    w-11 h-11
+                    w-10 h-10
+                    rounded-full
                     border border-white/10
-                    bg-[#18181b]
+                    bg-[#161618]
                     flex items-center justify-center
-                    text-[#c6a77d]
-                    hover:bg-[#c6a77d]
-                    hover:text-black
+                    text-[#8f8b84]
+                    hover:text-[#d4af37]
+                    hover:border-[#d4af37]/50
                     transition-all duration-300
                   "
                 >
-                  <social.icon size={17} />
+                  <social.icon size={16} />
                 </a>
               ))}
             </div>
           </div>
 
-          {/* Company */}
-          <div>
-            <h4 className="text-sm tracking-[0.25em] uppercase text-white mb-6">
-              Company
-            </h4>
+          {/* Navigation Links */}
+          {['company', 'properties'].map((section) => (
+            <div key={section}>
+              <h4 className="text-[11px] tracking-[0.25em] uppercase text-white font-bold mb-8">
+                {section}
+              </h4>
+              <ul className="space-y-4">
+                {(footerLinks as any)[section].map((link: any) => (
+                  <li key={link.label}>
+                    <Link
+                      to={link.href}
+                      className="text-sm text-[#8f8b84] hover:text-white transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
 
-            <ul className="space-y-4">
-              {footerLinks.company.map((link) => (
-                <li key={link.label}>
-                  <a
-                    href={link.href}
-                    className="
-                      text-sm text-[#b7b1a8]
-                      hover:text-[#c6a77d]
-                      transition-colors
-                    "
-                  >
-                    {link.label}
+          {/* Contact Details */}
+          <div>
+            <h4 className="text-[11px] tracking-[0.25em] uppercase text-white font-bold mb-8">
+              Inquiries
+            </h4>
+            <ul className="space-y-6">
+              <li className="flex items-start gap-3">
+                <Mail size={16} className="text-[#d4af37] mt-1" />
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase text-[#5a5650] tracking-tighter">Email Us</span>
+                  <a href="mailto:info@luxeestates.com" className="text-sm text-[#8f8b84] hover:text-white transition-colors">
+                    info@luxeestates.com
                   </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Properties */}
-          <div>
-            <h4 className="text-sm tracking-[0.25em] uppercase text-white mb-6">
-              Properties
-            </h4>
-
-            <ul className="space-y-4">
-              {footerLinks.properties.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    to={link.href}
-                    className="
-                      text-sm text-[#b7b1a8]
-                      hover:text-[#c6a77d]
-                      transition-colors
-                    "
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Contact */}
-          <div>
-            <h4 className="text-sm tracking-[0.25em] uppercase text-white mb-6">
-              Contact
-            </h4>
-
-            <ul className="space-y-5">
-              <li className="flex gap-3">
-                <Mail
-                  size={17}
-                  className="text-[#c6a77d] flex-shrink-0 mt-0.5"
-                />
-                <a
-                  href="mailto:support@luxeestates.com"
-                  className="text-sm text-[#b7b1a8] hover:text-[#c6a77d] transition-colors"
-                >
-                  support@luxeestates.com
-                </a>
+                </div>
               </li>
-
-              <li className="flex gap-3">
-                <Phone
-                  size={17}
-                  className="text-[#c6a77d] flex-shrink-0 mt-0.5"
-                />
-                <a
-                  href="tel:+1234567890"
-                  className="text-sm text-[#b7b1a8] hover:text-[#c6a77d] transition-colors"
-                >
-                  +1 (234) 567-8900
-                </a>
-              </li>
-
-              <li className="flex gap-3">
-                <MapPin
-                  size={17}
-                  className="text-[#c6a77d] flex-shrink-0 mt-0.5"
-                />
-                <span className="text-sm text-[#b7b1a8] leading-relaxed">
-                  123 Luxury Avenue,
-                  <br />
-                  New York, NY 10001
-                </span>
+              <li className="flex items-start gap-3">
+                <MapPin size={16} className="text-[#d4af37] mt-1" />
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase text-[#5a5650] tracking-tighter">Visit</span>
+                  <span className="text-sm text-[#8f8b84]">123 Luxury Ave, NY</span>
+                </div>
               </li>
             </ul>
           </div>
         </div>
 
-        <Separator className="bg-white/10 my-12" />
+        <Separator className="bg-white/5 my-12" />
 
-        {/* Bottom */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-5">
-          <p className="text-xs tracking-[0.18em] uppercase text-[#7d7972]">
-            © {currentYear} LuxeEstates — All Rights Reserved
+        {/* Bottom Bar */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+          <p className="text-[10px] tracking-[0.2em] uppercase text-[#5a5650]">
+            © {currentYear} LuxeEstates — Crafted for Excellence
           </p>
-
-          <div className="flex flex-wrap justify-center gap-8">
-            <a
-              href="#"
-              className="text-xs tracking-[0.15em] uppercase text-[#9f9a92] hover:text-[#c6a77d] transition-colors"
-            >
-              Terms
-            </a>
-
-            <a
-              href="#"
-              className="text-xs tracking-[0.15em] uppercase text-[#9f9a92] hover:text-[#c6a77d] transition-colors"
-            >
-              Privacy
-            </a>
-
-            <a
-              href="#"
-              className="text-xs tracking-[0.15em] uppercase text-[#9f9a92] hover:text-[#c6a77d] transition-colors"
-            >
-              Cookies
-            </a>
+          <div className="flex gap-8">
+            {['Privacy', 'Legal', 'Sitemap'].map((item) => (
+              <a key={item} href="#" className="text-[10px] tracking-[0.15em] uppercase text-[#5a5650] hover:text-[#d4af37] transition-colors">
+                {item}
+              </a>
+            ))}
           </div>
         </div>
       </div>

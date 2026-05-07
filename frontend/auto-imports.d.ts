@@ -11,6 +11,7 @@ declare global {
   const ArrowLeft: typeof import('lucide-react').ArrowLeft
   const ArrowRight: typeof import('lucide-react').ArrowRight
   const ArrowUpRight: typeof import('lucide-react').ArrowUpRight
+  const Award: typeof import('lucide-react').Award
   const Badge: typeof import('lucide-react').Badge
   const Bath: typeof import('lucide-react').Bath
   const Bed: typeof import('lucide-react').Bed
@@ -22,6 +23,7 @@ declare global {
   const Check: typeof import('lucide-react').Check
   const CheckCircle2: typeof import('lucide-react').CheckCircle2
   const CheckIcon: typeof import('lucide-react').CheckIcon
+  const ChevronDown: typeof import('lucide-react').ChevronDown
   const ChevronDownIcon: typeof import('lucide-react').ChevronDownIcon
   const ChevronLeft: typeof import('lucide-react').ChevronLeft
   const ChevronLeftIcon: typeof import('lucide-react').ChevronLeftIcon
@@ -53,12 +55,14 @@ declare global {
   const Icon: typeof import('lucide-react').Icon
   const Image: typeof import('lucide-react').Image
   const ImagePlus: typeof import('lucide-react').ImagePlus
+  const Images: typeof import('lucide-react').Images
   const Info: typeof import('lucide-react').Info
   const InfoIcon: typeof import('lucide-react').InfoIcon
   const Instagram: typeof import('lucide-react').Instagram
   const LayoutDashboard: typeof import('lucide-react').LayoutDashboard
   const Link: typeof import('lucide-react').Link
   const Linkedin: typeof import('lucide-react').Linkedin
+  const List: typeof import('lucide-react').List
   const Loader: typeof import('lucide-react').Loader
   const Loader2Icon: typeof import('lucide-react').Loader2Icon
   const Lock: typeof import('lucide-react').Lock
@@ -73,6 +77,7 @@ declare global {
   const MoreHorizontal: typeof import('lucide-react').MoreHorizontal
   const MoreHorizontalIcon: typeof import('lucide-react').MoreHorizontalIcon
   const MoreVertical: typeof import('lucide-react').MoreVertical
+  const Navigation: typeof import('lucide-react').Navigation
   const OctagonXIcon: typeof import('lucide-react').OctagonXIcon
   const PanelLeftIcon: typeof import('lucide-react').PanelLeftIcon
   const Pencil: typeof import('lucide-react').Pencil
@@ -81,6 +86,7 @@ declare global {
   const RotateCw: typeof import('lucide-react').RotateCw
   const Route: typeof import('lucide-react').Route
   const Save: typeof import('lucide-react').Save
+  const Scroll: typeof import('lucide-react').Scroll
   const Search: typeof import('lucide-react').Search
   const SearchIcon: typeof import('lucide-react').SearchIcon
   const Section: typeof import('lucide-react').Section
@@ -94,8 +100,11 @@ declare global {
   const SlidersHorizontal: typeof import('lucide-react').SlidersHorizontal
   const Sparkles: typeof import('lucide-react').Sparkles
   const Square: typeof import('lucide-react').Square
+  const Star: typeof import('lucide-react').Star
+  const Stars: typeof import('lucide-react').Stars
   const Suspense: typeof import('react').Suspense
   const Table: typeof import('lucide-react').Table
+  const Text: typeof import('lucide-react').Text
   const Timer: typeof import('lucide-react').Timer
   const Trash2: typeof import('lucide-react').Trash2
   const TrendingUp: typeof import('lucide-react').TrendingUp
