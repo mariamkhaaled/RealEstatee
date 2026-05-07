@@ -19,6 +19,7 @@ declare global {
   const Box: typeof import('lucide-react').Box
   const Briefcase: typeof import('lucide-react').Briefcase
   const Building: typeof import('lucide-react').Building
+  const Building2: typeof import('lucide-react').Building2
   const Calendar: typeof import('lucide-react').Calendar
   const Check: typeof import('lucide-react').Check
   const CheckCircle2: typeof import('lucide-react').CheckCircle2
@@ -59,6 +60,7 @@ declare global {
   const Info: typeof import('lucide-react').Info
   const InfoIcon: typeof import('lucide-react').InfoIcon
   const Instagram: typeof import('lucide-react').Instagram
+  const Layout: typeof import('lucide-react').Layout
   const LayoutDashboard: typeof import('lucide-react').LayoutDashboard
   const Link: typeof import('lucide-react').Link
   const Linkedin: typeof import('lucide-react').Linkedin
@@ -72,6 +74,7 @@ declare global {
   const Map: typeof import('lucide-react').Map
   const MapPin: typeof import('lucide-react').MapPin
   const Maximize: typeof import('lucide-react').Maximize
+  const Maximize2: typeof import('lucide-react').Maximize2
   const MessageSquare: typeof import('lucide-react').MessageSquare
   const MinusIcon: typeof import('lucide-react').MinusIcon
   const MoreHorizontal: typeof import('lucide-react').MoreHorizontal
@@ -107,6 +110,7 @@ declare global {
   const Text: typeof import('lucide-react').Text
   const Timer: typeof import('lucide-react').Timer
   const Trash2: typeof import('lucide-react').Trash2
+  const Trees: typeof import('lucide-react').Trees
   const TrendingUp: typeof import('lucide-react').TrendingUp
   const TriangleAlertIcon: typeof import('lucide-react').TriangleAlertIcon
   const Twitter: typeof import('lucide-react').Twitter

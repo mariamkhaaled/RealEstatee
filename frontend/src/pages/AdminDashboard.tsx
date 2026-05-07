@@ -143,6 +143,10 @@ const AdminDashboard: React.FC = () => {
       .lux-title {
         font-family: 'Cormorant Garamond', serif;
       }
+      .num { 
+        font-family: 'DM Sans', system-ui, sans-serif !important;
+        font-variant-numeric: tabular-nums;
+      }
 
       .lux-card {
         background: rgba(255,255,255,0.78);
@@ -282,14 +286,12 @@ const AdminDashboard: React.FC = () => {
                       Total Revenue
                     </p>
 
-                    <h3 className="lux-title text-5xl font-light">
+                    <h3 className="lux-title text-5xl font-light num ">
                       $783K
                     </h3>
                   </div>
 
-                  <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-[#c8a96e]/10 border border-[#c8a96e]/20">
-                    💰
-                  </div>
+                  
                 </div>
 
                 <div className="flex items-end justify-between mt-8">
@@ -313,14 +315,12 @@ const AdminDashboard: React.FC = () => {
                       Maintenance Cost
                     </p>
 
-                    <h3 className="lux-title text-5xl font-light">
+                    <h3 className="lux-title text-5xl font-light num">
                       $582K
                     </h3>
                   </div>
 
-                  <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-[#c8a96e]/10 border border-[#c8a96e]/20">
-                    🔧
-                  </div>
+                  
                 </div>
 
                 <div className="flex items-end justify-between mt-8">
@@ -337,7 +337,8 @@ const AdminDashboard: React.FC = () => {
             </div>
 
             {/* Chart */}
-            <div className="lux-card rounded-3xl p-8">
+            
+            {/* <div className="lux-card rounded-3xl p-8">
               <div className="flex justify-between items-center mb-10">
                 <div>
                   <p className="lux-tag lux-gold mb-2">
@@ -376,7 +377,7 @@ const AdminDashboard: React.FC = () => {
                   />
                 </svg>
               </div>
-            </div>
+            </div> */}
 
             {/* Pending Listings */}
             <div className="lux-card rounded-3xl overflow-hidden">
