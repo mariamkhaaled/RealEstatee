@@ -29,6 +29,41 @@ const TYPES = [
   { label: "Office", icon: Briefcase },
 ] as const;
 
+/* ✅ SAME SAFE STYLE AS FAVORITES (simple + robust) */
+const normalizeImages = (images: any): string[] => {
+  if (!images) return [];
+
+  if (Array.isArray(images)) {
+    return images
+      .filter(Boolean)
+      .map((img) =>
+        typeof img === "string"
+          ? img.startsWith("http")
+            ? img
+            : `http://localhost:5000${img}`
+          : ""
+      )
+      .filter(Boolean);
+  }
+
+  if (typeof images === "string") {
+    try {
+      const parsed = JSON.parse(images);
+      if (Array.isArray(parsed)) {
+        return parsed
+          .filter(Boolean)
+          .map((img: string) =>
+            img.startsWith("http")
+              ? img
+              : `http://localhost:5000${img}`
+          );
+      }
+    } catch {}
+  }
+
+  return [];
+};
+
 export default function Properties() {
   const [search, setSearch] = useState("");
   const [purpose, setPurpose] = useState("All");
@@ -38,37 +73,35 @@ export default function Properties() {
   const [all, setAll] = useState<Property[]>([]);
   const [filtered, setFiltered] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     (async () => {
       try {
         const res = await fetch("http://localhost:5000/api/properties");
         const data = await res.json();
-        const mapped: Property[] = (data.data?.properties || []).map(
-          (p: any) => ({
-            id: String(p.property_id),
-            title: p.title,
-            description: p.description,
-            price: Number(p.price),
-            location: `${p.city}${p.address ? `, ${p.address}` : ""}`,
-            type: p.property_type,
-            purpose: p.purpose,
-            beds: p.bedrooms,
-            baths: p.bathrooms,
-            sqft: p.area,
-            images: (p.images || []).map((img: string) =>
-              img.startsWith("http") ? img : `http://localhost:5000${img}`,
-            ),
-            features: p.features || [],
-            ownerId: String(p.owner_id || ""),
-            status: p.status,
-            createdAt: new Date().toISOString(),
-          }),
-        );
+
+        const mapped: Property[] = (data.data?.properties || []).map((p: any) => ({
+          id: String(p.property_id),
+          title: p.title,
+          description: p.description,
+          price: Number(p.price),
+
+          location: `${p.city}${p.address ? `, ${p.address}` : ""}`,
+
+          type: p.property_type,
+          purpose: p.purpose,
+          beds: p.bedrooms,
+          baths: p.bathrooms,
+          sqft: p.area,
+
+          // ✅ FIXED: safe like Favorites
+          images: normalizeImages(p.images),
+
+          features: p.features || [],
+          ownerId: String(p.owner_id || ""),
+          status: p.status,
+          createdAt: new Date().toISOString(),
+        }));
 
         const activeOnly = mapped.filter((p) => p.status === "Active");
         setAll(activeOnly);
@@ -79,6 +112,8 @@ export default function Properties() {
     })();
   }, []);
 
+
+  
   const applyFilters = useCallback(() => {
     let r = all;
 
@@ -88,13 +123,13 @@ export default function Properties() {
         (p) =>
           p.title.toLowerCase().includes(q) ||
           p.location.toLowerCase().includes(q) ||
-          (p.description?.toLowerCase().includes(q) ?? false),
+          (p.description?.toLowerCase().includes(q) ?? false)
       );
     }
 
     if (purpose !== "All") {
       r = r.filter((p) =>
-        purpose === "For Sale" ? p.purpose === "Sale" : p.purpose === "Rent",
+        purpose === "For Sale" ? p.purpose === "Sale" : p.purpose === "Rent"
       );
     }
 
@@ -103,8 +138,9 @@ export default function Properties() {
     if (maxPrice) r = r.filter((p) => p.price <= Number(maxPrice));
 
     setFiltered(r);
-    setDrawerOpen(false);
   }, [all, search, purpose, type, minPrice, maxPrice]);
+
+  if (loading) return <div>Loading...</div>;
 
   const clearFilters = () => {
     setSearch("");

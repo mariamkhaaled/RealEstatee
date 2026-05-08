@@ -1,37 +1,36 @@
 const db = require("../config/db");
 
 const getFavoritesByUser = async (userId) => {
-  const [rows] = await db.execute(
-    `
-      SELECT 
-        p.property_id,
-        p.title,
-        p.description,
-        p.property_type,
-        p.bedrooms,
-        p.bathrooms,
-        p.area,
-        l.price,
-        l.status,
-        l.purpose,
-        l.created_at,
-        pl.city,
-        pl.address,
-        pi.image_url,
-        f.feature_name,
-        p.owner_id
-      FROM favorites fv
-      JOIN properties p ON fv.property_id = p.property_id
-      JOIN listings l ON p.property_id = l.property_id
-      LEFT JOIN property_locations pl ON p.property_id = pl.property_id
-      LEFT JOIN property_images pi ON p.property_id = pi.property_id
-      LEFT JOIN property_features pf ON p.property_id = pf.property_id
-      LEFT JOIN features f ON pf.feature_id = f.feature_id
-      WHERE fv.customer_id = ?
-      ORDER BY p.property_id DESC
-    `,
-    [userId]
-  );
+  const [rows] = await db.execute(`
+  SELECT 
+    p.property_id,
+    p.title,
+    p.description,
+    p.property_type,
+    p.bedrooms,
+    p.bathrooms,
+    p.area,
+    l.price,
+    l.status,
+    l.purpose,
+    l.created_at,
+    pl.city,
+    pl.address,
+    pi.image_url,
+    pi.is_primary,
+    pi.image_id,
+    f.feature_name,
+    p.owner_id
+  FROM favorites fv
+  JOIN properties p ON fv.property_id = p.property_id
+  JOIN listings l ON p.property_id = l.property_id
+  LEFT JOIN property_locations pl ON p.property_id = pl.property_id
+  LEFT JOIN property_images pi ON p.property_id = pi.property_id
+  LEFT JOIN property_features pf ON p.property_id = pf.property_id
+  LEFT JOIN features f ON pf.feature_id = f.feature_id
+  WHERE fv.customer_id = ?
+  ORDER BY p.property_id DESC, pi.is_primary DESC, pi.image_id ASC
+`, [userId]);
 
   const favoritesMap = {};
 

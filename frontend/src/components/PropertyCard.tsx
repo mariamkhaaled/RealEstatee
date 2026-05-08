@@ -99,8 +99,7 @@ const PropertyCard = ({ property, onFavoriteToggle }: PropertyCardProps) => {
           <img
             src={imgSrc}
             alt={property.title}
-            className="pc-img"
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
 
           {/* Cinematic gradient */}
@@ -201,9 +200,9 @@ const PropertyCard = ({ property, onFavoriteToggle }: PropertyCardProps) => {
           {/* Specs row */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 16 }}>
             {[
-              { icon: Bed,       value: property.beds,  label: 'Beds'  },
-              { icon: Bath,      value: property.baths, label: 'Baths' },
-              { icon: Maximize2, value: property.sqft,  label: 'sqft'  },
+              { icon: Bed, value: property.beds, label: 'Beds' },
+              { icon: Bath, value: property.baths, label: 'Baths' },
+              { icon: Maximize2, value: property.sqft, label: 'sqft' },
             ].map(({ icon: Icon, value, label }, i) => (
               <div key={label} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, borderRight: i < 2 ? '1px solid rgba(200,169,110,0.18)' : 'none' }}>
                 <Icon size={13} color="#c8a96e" strokeWidth={1.5} />

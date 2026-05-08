@@ -2,76 +2,80 @@ const db = require('../config/db');
 
 class Property {
   static async findAll() {
-        const [rows] = await db.execute(`
-            SELECT 
-                p.property_id,
-                p.title,
-                p.description,
-                p.property_type,
-                p.bedrooms,
-                p.bathrooms,
-                p.area,
+  const [rows] = await db.execute(`
+    SELECT 
+      p.property_id,
+      p.title,
+      p.description,
+      p.property_type,
+      p.bedrooms,
+      p.bathrooms,
+      p.area,
 
-                u.full_name AS owner_name,
+      u.full_name AS owner_name,
 
-                l.listing_id,
-                l.purpose,
-                l.price,
-                l.status,
-                l.views,
+      l.listing_id,
+      l.purpose,
+      l.price,
+      l.status,
+      l.views,
 
-                pl.city,
-                pl.address,
+      pl.city,
+      pl.address,
 
-                pi.image_url,
-                f.feature_name
+      pi.image_url,
+      pi.is_primary,
+      pi.image_id,
 
-            FROM properties p
-            JOIN users u ON p.owner_id = u.user_id
-            JOIN listings l ON p.property_id = l.property_id
-            LEFT JOIN property_locations pl ON p.property_id = pl.property_id
-            LEFT JOIN property_images pi ON p.property_id = pi.property_id
-            LEFT JOIN property_features pf ON p.property_id = pf.property_id
-            LEFT JOIN features f ON pf.feature_id = f.feature_id
-            ORDER BY p.property_id DESC
-        `);
+      f.feature_name
 
-        const propertiesMap = {};
+    FROM properties p
+    JOIN users u ON p.owner_id = u.user_id
+    JOIN listings l ON p.property_id = l.property_id
+    LEFT JOIN property_locations pl ON p.property_id = pl.property_id
+    LEFT JOIN property_images pi ON p.property_id = pi.property_id
+    LEFT JOIN property_features pf ON p.property_id = pf.property_id
+    LEFT JOIN features f ON pf.feature_id = f.feature_id
 
-        for (const row of rows) {
-            if (!propertiesMap[row.property_id]) {
-                propertiesMap[row.property_id] = {
-                    property_id: row.property_id,
-                    title: row.title,
-                    description: row.description,
-                    property_type: row.property_type,
-                    bedrooms: row.bedrooms,
-                    bathrooms: row.bathrooms,
-                    area: row.area,
-                    owner_name: row.owner_name, // <--- Name added here!
-                    listing_id: row.listing_id,
-                    purpose: row.purpose,
-                    price: row.price,
-                    status: row.status,
-                    views: row.views,
-                    city: row.city,
-                    address: row.address,
-                    images: [],
-                    features: []
-                };
-            }
+    ORDER BY p.property_id DESC, pi.is_primary DESC, pi.image_id ASC
+  `);
 
-            if (row.image_url && !propertiesMap[row.property_id].images.includes(row.image_url)) {
-                propertiesMap[row.property_id].images.push(row.image_url);
-            }
+  const propertiesMap = {};
 
-            if (row.feature_name && !propertiesMap[row.property_id].features.includes(row.feature_name)) {
-                propertiesMap[row.property_id].features.push(row.feature_name);
-            }
-        }
-
-        return Object.values(propertiesMap);
+  for (const row of rows) {
+    if (!propertiesMap[row.property_id]) {
+      propertiesMap[row.property_id] = {
+        property_id: row.property_id,
+        title: row.title,
+        description: row.description,
+        property_type: row.property_type,
+        bedrooms: row.bedrooms,
+        bathrooms: row.bathrooms,
+        area: row.area,
+        owner_name: row.owner_name,
+        listing_id: row.listing_id,
+        purpose: row.purpose,
+        price: row.price,
+        status: row.status,
+        views: row.views,
+        city: row.city,
+        address: row.address,
+        images: [],
+        features: []
+      };
     }
+
+    if (row.image_url && !propertiesMap[row.property_id].images.includes(row.image_url)) {
+      propertiesMap[row.property_id].images.push(row.image_url);
+    }
+
+    if (row.feature_name && !propertiesMap[row.property_id].features.includes(row.feature_name)) {
+      propertiesMap[row.property_id].features.push(row.feature_name);
+    }
+  }
+
+  return Object.values(propertiesMap);
+}
 
 static async create(data) {
         const connection = await db.getConnection();
