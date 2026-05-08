@@ -84,7 +84,7 @@ type PropertyType = {
   listing_id: number;
   purpose: string;
   price: string | number;
-  status: string;
+  status: "Pending" | "Active" | "Closed";
   views: number;
   city: string;
   address: string;
@@ -1876,7 +1876,7 @@ const OwnerDashboard = () => {
           }}
         >
           <DialogContent className="fixed top-[50%] left-[50%] z-50 w-[95vw] max-w-6xl max-h-[90vh] translate-x-[-50%] translate-y-[-50%] bg-white">
-            {editingProperty ? (
+             {editingProperty ? (
               <AddPropertyModal
                 mode="update"
                 initialProperty={editingProperty}

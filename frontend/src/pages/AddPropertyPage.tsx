@@ -39,6 +39,7 @@ type AddPropertyModalProps = {
     address: string;
     images: string[];
     features: string[];
+    status: "Pending" | "Active" | "Closed";
   } | null;
 };
 
@@ -75,6 +76,7 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingFeatures, setIsLoadingFeatures] = useState(true);
   const [submitError, setSubmitError] = useState("");
+  const [removedExistingImages, setRemovedExistingImages] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchFeatures = async () => {
@@ -92,7 +94,7 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({
       } catch (error) {
         console.error("Error loading features:", error);
         setFeaturesError(
-          error instanceof Error ? error.message : "Failed to load features.",
+          error instanceof Error ? error.message : "Failed to load features."
         );
       } finally {
         setIsLoadingFeatures(false);
@@ -102,10 +104,11 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({
     fetchFeatures();
   }, []);
 
+  // =========================
+  // FIX 1: normalize images + reset removed list
+  // =========================
   useEffect(() => {
-    if (mode !== "update" || !initialProperty) {
-      return;
-    }
+    if (mode !== "update" || !initialProperty) return;
 
     setFormData({
       title: initialProperty.title || "",
@@ -121,11 +124,13 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({
     });
 
     setSelectedFiles([]);
-    setPreviewUrls(
-      (initialProperty.images || []).map((rawUrl) =>
-        rawUrl.startsWith("http") ? rawUrl : `http://localhost:5000${rawUrl}`,
-      ),
+
+    const normalizedImages = (initialProperty.images || []).map((url) =>
+      url.startsWith("http") ? url : `http://localhost:5000${url}`
     );
+
+    setPreviewUrls(normalizedImages);
+    setRemovedExistingImages([]);
   }, [mode, initialProperty]);
 
   useEffect(() => {
@@ -138,12 +143,12 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({
     }
 
     const propertyFeatureNames = new Set(
-      (initialProperty.features || []).map((name) => name.toLowerCase()),
+      (initialProperty.features || []).map((name) => name.toLowerCase())
     );
 
     const featureIds = availableFeatures
       .filter((feature) =>
-        propertyFeatureNames.has(feature.feature_name.toLowerCase()),
+        propertyFeatureNames.has(feature.feature_name.toLowerCase())
       )
       .map((feature) => feature.feature_id);
 
@@ -151,9 +156,7 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({
   }, [mode, initialProperty, availableFeatures]);
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -161,8 +164,6 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({
       [name]: value,
     }));
   };
-
- 
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -186,18 +187,22 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({
     const newUrls = filesToAdd.map((file) => URL.createObjectURL(file));
     setPreviewUrls((prev) => [...prev, ...newUrls]);
 
-    if (incomingFiles.length > remainingSlots) {
-      setImageError(
-        `Only ${remainingSlots} more image(s) were added. Maximum is ${MAX_IMAGES}.`,
-      );
-    }
-
     e.target.value = "";
   };
 
+  // =========================
+  // FIX 2: safe remove logic
+  // =========================
   const removeImage = (index: number) => {
-    if (previewUrls[index]?.startsWith("blob:")) {
-      URL.revokeObjectURL(previewUrls[index]);
+    const removed = previewUrls[index];
+
+    if (!removed) return;
+
+    if (removed.startsWith("blob:")) {
+      URL.revokeObjectURL(removed);
+    } else {
+      const normalized = removed.replace("http://localhost:5000", "");
+      setRemovedExistingImages((prev) => [...prev, normalized]);
     }
 
     setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
@@ -209,15 +214,13 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({
     setSelectedFeatures((prev) =>
       prev.includes(featureId)
         ? prev.filter((id) => id !== featureId)
-        : [...prev, featureId],
+        : [...prev, featureId]
     );
   };
 
   const resetForm = () => {
     previewUrls.forEach((url) => {
-      if (url.startsWith("blob:")) {
-        URL.revokeObjectURL(url);
-      }
+      if (url.startsWith("blob:")) URL.revokeObjectURL(url);
     });
 
     setFormData({
@@ -236,10 +239,14 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({
     setSelectedFiles([]);
     setPreviewUrls([]);
     setSelectedFeatures([]);
+    setRemovedExistingImages([]);
     setImageError("");
     setSubmitError("");
   };
 
+  // =========================
+  // FIX 3: correct final images sync
+  // =========================
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError("");
@@ -278,10 +285,10 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({
           title: formData.title,
           description: formData.description,
           type: formData.type,
-          bedrooms: formData.bedrooms ? Number(formData.bedrooms) : 0,
-          bathrooms: formData.bathrooms ? Number(formData.bathrooms) : 0,
-          area: formData.area ? Number(formData.area) : 0,
-        }),
+          bedrooms: Number(formData.bedrooms || 0),
+          bathrooms: Number(formData.bathrooms || 0),
+          area: Number(formData.area || 0),
+        })
       );
 
       payload.append(
@@ -289,7 +296,7 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({
         JSON.stringify({
           city: formData.location,
           address: formData.address,
-        }),
+        })
       );
 
       payload.append(
@@ -297,9 +304,12 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({
         JSON.stringify({
           price: Number(formData.price),
           purpose: formData.purpose,
-          status: "Active",
+          status:
+            mode === "update"
+              ? initialProperty?.status || "Pending"
+              : "Pending",
           views: 0,
-        }),
+        })
       );
 
       payload.append("feature_ids", JSON.stringify(selectedFeatures));
@@ -308,23 +318,22 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({
         payload.append("images", file);
       });
 
-     // NEW images (uploaded files)
-selectedFiles.forEach((file) => {
-  payload.append("images", file);
-});
+      if (mode === "update" && initialProperty) {
+        const originalImages = initialProperty.images.map((img) =>
+          img.startsWith("http")
+            ? img.replace("http://localhost:5000", "")
+            : img
+        );
 
-// EXISTING images (important in update)
-if (mode === "update" && initialProperty) {
-  const existingImages = previewUrls.filter(
-    (url) => !url.startsWith("blob:")
-  );
+        const finalExistingImages = originalImages.filter(
+          (img) => !removedExistingImages.includes(img)
+        );
 
-  // send them properly as JSON string
-  payload.append(
-    "existing_images",
-    JSON.stringify(existingImages)
-  );
-}
+        payload.append(
+          "existing_images",
+          JSON.stringify(finalExistingImages)
+        );
+      }
 
       const endpoint =
         mode === "update" && initialProperty
@@ -341,26 +350,22 @@ if (mode === "update" && initialProperty) {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(
-          data.message || `Request failed with status ${res.status}`,
-        );
+        throw new Error(data.message || "Request failed");
       }
 
       alert(
         mode === "update"
           ? "Property updated successfully"
-          : "Property saved successfully",
+          : "Property saved successfully"
       );
+
       resetForm();
 
-      if (onSave) onSave();
+      if (onSave) await onSave();
       onClose();
     } catch (error) {
-      console.error("Error saving property:", error);
       setSubmitError(
-        error instanceof Error
-          ? error.message
-          : "Failed to save property. Check backend and try again.",
+        error instanceof Error ? error.message : "Failed to save property"
       );
     } finally {
       setIsSubmitting(false);
@@ -369,294 +374,293 @@ if (mode === "update" && initialProperty) {
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-    <DialogContent className="max-w-4xl">
-      <div className="max-h-[85vh] overflow-y-auto pr-1">
-    <div className="max-h-[85vh] overflow-y-auto pr-1">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-foreground">
-          {mode === "update" ? "Update Property" : "Add New Property"}
-        </h2>
-        <p className="text-muted-foreground mt-1">
-          {mode === "update"
-            ? "Edit the property details below."
-            : "Fill in the property details below."}
-        </p>
-      </div>
+      <DialogContent className="max-w-4xl">
+        <div className="max-h-[85vh] overflow-y-auto pr-1">
+          <div className="max-h-[85vh] overflow-y-auto pr-1">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-foreground">
+                {mode === "update" ? "Update Property" : "Add New Property"}
+              </h2>
+              <p className="text-muted-foreground mt-1">
+                {mode === "update"
+                  ? "Edit the property details below."
+                  : "Fill in the property details below."}
+              </p>
+            </div>
 
-      <form onSubmit={handleSubmit} noValidate className="space-y-6">
-        <div>
-          <div className="flex items-center justify-between mb-3 gap-3">
-            <label className="block text-sm font-medium">Upload Images</label>
-            <span className="text-xs text-muted-foreground">
-              {previewUrls.length}/{MAX_IMAGES} images
-            </span>
-          </div>
+            <form onSubmit={handleSubmit} noValidate className="space-y-6">
+              <div>
+                <div className="flex items-center justify-between mb-3 gap-3">
+                  <label className="block text-sm font-medium">Upload Images</label>
+                  <span className="text-xs text-muted-foreground">
+                    {previewUrls.length}/{MAX_IMAGES} images
+                  </span>
+                </div>
 
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleImageChange}
-            className="hidden"
-          />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
 
-          {previewUrls.length === 0 ? (
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full min-h-[280px] border-2 border-dashed border-border rounded-2xl flex items-center justify-center cursor-pointer bg-muted/40 hover:bg-muted/60 transition relative overflow-hidden"
-            >
-              <div className="flex flex-col items-center justify-center text-muted-foreground">
-                <UploadCloud size={42} />
-                <p className="mt-3 text-sm">Click to upload property images</p>
-                <p className="mt-1 text-xs">You can upload up to 10 images</p>
-              </div>
-            </button>
-          ) : (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-                {previewUrls.map((url, index) => (
-                  <div
-                    key={index}
-                    className="relative rounded-xl overflow-hidden border border-border bg-background h-40"
-                  >
-                    <img
-                      src={url}
-                      alt={`Preview ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                ))}
-
-                {previewUrls.length < MAX_IMAGES && (
+                {previewUrls.length === 0 ? (
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="h-40 rounded-xl border-2 border-dashed border-border bg-muted/30 hover:bg-muted/50 transition flex flex-col items-center justify-center text-muted-foreground"
+                    className="w-full min-h-[280px] border-2 border-dashed border-border rounded-2xl flex items-center justify-center cursor-pointer bg-muted/40 hover:bg-muted/60 transition relative overflow-hidden"
                   >
-                    <ImagePlus size={28} />
-                    <span className="mt-2 text-sm font-medium">Add More</span>
+                    <div className="flex flex-col items-center justify-center text-muted-foreground">
+                      <UploadCloud size={42} />
+                      <p className="mt-3 text-sm">Click to upload property images</p>
+                      <p className="mt-1 text-xs">You can upload up to 10 images</p>
+                    </div>
                   </button>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                      {previewUrls.map((url, index) => (
+                        <div
+                          key={index}
+                          className="relative rounded-xl overflow-hidden border border-border bg-background h-40"
+                        >
+                          <img
+                            src={url}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ))}
+
+                      {previewUrls.length < MAX_IMAGES && (
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="h-40 rounded-xl border-2 border-dashed border-border bg-muted/30 hover:bg-muted/50 transition flex flex-col items-center justify-center text-muted-foreground"
+                        >
+                          <ImagePlus size={28} />
+                          <span className="mt-2 text-sm font-medium">Add More</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {imageError && (
+                  <p className="text-sm text-red-500 mt-2">{imageError}</p>
                 )}
               </div>
-            </div>
-          )}
 
-          {imageError && (
-            <p className="text-sm text-red-500 mt-2">{imageError}</p>
-          )}
-        </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Property Title
+                  </label>
+                  <input
+                    type="text"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleChange}
+                    placeholder="Modern Seaside Villa"
+                    className="w-full rounded-lg border border-border bg-background px-4 py-3 outline-none focus:ring-2 focus:ring-primary"
+                    required
+                  />
+                </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Property Title
-            </label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              placeholder="Modern Seaside Villa"
-              className="w-full rounded-lg border border-border bg-background px-4 py-3 outline-none focus:ring-2 focus:ring-primary"
-              required
-            />
-          </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Price</label>
+                  <input
+                    type="number"
+                    name="price"
+                    value={formData.price}
+                    onChange={handleChange}
+                    placeholder="1250000"
+                    className="w-full rounded-lg border border-border bg-background px-4 py-3 outline-none focus:ring-2 focus:ring-primary"
+                    required
+                  />
+                </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">Price</label>
-            <input
-              type="number"
-              name="price"
-              value={formData.price}
-              onChange={handleChange}
-              placeholder="1250000"
-              className="w-full rounded-lg border border-border bg-background px-4 py-3 outline-none focus:ring-2 focus:ring-primary"
-              required
-            />
-          </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Location</label>
+                  <input
+                    type="text"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleChange}
+                    placeholder="Alexandria"
+                    className="w-full rounded-lg border border-border bg-background px-4 py-3 outline-none focus:ring-2 focus:ring-primary"
+                    required
+                  />
+                </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">Location</label>
-            <input
-              type="text"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              placeholder="Alexandria"
-              className="w-full rounded-lg border border-border bg-background px-4 py-3 outline-none focus:ring-2 focus:ring-primary"
-              required
-            />
-          </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Address</label>
+                  <input
+                    type="text"
+                    name="address"
+                    value={formData.address}
+                    onChange={handleChange}
+                    placeholder="North Coast - Marina 5"
+                    className="w-full rounded-lg border border-border bg-background px-4 py-3 outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">Address</label>
-            <input
-              type="text"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              placeholder="North Coast - Marina 5"
-              className="w-full rounded-lg border border-border bg-background px-4 py-3 outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Type</label>
-            <select
-              name="type"
-              value={formData.type}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-border bg-background px-4 py-3 outline-none focus:ring-2 focus:ring-primary"
-              required
-            >
-              <option value="">Select type</option>
-              <option value="Villa">Villa</option>
-              <option value="Apartment">Apartment</option>
-              <option value="Penthouse">Penthouse</option>
-              <option value="Studio">Studio</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Purpose</label>
-            <select
-              name="purpose"
-              value={formData.purpose}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-border bg-background px-4 py-3 outline-none focus:ring-2 focus:ring-primary"
-              required
-            >
-              <option value="">Select purpose</option>
-              <option value="Sale">Sale</option>
-              <option value="Rent">Rent</option>
-              <option value="Installment">Installment</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Bedrooms</label>
-            <input
-              type="number"
-              name="bedrooms"
-              value={formData.bedrooms}
-              onChange={handleChange}
-              placeholder="4"
-              className="w-full rounded-lg border border-border bg-background px-4 py-3 outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Bathrooms</label>
-            <input
-              type="number"
-              name="bathrooms"
-              value={formData.bathrooms}
-              onChange={handleChange}
-              placeholder="3"
-              className="w-full rounded-lg border border-border bg-background px-4 py-3 outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Area (sqft)
-            </label>
-            <input
-              type="number"
-              name="area"
-              value={formData.area}
-              onChange={handleChange}
-              placeholder="3200"
-              className="w-full rounded-lg border border-border bg-background px-4 py-3 outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">Description</label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            rows={5}
-            placeholder="Write property description..."
-            className="w-full rounded-lg border border-border bg-background px-4 py-3 outline-none focus:ring-2 focus:ring-primary"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-3">
-            Features / Amenities
-          </label>
-
-          {isLoadingFeatures ? (
-            <p className="text-sm text-muted-foreground">Loading features...</p>
-          ) : featuresError ? (
-            <p className="text-sm text-red-500">{featuresError}</p>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {availableFeatures.map((feature) => {
-                const isSelected = selectedFeatures.includes(
-                  feature.feature_id,
-                );
-
-                return (
-                  <button
-                    key={feature.feature_id}
-                    type="button"
-                    onClick={() => toggleFeature(feature.feature_id)}
-                    className={`rounded-lg border px-4 py-3 text-sm text-left transition ${
-                      isSelected
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border bg-background hover:bg-muted"
-                    }`}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Type</label>
+                  <select
+                    name="type"
+                    value={formData.type}
+                    onChange={handleChange}
+                    className="w-full rounded-lg border border-border bg-background px-4 py-3 outline-none focus:ring-2 focus:ring-primary"
+                    required
                   >
-                    {feature.feature_name}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                    <option value="">Select type</option>
+                    <option value="Villa">Villa</option>
+                    <option value="Apartment">Apartment</option>
+                    <option value="Penthouse">Penthouse</option>
+                    <option value="Studio">Studio</option>
+                  </select>
+                </div>
 
-        {submitError && <p className="text-sm text-red-500">{submitError}</p>}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Purpose</label>
+                  <select
+                    name="purpose"
+                    value={formData.purpose}
+                    onChange={handleChange}
+                    className="w-full rounded-lg border border-border bg-background px-4 py-3 outline-none focus:ring-2 focus:ring-primary"
+                    required
+                  >
+                    <option value="">Select purpose</option>
+                    <option value="Sale">Sale</option>
+                    <option value="Rent">Rent</option>
+                    <option value="Installment">Installment</option>
+                  </select>
+                </div>
 
-        <div className="flex gap-3 pt-2">
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting
-              ? mode === "update"
-                ? "Updating..."
-                : "Saving..."
-              : mode === "update"
-                ? "Update Property"
-                : "Save Property"}
-          </Button>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Bedrooms</label>
+                  <input
+                    type="number"
+                    name="bedrooms"
+                    value={formData.bedrooms}
+                    onChange={handleChange}
+                    placeholder="4"
+                    className="w-full rounded-lg border border-border bg-background px-4 py-3 outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
 
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Bathrooms</label>
+                  <input
+                    type="number"
+                    name="bathrooms"
+                    value={formData.bathrooms}
+                    onChange={handleChange}
+                    placeholder="3"
+                    className="w-full rounded-lg border border-border bg-background px-4 py-3 outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Area (sqft)
+                  </label>
+                  <input
+                    type="number"
+                    name="area"
+                    value={formData.area}
+                    onChange={handleChange}
+                    placeholder="3200"
+                    className="w-full rounded-lg border border-border bg-background px-4 py-3 outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Description</label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  rows={5}
+                  placeholder="Write property description..."
+                  className="w-full rounded-lg border border-border bg-background px-4 py-3 outline-none focus:ring-2 focus:ring-primary"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-3">
+                  Features / Amenities
+                </label>
+
+                {isLoadingFeatures ? (
+                  <p className="text-sm text-muted-foreground">Loading features...</p>
+                ) : featuresError ? (
+                  <p className="text-sm text-red-500">{featuresError}</p>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {availableFeatures.map((feature) => {
+                      const isSelected = selectedFeatures.includes(
+                        feature.feature_id,
+                      );
+
+                      return (
+                        <button
+                          key={feature.feature_id}
+                          type="button"
+                          onClick={() => toggleFeature(feature.feature_id)}
+                          className={`rounded-lg border px-4 py-3 text-sm text-left transition ${isSelected
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border bg-background hover:bg-muted"
+                            }`}
+                        >
+                          {feature.feature_name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {submitError && <p className="text-sm text-red-500">{submitError}</p>}
+
+              <div className="flex gap-3 pt-2">
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting
+                    ? mode === "update"
+                      ? "Updating..."
+                      : "Saving..."
+                    : mode === "update"
+                      ? "Update Property"
+                      : "Save Property"}
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onClose}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </div>
         </div>
-      </form>
-    </div>
-        </div>
-    </DialogContent>
-  </Dialog>
+      </DialogContent>
+    </Dialog>
   );
 };
 

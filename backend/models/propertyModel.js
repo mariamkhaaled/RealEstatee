@@ -1,8 +1,8 @@
 const db = require('../config/db');
 
 class Property {
-  static async findAll() {
-  const [rows] = await db.execute(`
+    static async findAll() {
+        const [rows] = await db.execute(`
     SELECT 
       p.property_id,
       p.title,
@@ -40,44 +40,44 @@ class Property {
     ORDER BY p.property_id DESC, pi.is_primary DESC, pi.image_id ASC
   `);
 
-  const propertiesMap = {};
+        const propertiesMap = {};
 
-  for (const row of rows) {
-    if (!propertiesMap[row.property_id]) {
-      propertiesMap[row.property_id] = {
-        property_id: row.property_id,
-        title: row.title,
-        description: row.description,
-        property_type: row.property_type,
-        bedrooms: row.bedrooms,
-        bathrooms: row.bathrooms,
-        area: row.area,
-        owner_name: row.owner_name,
-        listing_id: row.listing_id,
-        purpose: row.purpose,
-        price: row.price,
-        status: row.status,
-        views: row.views,
-        city: row.city,
-        address: row.address,
-        images: [],
-        features: []
-      };
+        for (const row of rows) {
+            if (!propertiesMap[row.property_id]) {
+                propertiesMap[row.property_id] = {
+                    property_id: row.property_id,
+                    title: row.title,
+                    description: row.description,
+                    property_type: row.property_type,
+                    bedrooms: row.bedrooms,
+                    bathrooms: row.bathrooms,
+                    area: row.area,
+                    owner_name: row.owner_name,
+                    listing_id: row.listing_id,
+                    purpose: row.purpose,
+                    price: row.price,
+                    status: row.status,
+                    views: row.views,
+                    city: row.city,
+                    address: row.address,
+                    images: [],
+                    features: []
+                };
+            }
+
+            if (row.image_url && !propertiesMap[row.property_id].images.includes(row.image_url)) {
+                propertiesMap[row.property_id].images.push(row.image_url);
+            }
+
+            if (row.feature_name && !propertiesMap[row.property_id].features.includes(row.feature_name)) {
+                propertiesMap[row.property_id].features.push(row.feature_name);
+            }
+        }
+
+        return Object.values(propertiesMap);
     }
 
-    if (row.image_url && !propertiesMap[row.property_id].images.includes(row.image_url)) {
-      propertiesMap[row.property_id].images.push(row.image_url);
-    }
-
-    if (row.feature_name && !propertiesMap[row.property_id].features.includes(row.feature_name)) {
-      propertiesMap[row.property_id].features.push(row.feature_name);
-    }
-  }
-
-  return Object.values(propertiesMap);
-}
-
-static async create(data) {
+    static async create(data) {
         const connection = await db.getConnection();
 
         try {
@@ -158,7 +158,7 @@ static async create(data) {
         }
     }
     static async findByOwnerId(ownerId) {
-    const [rows] = await db.execute(`
+        const [rows] = await db.execute(`
         SELECT 
             p.property_id,
             p.title,
@@ -186,42 +186,42 @@ static async create(data) {
         ORDER BY p.property_id DESC
     `, [ownerId]);
 
-    const propertiesMap = {};
+        const propertiesMap = {};
 
-    for (const row of rows) {
-        if (!propertiesMap[row.property_id]) {
-            propertiesMap[row.property_id] = {
-                property_id: row.property_id,
-                title: row.title,
-                description: row.description,
-                property_type: row.property_type,
-                bedrooms: row.bedrooms,
-                bathrooms: row.bathrooms,
-                area: row.area,
-                listing_id: row.listing_id,
-                purpose: row.purpose,
-                price: row.price,
-                status: row.status,
-                views: row.views,
-                city: row.city,
-                address: row.address,
-                images: [],
-                features: []
-            };
+        for (const row of rows) {
+            if (!propertiesMap[row.property_id]) {
+                propertiesMap[row.property_id] = {
+                    property_id: row.property_id,
+                    title: row.title,
+                    description: row.description,
+                    property_type: row.property_type,
+                    bedrooms: row.bedrooms,
+                    bathrooms: row.bathrooms,
+                    area: row.area,
+                    listing_id: row.listing_id,
+                    purpose: row.purpose,
+                    price: row.price,
+                    status: row.status,
+                    views: row.views,
+                    city: row.city,
+                    address: row.address,
+                    images: [],
+                    features: []
+                };
+            }
+
+            if (row.image_url && !propertiesMap[row.property_id].images.includes(row.image_url)) {
+                propertiesMap[row.property_id].images.push(row.image_url);
+            }
+
+            if (row.feature_name && !propertiesMap[row.property_id].features.includes(row.feature_name)) {
+                propertiesMap[row.property_id].features.push(row.feature_name);
+            }
         }
 
-        if (row.image_url && !propertiesMap[row.property_id].images.includes(row.image_url)) {
-            propertiesMap[row.property_id].images.push(row.image_url);
-        }
-
-        if (row.feature_name && !propertiesMap[row.property_id].features.includes(row.feature_name)) {
-            propertiesMap[row.property_id].features.push(row.feature_name);
-        }
+        return Object.values(propertiesMap);
     }
-
-    return Object.values(propertiesMap);
-}
-static async findById(propertyId) {
+    static async findById(propertyId) {
         const [rows] = await db.execute(`
             SELECT 
                 p.property_id,
@@ -285,7 +285,7 @@ static async findById(propertyId) {
         return property;
     }
 
-static async update(propertyId, ownerId, data) {
+    static async update(propertyId, ownerId, data) {
         const connection = await db.getConnection();
 
         try {
@@ -351,13 +351,15 @@ static async update(propertyId, ownerId, data) {
                 WHERE property_id = ?
             `, [propertyId]);
 
-            if (Array.isArray(images) && images.length > 0) {
-                for (let i = 0; i < images.length; i++) {
-                    await connection.execute(`
-                        INSERT INTO property_images (property_id, image_url, is_primary)
-                        VALUES (?, ?, ?)
-                    `, [propertyId, images[i], i === 0]);
-                }
+            const existing = JSON.parse(data.existing_images || "[]");
+            const uploaded = images || [];
+
+            const finalImages = [...existing, ...uploaded];
+            for (let i = 0; i < finalImages.length; i++) {
+                await connection.execute(`
+            INSERT INTO property_images (property_id, image_url, is_primary)
+            VALUES (?, ?, ?)
+                            `, [propertyId, finalImages[i], i === 0]);
             }
 
             // Replace features
@@ -384,55 +386,55 @@ static async update(propertyId, ownerId, data) {
             connection.release();
         }
     }
-static async delete(propertyId, ownerId) {
-    const connection = await db.getConnection();
+    static async delete(propertyId, ownerId) {
+        const connection = await db.getConnection();
 
-    try {
-        await connection.beginTransaction();
+        try {
+            await connection.beginTransaction();
 
-        const existingProperty = await this.findById(propertyId);
-        if (!existingProperty) {
-            throw new Error('Property not found');
-        }
+            const existingProperty = await this.findById(propertyId);
+            if (!existingProperty) {
+                throw new Error('Property not found');
+            }
 
-        if (existingProperty.owner_id !== ownerId) {
-            throw new Error('Unauthorized');
-        }
+            if (existingProperty.owner_id !== ownerId) {
+                throw new Error('Unauthorized');
+            }
 
-        await connection.execute(`
+            await connection.execute(`
             DELETE FROM property_features
             WHERE property_id = ?
         `, [propertyId]);
 
-        await connection.execute(`
+            await connection.execute(`
             DELETE FROM property_images
             WHERE property_id = ?
         `, [propertyId]);
 
-        await connection.execute(`
+            await connection.execute(`
             DELETE FROM property_locations
             WHERE property_id = ?
         `, [propertyId]);
 
-        await connection.execute(`
+            await connection.execute(`
             DELETE FROM listings
             WHERE property_id = ?
         `, [propertyId]);
 
-        await connection.execute(`
+            await connection.execute(`
             DELETE FROM properties
             WHERE property_id = ? AND owner_id = ?
         `, [propertyId, ownerId]);
 
-        await connection.commit();
-        return true;
-    } catch (error) {
-        await connection.rollback();
-        throw error;
-    } finally {
-        connection.release();
+            await connection.commit();
+            return true;
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
     }
-}
 }
 
 
