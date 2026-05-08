@@ -125,15 +125,15 @@ const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onBack }) => {
         <div className="bg-card rounded-2xl shadow-custom border p-10">
           {/* Header */}
           <div className="text-center mb-10">
-            <div className="w-16 h-16 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-6 border border-blue-100">
+            <div className="w-16 h-16 bg-gradient-to-br from-[#f7ecd2] to-[#fff9ef] rounded-xl flex items-center justify-center mx-auto mb-6 border border-[#f0e6c6]">
               {step === "email" && (
-                <Mail className="text-[#002347]" size={32} strokeWidth={1.5} />
+                <Mail className="text-[#c8a96e]" size={32} strokeWidth={1.5} />
               )}
               {step === "otp" && (
-                <Mail className="text-[#002347]" size={32} strokeWidth={1.5} />
+                <Mail className="text-[#c8a96e]" size={32} strokeWidth={1.5} />
               )}
               {step === "password" && (
-                <Lock className="text-[#002347]" size={32} strokeWidth={1.5} />
+                <Lock className="text-[#c8a96e]" size={32} strokeWidth={1.5} />
               )}
             </div>
 
@@ -188,7 +188,10 @@ const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onBack }) => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 bg-[#002347] text-white rounded-lg font-semibold hover:bg-[#001a35] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-3 text-[#2a1f0e] rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    background: "linear-gradient(135deg,#c8a96e,#e8d4a8)",
+                  }}
                 >
                   {loading ? "Sending..." : "Send Reset Code"}
                 </button>
@@ -215,7 +218,8 @@ const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onBack }) => {
                 <button
                   type="button"
                   onClick={handleBackStep}
-                  className="w-full py-2 text-[#002347] hover:bg-blue-50 rounded-lg transition-colors font-medium text-sm"
+                  className="w-full py-2 text-[#2a1f0e] rounded-lg transition-colors font-medium text-sm"
+                  style={{ background: "#fff9ef" }}
                 >
                   <ArrowLeft size={16} className="inline mr-2" />
                   Back to Email
@@ -253,7 +257,10 @@ const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onBack }) => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 bg-[#002347] text-white rounded-lg font-semibold hover:bg-[#001a35] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-3 text-[#2a1f0e] rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    background: "linear-gradient(135deg,#c8a96e,#e8d4a8)",
+                  }}
                 >
                   {loading ? "Resetting..." : "Reset Password"}
                 </button>
@@ -261,7 +268,8 @@ const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onBack }) => {
                 <button
                   type="button"
                   onClick={handleBackStep}
-                  className="w-full py-2 text-[#002347] hover:bg-blue-50 rounded-lg transition-colors font-medium text-sm"
+                  className="w-full py-2 text-[#2a1f0e] rounded-lg transition-colors font-medium text-sm"
+                  style={{ background: "#fff9ef" }}
                 >
                   <ArrowLeft size={16} className="inline mr-2" />
                   Back to Code

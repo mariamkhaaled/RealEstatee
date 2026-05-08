@@ -34,6 +34,7 @@ declare global {
   const CircleCheckIcon: typeof import('lucide-react').CircleCheckIcon
   const CircleIcon: typeof import('lucide-react').CircleIcon
   const Code: typeof import('lucide-react').Code
+  const Combine: typeof import('lucide-react').Combine
   const Command: typeof import('lucide-react').Command
   const Contact: typeof import('lucide-react').Contact
   const Container: typeof import('lucide-react').Container

@@ -84,7 +84,7 @@ export default function ChangePassword({ onBack }: ChangePasswordProps) {
 
       toast.success("Password changed successfully! Returning to profile...");
       setTimeout(() => {
-        onBack?.(); 
+        onBack?.();
       }, 1500);
       setCurrentPassword("");
       setNewPassword("");
@@ -172,13 +172,13 @@ export default function ChangePassword({ onBack }: ChangePasswordProps) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
-            className="bg-white rounded-lg p-10 shadow-md border border-[#e0e0e0]"
+            className="bg-card rounded-lg p-10 shadow-custom border border-[#f0e6c6]"
           >
             {/* Header */}
-            <h2 className="text-2xl font-bold text-[#002347] mb-2">
+            <h2 className="text-2xl font-bold text-[#2a1f0e] mb-2">
               Change Password
             </h2>
-            <p className="text-gray-600 text-sm mb-8">
+            <p className="text-[#6b5f49] text-sm mb-8">
               Update your password to keep your account secure
             </p>
 
@@ -195,13 +195,13 @@ export default function ChangePassword({ onBack }: ChangePasswordProps) {
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     placeholder="Enter current password"
-                    className="w-full px-4 py-3 border border-[#e0e0e0] rounded-lg focus:outline-none focus:border-[#002347] focus:ring-2 focus:ring-[#002347]/10 transition"
+                    className="w-full px-4 py-3 border border-[#e9e2c7] rounded-lg focus:outline-none focus:border-[#2a1f0e] focus:ring-2 focus:ring-[#2a1f0e]/10 transition bg-transparent"
                     disabled={loading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-[#002347] transition"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-[#2a1f0e] transition"
                     disabled={loading}
                   >
                     {showCurrentPassword ? (
@@ -224,13 +224,13 @@ export default function ChangePassword({ onBack }: ChangePasswordProps) {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Enter new password (min 6 characters)"
-                    className="w-full px-4 py-3 border border-[#e0e0e0] rounded-lg focus:outline-none focus:border-[#002347] focus:ring-2 focus:ring-[#002347]/10 transition"
+                    className="w-full px-4 py-3 border border-[#e9e2c7] rounded-lg focus:outline-none focus:border-[#2a1f0e] focus:ring-2 focus:ring-[#2a1f0e]/10 transition bg-transparent"
                     disabled={loading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-[#002347] transition"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-[#2a1f0e] transition"
                     disabled={loading}
                   >
                     {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -278,7 +278,10 @@ export default function ChangePassword({ onBack }: ChangePasswordProps) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#002347] text-white py-3 rounded-lg font-semibold hover:bg-[#001835] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full text-[#2a1f0e] py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                style={{
+                  background: "linear-gradient(135deg,#c8a96e,#e8d4a8)",
+                }}
               >
                 {loading ? (
                   <>
@@ -292,12 +295,12 @@ export default function ChangePassword({ onBack }: ChangePasswordProps) {
             </form>
 
             {/* Divider */}
-            <div className="mt-8 pt-6 border-t border-[#e0e0e0]">
-              <p className="text-center text-sm text-gray-600">
+            <div className="mt-8 pt-6 border-t border-[#f0e6c6]">
+              <p className="text-center text-sm text-[#6b5f49]">
                 Forgot your current password?{" "}
                 <button
                   onClick={handleStartForgotPassword}
-                  className="text-[#002347] hover:underline font-semibold disabled:opacity-50"
+                  className="text-[#2a1f0e] font-semibold disabled:opacity-50"
                   disabled={loading}
                 >
                   Reset here
@@ -325,13 +328,13 @@ export default function ChangePassword({ onBack }: ChangePasswordProps) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
-            className="bg-white rounded-lg p-10 shadow-md border border-[#e0e0e0]"
+            className="bg-card rounded-lg p-10 shadow-custom border border-[#f0e6c6]"
           >
             {/* Header */}
-            <h2 className="text-2xl font-bold text-[#002347] mb-2">
+            <h2 className="text-2xl font-bold text-[#2a1f0e] mb-2">
               Verify Your Email
             </h2>
-            <p className="text-gray-600 text-sm mb-8">
+            <p className="text-[#6b5f49] text-sm mb-8">
               Enter the 6-digit code sent to {userEmail}
             </p>
 
@@ -357,7 +360,7 @@ export default function ChangePassword({ onBack }: ChangePasswordProps) {
                 setError("");
                 setOtp("");
               }}
-              className="flex items-center gap-2 text-[#002347] hover:text-[#001835] font-semibold transition disabled:opacity-50"
+              className="flex items-center gap-2 text-[#2a1f0e] font-semibold transition disabled:opacity-50"
               disabled={loading}
             >
               <ArrowLeft size={18} />
@@ -373,13 +376,13 @@ export default function ChangePassword({ onBack }: ChangePasswordProps) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
-            className="bg-white rounded-lg p-10 shadow-md border border-[#e0e0e0]"
+            className="bg-card rounded-lg p-10 shadow-custom border border-[#f0e6c6]"
           >
             {/* Header */}
-            <h2 className="text-2xl font-bold text-[#002347] mb-2">
+            <h2 className="text-2xl font-bold text-[#2a1f0e] mb-2">
               Set New Password
             </h2>
-            <p className="text-gray-600 text-sm mb-8">
+            <p className="text-[#6b5f49] text-sm mb-8">
               Create a new password for your account
             </p>
 
@@ -396,7 +399,7 @@ export default function ChangePassword({ onBack }: ChangePasswordProps) {
                     value={forgotNewPassword}
                     onChange={(e) => setForgotNewPassword(e.target.value)}
                     placeholder="Enter new password (min 6 characters)"
-                    className="w-full px-4 py-3 border border-[#e0e0e0] rounded-lg focus:outline-none focus:border-[#002347] focus:ring-2 focus:ring-[#002347]/10 transition"
+                    className="w-full px-4 py-3 border border-[#e9e2c7] rounded-lg focus:outline-none focus:border-[#2a1f0e] focus:ring-2 focus:ring-[#2a1f0e]/10 transition bg-transparent"
                     disabled={loading}
                   />
                   <button
@@ -458,7 +461,10 @@ export default function ChangePassword({ onBack }: ChangePasswordProps) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#002347] text-white py-3 rounded-lg font-semibold hover:bg-[#001835] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full text-[#2a1f0e] py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                style={{
+                  background: "linear-gradient(135deg,#c8a96e,#e8d4a8)",
+                }}
               >
                 {loading ? (
                   <>
@@ -477,7 +483,7 @@ export default function ChangePassword({ onBack }: ChangePasswordProps) {
                 setStep("forgot-otp");
                 setError("");
               }}
-              className="mt-6 flex items-center gap-2 text-[#002347] hover:text-[#001835] font-semibold transition disabled:opacity-50"
+              className="mt-6 flex items-center gap-2 text-[#2a1f0e] font-semibold transition disabled:opacity-50"
               disabled={loading}
             >
               <ArrowLeft size={18} />

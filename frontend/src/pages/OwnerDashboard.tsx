@@ -164,18 +164,25 @@ const OwnerDashboard = () => {
   const currentUserId = Number(user?.id || user?.user_id || 0);
   const currentUserName = user?.name || user?.full_name || "Owner";
 
-  const emitTyping = (isTyping: boolean) => {
-    if (!selectedInquiry?.inquiry_id) {
-      return;
-    }
+  const emitTyping = useCallback(
+    (isTyping: boolean) => {
+      if (!selectedInquiry?.inquiry_id) {
+        return;
+      }
 
-    const socket = connectSocket();
-    socket.emit("typing", {
-      inquiryId: selectedInquiry.inquiry_id,
-      userId: currentUserId,
-      userName: currentUserName,
-      isTyping,
-    });
+      const socket = connectSocket();
+      socket.emit("typing", {
+        inquiryId: selectedInquiry.inquiry_id,
+        userId: currentUserId,
+        userName: currentUserName,
+        isTyping,
+      });
+    },
+    [currentUserId, currentUserName, selectedInquiry?.inquiry_id],
+  );
+
+  const handleMessageTextChange = (value: string) => {
+    setMessageText(value);
   };
 
   const getErrorMessage = (err: unknown, fallback: string) => {
@@ -416,6 +423,13 @@ const OwnerDashboard = () => {
           };
         }),
       );
+
+      // Clear unread count for this inquiry and notify global listeners
+      setUnreadByInquiry((prev) => ({
+        ...prev,
+        [Number(payload.inquiryId)]: 0,
+      }));
+      window.dispatchEvent(new Event("unread-count-changed"));
     };
 
     const handleInquiryStatusUpdated = (payload: {
@@ -464,11 +478,54 @@ const OwnerDashboard = () => {
       emitTyping(false);
       isTypingRef.current = false;
     }
-  }, [selectedInquiry?.inquiry_id]);
+  }, [emitTyping, selectedInquiry?.inquiry_id]);
 
   useLayoutEffect(() => {
     scrollChatToBottom();
   }, [messages, selectedInquiry?.inquiry_id]);
+
+  useEffect(() => {
+    if (!selectedInquiry?.inquiry_id) {
+      return;
+    }
+
+    if (!messageText.trim()) {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+
+      if (isTypingRef.current) {
+        emitTyping(false);
+        isTypingRef.current = false;
+      }
+
+      return;
+    }
+
+    if (!isTypingRef.current) {
+      emitTyping(true);
+      isTypingRef.current = true;
+    }
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      if (isTypingRef.current) {
+        emitTyping(false);
+        isTypingRef.current = false;
+      }
+    }, 1200);
+
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+    };
+  }, [emitTyping, messageText, selectedInquiry?.inquiry_id]);
 
   const handleSend = async () => {
     if (!selectedInquiry || !messageText.trim()) {
@@ -808,20 +865,25 @@ const OwnerDashboard = () => {
       return;
     }
 
+    if (!ownerId) {
+      setError("Unable to delete property without an owner account.");
+      return;
+    }
+
     try {
       setDeletingProperty(true);
       setError("");
 
-      const token = localStorage.getItem("token");
       const response = await fetch(
         `http://localhost:5000/api/properties/${propertyToDelete.property_id}`,
         {
           method: "DELETE",
-          headers: token
-            ? {
-              Authorization: `Bearer ${token}`,
-            }
-            : undefined,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            owner_id: ownerId,
+          }),
         },
       );
 
@@ -845,6 +907,10 @@ const OwnerDashboard = () => {
     } finally {
       setDeletingProperty(false);
     }
+  };
+
+  const openPropertyDeleteDialog = (property: PropertyType) => {
+    setPropertyToDelete(property);
   };
 
   if (!isOwner) {
@@ -922,9 +988,8 @@ const OwnerDashboard = () => {
                   >
                     <Activity className="h-4 w-4" />
                     Inquiry Requests
-
                     {totalUnread > 0 && (
-                      <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#c8a96e] px-1.5 text-[11px] font-semibold text-white">
+                      <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#dc2626] px-1.5 text-[11px] font-semibold text-white">
                         {totalUnread}
                       </span>
                     )}
@@ -981,30 +1046,32 @@ const OwnerDashboard = () => {
                         <Plus className="mr-2 h-4 w-4" />
                         Add Property
                       </Button>
-
                     </div>
 
                     {/* PROPERTY LIST */}
                     <div className="min-h-0 h-full flex-1 overflow-y-auto p-3">
                       {filteredProperties.map((property) => {
                         const isSelected =
-                          selectedProperty?.property_id === property.property_id;
+                          selectedProperty?.property_id ===
+                          property.property_id;
 
                         return (
                           <div
                             key={property.property_id}
-                            className={`mb-3 rounded-[24px] border p-3 transition-all duration-300 ${isSelected
-                              ? "border-[#d7b98f] bg-[#f8f3ea] shadow-[0_14px_30px_rgba(200,169,110,0.12)]"
-                              : "border-[#eee4d7] bg-white hover:bg-[#fdfaf5]"
-                              }`}
+                            className={`mb-3 rounded-[24px] border p-3 transition-all duration-300 ${
+                              isSelected
+                                ? "border-[#d7b98f] bg-[#f8f3ea] shadow-[0_14px_30px_rgba(200,169,110,0.12)]"
+                                : "border-[#eee4d7] bg-white hover:bg-[#fdfaf5]"
+                            }`}
                           >
                             {/* FULL CARD ROW */}
                             <div className="flex items-center justify-between gap-3">
-
                               {/* LEFT (SELECT AREA) */}
                               <button
                                 type="button"
-                                onClick={() => setSelectedPropertyId(property.property_id)}
+                                onClick={() =>
+                                  setSelectedPropertyId(property.property_id)
+                                }
                                 className="flex flex-1 items-center gap-3 text-left min-w-0"
                               >
                                 <img
@@ -1041,8 +1108,19 @@ const OwnerDashboard = () => {
                                 >
                                   <Pencil className="h-4 w-4" />
                                 </Button>
-                              </div>
 
+                                <Button
+                                  size="icon"
+                                  variant="outline"
+                                  className="rounded-full border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openPropertyDeleteDialog(property);
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         );
@@ -1061,43 +1139,91 @@ const OwnerDashboard = () => {
                               key={index}
                               src={imageUrl}
                               alt=""
-                              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${activeImageIndex === index
-                                ? "opacity-100"
-                                : "opacity-0"
-                                }`}
+                              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
+                                activeImageIndex === index
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              }`}
                             />
                           ))}
 
                           <div className="absolute inset-0 bg-gradient-to-t from-black/35 to-transparent" />
 
+                          {selectedPropertyImages.length > 1 && (
+                            <>
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="outline"
+                                onClick={showPreviousImage}
+                                className="absolute left-4 top-1/2 z-10 h-10 w-10 -translate-y-1/2 rounded-full border-white/30 bg-white/20 text-white backdrop-blur-xl hover:bg-white hover:text-[#2b2218]"
+                              >
+                                <ChevronLeft className="h-4 w-4" />
+                              </Button>
+
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="outline"
+                                onClick={showNextImage}
+                                className="absolute right-4 top-1/2 z-10 h-10 w-10 -translate-y-1/2 rounded-full border-white/30 bg-white/20 text-white backdrop-blur-xl hover:bg-white hover:text-[#2b2218]"
+                              >
+                                <ChevronRight className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
+
                           {/* OVERLAY CARD */}
-                          {/* OVERLAY CARD */}
-                          <div className="absolute bottom-2 left-2 flex items-center justify-between gap-2 rounded-xl border border-white/30 bg-white/20 backdrop-blur-xl px-3 py-2 shadow-[0_10px_25px_rgba(0,0,0,0.15)] max-w-[260px]">
-                            <div className="min-w-0">
+                          <div className="absolute bottom-4 left-4 right-4 z-10 flex items-end justify-between gap-3">
+                            <div className="max-w-[22rem] rounded-xl border border-white/30 bg-white/20 px-3 py-2 shadow-[0_10px_25px_rgba(0,0,0,0.15)] backdrop-blur-xl sm:max-w-[28rem]">
                               <p className="text-[9px] uppercase tracking-[0.2em] text-white/70">
                                 Property Focus
                               </p>
 
                               <h3
-                                className="mt-0.5 text-lg text-white leading-tight truncate"
-                                style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                                className="mt-0.5 line-clamp-2 text-lg leading-tight text-white"
+                                style={{
+                                  fontFamily: "'Cormorant Garamond', serif",
+                                }}
                               >
                                 {selectedProperty.title}
                               </h3>
 
-                              <p className="mt-0.5 text-xs text-white/70 truncate">
+                              <p className="mt-0.5 truncate text-xs text-white/70">
                                 {selectedProperty.city}
                               </p>
                             </div>
 
-                            <Link to={`/property-details/${selectedProperty.property_id}`}>
-                              <Button
-                                size="icon"
-                                className="h-9 w-9 rounded-full border border-white/30 bg-white/20 text-white backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:bg-white hover:text-[#2b2218]"
+                            <div className="flex flex-col items-end gap-3">
+                              <Link
+                                to={`/property-details/${selectedProperty.property_id}`}
                               >
-                                <ArrowUpRight className="h-4 w-4" />
-                              </Button>
-                            </Link>
+                                <Button
+                                  size="icon"
+                                  className="h-9 w-9 rounded-full border border-white/30 bg-white/20 text-white backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:bg-white hover:text-[#2b2218]"
+                                >
+                                  <ArrowUpRight className="h-4 w-4" />
+                                </Button>
+                              </Link>
+
+                              {selectedPropertyImages.length > 1 && (
+                                <div className="flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-2 backdrop-blur-xl">
+                                  {selectedPropertyImages.map((_, index) => (
+                                    <button
+                                      key={index}
+                                      type="button"
+                                      onClick={() => setActiveImageIndex(index)}
+                                      className={`h-2.5 w-2.5 rounded-full transition-all ${
+                                        activeImageIndex === index
+                                          ? "bg-white shadow-[0_0_0_2px_rgba(255,255,255,0.25)]"
+                                          : "bg-white/45 hover:bg-white/70"
+                                      }`}
+                                      aria-label={`Show property image ${index + 1}`}
+                                    />
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
 
@@ -1132,7 +1258,7 @@ const OwnerDashboard = () => {
                             {
                               label: "Area",
                               value: `${Number(
-                                selectedProperty.area || 0
+                                selectedProperty.area || 0,
                               ).toFixed(2)} sqft`,
                               icon: Maximize,
                             },
@@ -1169,7 +1295,6 @@ const OwnerDashboard = () => {
                   <section className="flex min-h-0 flex-col overflow-hidden rounded-[30px] border border-[#eadfce] bg-white/75 backdrop-blur-xl shadow-[0_14px_40px_rgba(95,74,47,0.05)]">
                     {selectedProperty ? (
                       <div className="flex min-h-0 flex-1 flex-col gap-3 p-4">
-
                         {/* TOP */}
                         <div className="rounded-[24px] border border-[#eadfce] bg-[linear-gradient(135deg,_rgba(255,255,255,0.96),_rgba(248,243,234,0.92))] p-3 shadow-[0_8px_20px_rgba(95,74,47,0.05)]">
                           <div className="flex items-center justify-between gap-2">
@@ -1225,11 +1350,9 @@ const OwnerDashboard = () => {
                           </p>
 
                           <div className="mt-3 space-y-2">
-
                             {/* Views */}
                             <div className="rounded-[18px] border border-[#eadfce] bg-[#fcfaf7] px-3 py-2.5">
                               <div className="flex items-center justify-between gap-2">
-
                                 <div className="flex items-center gap-2.5">
                                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#efe3d0]">
                                     <Eye className="h-3.5 w-3.5 text-[#7b5e3b]" />
@@ -1266,7 +1389,6 @@ const OwnerDashboard = () => {
                             {/* Inquiries */}
                             <div className="rounded-[18px] border border-[#eadfce] bg-[#fcfaf7] px-3 py-2.5">
                               <div className="flex items-center justify-between gap-2">
-
                                 <div className="flex items-center gap-2.5">
                                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#efe3d0]">
                                     <MessageSquare className="h-3.5 w-3.5 text-[#7b5e3b]" />
@@ -1303,7 +1425,6 @@ const OwnerDashboard = () => {
                             {/* Unread */}
                             <div className="rounded-[18px] border border-[#eadfce] bg-[#fcfaf7] px-3 py-2.5">
                               <div className="flex items-center justify-between gap-2">
-
                                 <div className="flex items-center gap-2.5">
                                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#efe3d0]">
                                     <Building className="h-3.5 w-3.5 text-[#7b5e3b]" />
@@ -1341,7 +1462,6 @@ const OwnerDashboard = () => {
 
                         {/* LIVE ACTIVITY */}
                         <div className="min-h-0 flex flex-1 flex-col overflow-hidden rounded-[24px] border border-[#eadfce] bg-[linear-gradient(135deg,_rgba(255,255,255,0.96),_rgba(248,243,234,0.92))] shadow-[0_8px_20px_rgba(95,74,47,0.05)]">
-
                           <div className="flex items-center justify-between border-b border-[#efe4d4] px-3 py-2.5">
                             <div className="flex items-center gap-2">
                               <Bell className="h-3.5 w-3.5 text-[#c8a96e]" />
@@ -1357,7 +1477,6 @@ const OwnerDashboard = () => {
                           </div>
 
                           <div className="min-h-0 flex-1 overflow-y-auto px-2.5 pb-2.5 pt-2 space-y-2">
-
                             {selectedPropertyInquiries.length === 0 ? (
                               <div className="flex items-center justify-center rounded-[16px] border border-dashed border-[#eadfce] bg-[#fcfaf7] px-3 py-5 text-xs text-[#8f7d68]">
                                 No inquiries yet.
@@ -1419,266 +1538,318 @@ const OwnerDashboard = () => {
                 </div>
               </TabsContent>
 
-
-
               <TabsContent value="inquiries" className="pt-2">
-  <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_440px]">
-    
-    {/* LEFT PANEL */}
-    <section className="flex flex-col overflow-hidden rounded-[34px] border border-[#e7dfd2] bg-[rgba(255,255,255,0.72)] shadow-[0_25px_70px_rgba(0,0,0,0.08)] backdrop-blur-2xl h-[70vh] min-h-[560px] max-h-[760px]">
+                <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_520px]">
+                  {/* LEFT PANEL */}
+                  <section className="flex flex-col overflow-hidden rounded-[34px] border border-[#e7dfd2] bg-[rgba(255,255,255,0.72)] shadow-[0_25px_70px_rgba(0,0,0,0.08)] backdrop-blur-2xl h-[70vh] min-h-[560px] max-h-[760px]">
+                    {/* HEADER */}
+                    <div className="border-b border-[#ece5da] bg-[linear-gradient(180deg,#faf7f2_0%,#f7f2ea_100%)] px-5 py-4">
+                      <h2 className="text-lg font-semibold text-[#2d2923]">
+                        Inquiry Requests
+                      </h2>
 
-      {/* HEADER */}
-      <div className="border-b border-[#ece5da] bg-[linear-gradient(180deg,#faf7f2_0%,#f7f2ea_100%)] px-5 py-4">
-        <h2 className="text-lg font-semibold text-[#2d2923]">
-          Inquiry Requests
-        </h2>
-
-        <p className="text-sm text-[#8a8175]">
-          Track each request status and start a live conversation in one place.
-        </p>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          {(["All", "Pending", "Accepted", "Rejected"] as const).map((status) => (
-            <Button
-              key={status}
-              size="sm"
-              variant={inquiryStatusFilter === status ? "default" : "outline"}
-              className={`rounded-full shadow-sm ${
-                inquiryStatusFilter === status
-                  ? "bg-[#b8955f] text-white hover:bg-[#a7844d]"
-                  : "border-[#e7dfd2] text-[#6e6253] hover:bg-[#faf7f2]"
-              }`}
-              onClick={() => setInquiryStatusFilter(status)}
-            >
-              {status}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      {/* LIST */}
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        {loadingInquiries ? (
-          <div className="px-5 py-8 text-sm text-[#8a8175]">
-            Loading inquiries...
-          </div>
-        ) : filteredInquiries.length === 0 ? (
-          <div className="px-5 py-8 text-sm text-[#8a8175]">
-            No inquiries yet.
-          </div>
-        ) : (
-          <div className="space-y-3 p-3 pb-8">
-            {filteredInquiries.map((inquiry) => {
-              const isSelected =
-                selectedInquiry?.inquiry_id === inquiry.inquiry_id;
-
-              const snippet =
-                inquiry.message.length > 90
-                  ? `${inquiry.message.slice(0, 90)}...`
-                  : inquiry.message;
-
-              return (
-                <div
-                  key={inquiry.inquiry_id}
-                  className={`rounded-[28px] border p-4 transition-all duration-300 ${
-                    isSelected
-                      ? "border-[#d4c0a1] bg-[linear-gradient(135deg,rgba(255,255,255,0.92),rgba(248,242,232,0.96))] shadow-[0_16px_35px_rgba(185,149,95,0.14)]"
-                      : "border-[#ece5da] bg-white/70 hover:bg-white hover:border-[#dcc8a8]"
-                  }`}
-                >
-
-                  {/* TOP ROW */}
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <p className="font-semibold text-[#2d2923]">
-                        {inquiry.property_title}
+                      <p className="text-sm text-[#8a8175]">
+                        Track each request status and start a live conversation
+                        in one place.
                       </p>
 
-                      <p className="mt-1 text-xs text-[#8a8175]">
-                        #{inquiry.inquiry_id} • {formatDate(inquiry.created_at)}
-                      </p>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {(
+                          ["All", "Pending", "Accepted", "Rejected"] as const
+                        ).map((status) => (
+                          <Button
+                            key={status}
+                            size="sm"
+                            variant={
+                              inquiryStatusFilter === status
+                                ? "default"
+                                : "outline"
+                            }
+                            className={`rounded-full shadow-sm ${
+                              inquiryStatusFilter === status
+                                ? "bg-[#b8955f] text-white hover:bg-[#a7844d]"
+                                : "border-[#e7dfd2] text-[#6e6253] hover:bg-[#faf7f2]"
+                            }`}
+                            onClick={() => setInquiryStatusFilter(status)}
+                          >
+                            {status}
+                          </Button>
+                        ))}
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      {(unreadByInquiry[inquiry.inquiry_id] || 0) > 0 && (
-                        <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#b8955f] px-1.5 text-[11px] font-semibold text-white">
-                          {unreadByInquiry[inquiry.inquiry_id]}
-                        </span>
+                    {/* LIST */}
+                    <div className="min-h-0 flex-1 overflow-y-auto">
+                      {loadingInquiries ? (
+                        <div className="px-5 py-8 text-sm text-[#8a8175]">
+                          Loading inquiries...
+                        </div>
+                      ) : filteredInquiries.length === 0 ? (
+                        <div className="px-5 py-8 text-sm text-[#8a8175]">
+                          No inquiries yet.
+                        </div>
+                      ) : (
+                        <div className="space-y-3 p-3 pb-8">
+                          {filteredInquiries.map((inquiry) => {
+                            const isSelected =
+                              selectedInquiry?.inquiry_id ===
+                              inquiry.inquiry_id;
+
+                            const snippet =
+                              inquiry.message.length > 90
+                                ? `${inquiry.message.slice(0, 90)}...`
+                                : inquiry.message;
+
+                            return (
+                              <div
+                                key={inquiry.inquiry_id}
+                                className={`rounded-[28px] border p-4 transition-all duration-300 ${
+                                  isSelected
+                                    ? "border-[#d4c0a1] bg-[linear-gradient(135deg,rgba(255,255,255,0.92),rgba(248,242,232,0.96))] shadow-[0_16px_35px_rgba(185,149,95,0.14)]"
+                                    : "border-[#ece5da] bg-white/70 hover:bg-white hover:border-[#dcc8a8]"
+                                }`}
+                              >
+                                {/* TOP ROW */}
+                                <div className="flex flex-wrap items-start justify-between gap-3">
+                                  <div>
+                                    <p className="font-semibold text-[#2d2923]">
+                                      {inquiry.property_title}
+                                    </p>
+
+                                    <p className="mt-1 text-xs text-[#8a8175]">
+                                      #{inquiry.inquiry_id} •{" "}
+                                      {formatDate(inquiry.created_at)}
+                                    </p>
+                                  </div>
+
+                                  <div className="flex items-center gap-2">
+                                    {(unreadByInquiry[inquiry.inquiry_id] ||
+                                      0) > 0 && (
+                                      <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#dc2626] px-1.5 text-[11px] font-semibold text-white">
+                                        {unreadByInquiry[inquiry.inquiry_id]}
+                                      </span>
+                                    )}
+
+                                    <Badge
+                                      className={getStatusBadgeClass(
+                                        inquiry.status,
+                                      )}
+                                    >
+                                      {inquiry.status}
+                                    </Badge>
+                                  </div>
+                                </div>
+
+                                {/* META */}
+                                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#8a8175]">
+                                  <span>{inquiry.name}</span>
+                                  <span>{inquiry.email}</span>
+                                  <span className="text-[#b8955f] font-semibold">
+                                    {formatPrice(inquiry.price)}
+                                  </span>
+                                </div>
+
+                                {/* MESSAGE */}
+                                {inquiry.last_message_content ? (
+                                  <div className="mt-3 space-y-1">
+                                    <p className="text-sm text-[#5f574c] line-clamp-2 italic">
+                                      "
+                                      {inquiry.last_message_content.length > 90
+                                        ? `${inquiry.last_message_content.slice(0, 90)}...`
+                                        : inquiry.last_message_content}
+                                      "
+                                    </p>
+
+                                    <p className="text-xs text-[#a89b8b]">
+                                      {inquiry.last_message_sender_name ||
+                                        "Requester"}{" "}
+                                      •{" "}
+                                      {inquiry.last_message_date
+                                        ? formatDate(inquiry.last_message_date)
+                                        : ""}
+                                    </p>
+                                  </div>
+                                ) : (
+                                  <p className="mt-3 text-sm text-[#6e6253]">
+                                    {snippet}
+                                  </p>
+                                )}
+
+                                {/* ACTIONS */}
+                                <div className="mt-4 flex flex-wrap gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => openInquiryChat(inquiry)}
+                                    className="rounded-full border-[#e7dfd2] text-[#6e6253] hover:bg-[#faf7f2]"
+                                    type="button"
+                                  >
+                                    Open Chat
+                                  </Button>
+
+                                  {inquiry.status === "Pending" ? (
+                                    <>
+                                      <Button
+                                        size="sm"
+                                        onClick={() =>
+                                          handleStatusUpdate(
+                                            inquiry.inquiry_id,
+                                            "Accepted",
+                                          )
+                                        }
+                                        className="rounded-full bg-emerald-600 text-white hover:bg-emerald-700"
+                                      >
+                                        <CheckCircle2 className="mr-1 h-4 w-4" />
+                                        Accept
+                                      </Button>
+
+                                      <Button
+                                        size="sm"
+                                        onClick={() =>
+                                          handleStatusUpdate(
+                                            inquiry.inquiry_id,
+                                            "Rejected",
+                                          )
+                                        }
+                                        className="rounded-full bg-rose-600 text-white hover:bg-rose-700"
+                                      >
+                                        <XCircle className="mr-1 h-4 w-4" />
+                                        Reject
+                                      </Button>
+                                    </>
+                                  ) : (
+                                    <span className="inline-flex items-center rounded-full border border-[#e7dfd2] bg-[#faf7f2] px-3 py-1 text-xs text-[#8a8175]">
+                                      Status finalized
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       )}
-
-                      <Badge className={getStatusBadgeClass(inquiry.status)}>
-                        {inquiry.status}
-                      </Badge>
                     </div>
-                  </div>
+                  </section>
 
-                  {/* META */}
-                  <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#8a8175]">
-                    <span>{inquiry.name}</span>
-                    <span>{inquiry.email}</span>
-                    <span className="text-[#b8955f] font-semibold">
-                      {formatPrice(inquiry.price)}
-                    </span>
-                  </div>
+                  {/* RIGHT CHAT */}
+                  <aside className="overflow-hidden rounded-[34px] border border-[#e7dfd2] bg-[rgba(255,255,255,0.72)] shadow-[0_25px_70px_rgba(0,0,0,0.08)] backdrop-blur-2xl h-[70vh] min-h-[560px] max-h-[760px] lg:sticky lg:top-24">
+                    {selectedInquiry ? (
+                      <div className="flex h-full flex-col">
+                        {/* HEADER */}
+                        <div className="border-b border-[#ece5da] bg-[linear-gradient(180deg,#faf7f2_0%,#ffffff_100%)] px-5 py-4">
+                          <h2 className="text-lg font-semibold text-[#2d2923]">
+                            {selectedInquiry.name}
+                          </h2>
 
-                  {/* MESSAGE */}
-                  {inquiry.last_message_content ? (
-                    <div className="mt-3 space-y-1">
-                      <p className="text-sm text-[#5f574c] line-clamp-2 italic">
-                        "{inquiry.last_message_content.length > 90
-                          ? `${inquiry.last_message_content.slice(0, 90)}...`
-                          : inquiry.last_message_content}"
-                      </p>
+                          <p className="text-sm text-[#8a8175]">
+                            {selectedInquiry.property_title}
+                          </p>
+                        </div>
 
-                      <p className="text-xs text-[#a89b8b]">
-                        {inquiry.last_message_sender_name || "Requester"} •{" "}
-                        {inquiry.last_message_date
-                          ? formatDate(inquiry.last_message_date)
-                          : ""}
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="mt-3 text-sm text-[#6e6253]">
-                      {snippet}
-                    </p>
-                  )}
+                        {/* CHAT */}
+                        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-3">
+                          {messages.map((message) => {
+                            const isMine =
+                              Number(message.sender_id) === currentUserId;
 
-                  {/* ACTIONS */}
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => openInquiryChat(inquiry)}
-                      className="rounded-full border-[#e7dfd2] text-[#6e6253] hover:bg-[#faf7f2]"
-                      type="button"
-                    >
-                      Open Chat
-                    </Button>
+                            return (
+                              <div
+                                key={message.message_id}
+                                className={`flex ${isMine ? "justify-end" : "justify-start gap-2.5"}`}
+                              >
+                                {!isMine && (
+                                  <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-full border border-[#e7dfd2] bg-[#faf7f2] text-[11px] font-semibold text-[#7b6d59]">
+                                    {message.sender_name?.charAt(0) || "U"}
+                                  </div>
+                                )}
 
-                    {inquiry.status === "Pending" ? (
-                      <>
-                        <Button
-                          size="sm"
-                          onClick={() =>
-                            handleStatusUpdate(inquiry.inquiry_id, "Accepted")
-                          }
-                          className="rounded-full bg-emerald-600 text-white hover:bg-emerald-700"
-                        >
-                          <CheckCircle2 className="mr-1 h-4 w-4" />
-                          Accept
-                        </Button>
+                                <div
+                                  className={`max-w-[75%] flex flex-col ${isMine ? "items-end" : "items-start"}`}
+                                >
+                                  <div
+                                    className={`rounded-2xl px-4 py-2.5 text-sm shadow-sm ${
+                                      isMine
+                                        ? "bg-[#b8955f] text-white"
+                                        : "border border-[#e7dfd2] bg-white text-[#2d2923]"
+                                    }`}
+                                  >
+                                    {message.content}
+                                  </div>
 
-                        <Button
-                          size="sm"
-                          onClick={() =>
-                            handleStatusUpdate(inquiry.inquiry_id, "Rejected")
-                          }
-                          className="rounded-full bg-rose-600 text-white hover:bg-rose-700"
-                        >
-                          <XCircle className="mr-1 h-4 w-4" />
-                          Reject
-                        </Button>
-                      </>
+                                  <p className="mt-1 text-[10px] text-[#a89b8b]">
+                                    {new Date(
+                                      message.created_at,
+                                    ).toLocaleTimeString("en-US", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })}
+
+                          {typingLabel && (
+                            <div className="flex justify-start gap-2.5">
+                              <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-full border border-[#e7dfd2] bg-[#faf7f2] text-[11px] font-semibold text-[#7b6d59]">
+                                {(selectedInquiry.name || "U").charAt(0)}
+                              </div>
+                              <div className="rounded-[22px] px-5 py-3 border border-[#ece5da] bg-white flex items-center gap-1.5">
+                                <span
+                                  className="h-2.5 w-2.5 rounded-full bg-[#b8955f] animate-bounce"
+                                  style={{
+                                    animationDelay: "0s",
+                                    animationDuration: "1.4s",
+                                  }}
+                                />
+                                <span
+                                  className="h-2.5 w-2.5 rounded-full bg-[#b8955f] animate-bounce"
+                                  style={{
+                                    animationDelay: "0.2s",
+                                    animationDuration: "1.4s",
+                                  }}
+                                />
+                                <span
+                                  className="h-2.5 w-2.5 rounded-full bg-[#b8955f] animate-bounce"
+                                  style={{
+                                    animationDelay: "0.4s",
+                                    animationDuration: "1.4s",
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* INPUT */}
+                        <div className="border-t border-[#ece5da] bg-[#faf7f2] p-4">
+                          <div className="flex gap-2">
+                            <Input
+                              value={messageText}
+                              onChange={(e) =>
+                                handleMessageTextChange(e.target.value)
+                              }
+                              placeholder="Write a message..."
+                              className="rounded-2xl border-[#e7dfd2] bg-white"
+                            />
+
+                            <Button
+                              onClick={handleSend}
+                              className="rounded-2xl bg-[#b8955f] text-white hover:bg-[#a7844d]"
+                            >
+                              Send
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
                     ) : (
-                      <span className="inline-flex items-center rounded-full border border-[#e7dfd2] bg-[#faf7f2] px-3 py-1 text-xs text-[#8a8175]">
-                        Status finalized
-                      </span>
+                      <div className="flex h-full items-center justify-center text-[#8a8175]">
+                        Select an inquiry
+                      </div>
                     )}
-                  </div>
+                  </aside>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </section>
-
-    {/* RIGHT CHAT */}
-    <aside className="overflow-hidden rounded-[34px] border border-[#e7dfd2] bg-[rgba(255,255,255,0.72)] shadow-[0_25px_70px_rgba(0,0,0,0.08)] backdrop-blur-2xl h-[70vh] min-h-[560px] max-h-[760px] lg:sticky lg:top-24">
-
-      {selectedInquiry ? (
-        <div className="flex h-full flex-col">
-
-          {/* HEADER */}
-          <div className="border-b border-[#ece5da] bg-[linear-gradient(180deg,#faf7f2_0%,#ffffff_100%)] px-5 py-4">
-            <h2 className="text-lg font-semibold text-[#2d2923]">
-              {selectedInquiry.name}
-            </h2>
-
-            <p className="text-sm text-[#8a8175]">
-              {selectedInquiry.property_title}
-            </p>
-          </div>
-
-          {/* CHAT */}
-          <div className="flex-1 overflow-y-auto px-5 py-5 space-y-3">
-
-            {messages.map((message) => {
-              const isMine = Number(message.sender_id) === currentUserId;
-
-              return (
-                <div
-                  key={message.message_id}
-                  className={`flex ${isMine ? "justify-end" : "justify-start gap-2.5"}`}
-                >
-                  {!isMine && (
-                    <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-full border border-[#e7dfd2] bg-[#faf7f2] text-[11px] font-semibold text-[#7b6d59]">
-                      {message.sender_name?.charAt(0) || "U"}
-                    </div>
-                  )}
-
-                  <div className={`max-w-[75%] flex flex-col ${isMine ? "items-end" : "items-start"}`}>
-                    <div
-                      className={`rounded-2xl px-4 py-2.5 text-sm shadow-sm ${
-                        isMine
-                          ? "bg-[#b8955f] text-white"
-                          : "border border-[#e7dfd2] bg-white text-[#2d2923]"
-                      }`}
-                    >
-                      {message.content}
-                    </div>
-
-                    <p className="mt-1 text-[10px] text-[#a89b8b]">
-                      {new Date(message.created_at).toLocaleTimeString("en-US", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* INPUT */}
-          <div className="border-t border-[#ece5da] bg-[#faf7f2] p-4">
-            <div className="flex gap-2">
-              <Input
-                value={messageText}
-                onChange={(e) => setMessageText(e.target.value)}
-                placeholder="Write a message..."
-                className="rounded-2xl border-[#e7dfd2] bg-white"
-              />
-
-              <Button
-                onClick={handleSend}
-                className="rounded-2xl bg-[#b8955f] text-white hover:bg-[#a7844d]"
-              >
-                Send
-              </Button>
-            </div>
-          </div>
-
-        </div>
-      ) : (
-        <div className="flex h-full items-center justify-center text-[#8a8175]">
-          Select an inquiry
-        </div>
-      )}
-
-    </aside>
-  </div>
-</TabsContent>
+              </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
@@ -1764,4 +1935,3 @@ const OwnerDashboard = () => {
 };
 
 export default OwnerDashboard;
-

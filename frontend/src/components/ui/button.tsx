@@ -1,11 +1,11 @@
-import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
-import { cva, type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import { Slot } from "@radix-ui/react-slot";
+import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-[3px]",
+  "inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-[3px]",
   {
     variants: {
       variant: {
@@ -14,8 +14,7 @@ const buttonVariants = cva(
           "bg-gradient-to-r from-[#c8a96e] to-[#e8d4a8] text-[#2a1f0e] shadow-sm hover:shadow-md hover:brightness-105",
 
         // ⚠️ destructive stays neutral (no theme dependency needed)
-        destructive:
-          "bg-[#b91c1c] text-white hover:bg-[#a01818]",
+        destructive: "bg-[#b91c1c] text-white hover:bg-[#a01818]",
 
         // 🤍 clean luxury outline
         outline:
@@ -26,12 +25,10 @@ const buttonVariants = cva(
           "bg-[rgba(245,239,226,0.9)] text-[#6b5636] hover:bg-[rgba(245,239,226,1)]",
 
         // transparent elegant hover
-        ghost:
-          "hover:bg-[rgba(200,169,110,0.08)] text-[#6b5636]",
+        ghost: "hover:bg-[rgba(200,169,110,0.08)] text-[#6b5636]",
 
         // link stays minimal
-        link:
-          "text-[#c8a96e] underline-offset-4 hover:underline",
+        link: "text-[#c8a96e] underline-offset-4 hover:underline",
       },
 
       size: {
@@ -46,8 +43,8 @@ const buttonVariants = cva(
       variant: "default",
       size: "default",
     },
-  }
-)
+  },
+);
 
 function Button({
   className,
@@ -57,9 +54,9 @@ function Button({
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
+    asChild?: boolean;
   }) {
-  const Comp = asChild ? Slot : "button"
+  const Comp = asChild ? Slot : "button";
 
   return (
     <Comp
@@ -67,7 +64,7 @@ function Button({
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     />
-  )
+  );
 }
 
-export { Button, buttonVariants }
+export { Button, buttonVariants };

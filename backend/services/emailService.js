@@ -7,8 +7,8 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS,
   },
   tls: {
-    rejectUnauthorized: false
-  }
+    rejectUnauthorized: false,
+  },
 });
 
 const buildInquiryNotificationTemplate = ({
@@ -98,8 +98,20 @@ const sendOTP = async (userEmail, otp) => {
             `,
     };
 
-    await transporter.sendMail(mailOptions);
+    const info = await transporter.sendMail(mailOptions);
     console.log(`✅ Email sent successfully to: ${userEmail}`);
+    // Log transport result for debugging (messageId/response)
+    console.log("Mail info:", {
+      messageId: info.messageId,
+      response: info.response,
+    });
+    // For testing accounts (nodemailer.createTestAccount), print preview URL
+    try {
+      const preview = require("nodemailer").getTestMessageUrl(info);
+      if (preview) console.log("Preview URL:", preview);
+    } catch (e) {
+      // ignore
+    }
   } catch (error) {
     console.error("❌ Error sending email:", error);
     throw error;
@@ -132,8 +144,16 @@ const sendInquiryNotification = async ({
       }),
     };
 
-    await transporter.sendMail(mailOptions);
+    const info = await transporter.sendMail(mailOptions);
     console.log(`✅ Inquiry email sent successfully to: ${to}`);
+    console.log("Mail info:", {
+      messageId: info.messageId,
+      response: info.response,
+    });
+    try {
+      const preview = require("nodemailer").getTestMessageUrl(info);
+      if (preview) console.log("Preview URL:", preview);
+    } catch (e) {}
   } catch (error) {
     console.error("❌ Error sending inquiry email:", error);
     throw error;

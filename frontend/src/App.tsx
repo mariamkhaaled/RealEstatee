@@ -26,7 +26,14 @@ const AppContent = () => {
 
   // القائمة السوداء للصفحات اللي مش عايزين فيها Navbar أو Footer
   // ضفت لك الـ register و الـ verify عشان التصميم يفضل متناسق
-  const hideLayoutPaths = ["/login", "/register", "/verify-email", "/reset-password"];
+  const hideLayoutPaths = [
+    "/login",
+    "/register",
+    "/verify-email",
+    "/verify-otp",
+    "/reset-password",
+    "/reset-pass",
+  ];
   const shouldHideLayout = hideLayoutPaths.includes(location.pathname);
 
   return (
@@ -43,7 +50,9 @@ const AppContent = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/verify-email" element={<VerifyOTP />} />
+          <Route path="/verify-otp" element={<VerifyOTP />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/reset-pass" element={<ResetPassword />} />
 
           {/* Protected Routes */}
           <Route

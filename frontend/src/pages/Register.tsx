@@ -47,7 +47,9 @@ const Register: React.FC = () => {
         return;
       }
 
-      navigate("/login");
+      // After successful signup redirect to OTP verification
+      const targetEmail = email.trim().toLowerCase();
+      navigate(`/verify-otp?email=${encodeURIComponent(targetEmail)}`);
     } catch {
       setError("Server error");
     }
@@ -55,10 +57,8 @@ const Register: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f3f0ea] relative overflow-hidden font-sans">
-
       {/* OUTER FRAME */}
       <div className="relative w-full max-w-5xl h-[600px] border border-[rgba(200,169,110,0.35)] bg-[rgba(255,253,248,0.92)] backdrop-blur-xl shadow-[0_30px_80px_rgba(200,169,110,0.12)] flex">
-
         {/* LEFT SIDE (Brand Panel) */}
         <div className="hidden md:flex flex-1 items-center justify-center border-r border-[rgba(200,169,110,0.2)]">
           <div className="text-center">
@@ -78,7 +78,6 @@ const Register: React.FC = () => {
         {/* RIGHT SIDE (Register Form) */}
         <div className="flex flex-1 items-center justify-center px-10">
           <div className="w-full max-w-sm">
-
             <div className="text-center mb-10">
               <h1 className="text-3xl font-serif italic text-[#1a1814]">
                 Create Account
@@ -89,7 +88,6 @@ const Register: React.FC = () => {
             </div>
 
             <form className="space-y-6" onSubmit={handleRegister}>
-
               {/* TWO SIDE-BY-SIDE FIELDS */}
               <div className="grid grid-cols-2 gap-4">
                 <input
@@ -130,9 +128,7 @@ const Register: React.FC = () => {
               </div>
 
               {error && (
-                <p className="text-[11px] text-red-400 text-center">
-                  {error}
-                </p>
+                <p className="text-[11px] text-red-400 text-center">{error}</p>
               )}
 
               <div>
@@ -150,10 +146,11 @@ const Register: React.FC = () => {
                       type="button"
                       onClick={() => setRole(r.value)}
                       className={`py-2 text-[11px] uppercase tracking-widest border transition-all duration-300
-          ${role === r.value
-                          ? "bg-[#c8a96e] text-[#2a1f0e] border-[#c8a96e]"
-                          : "bg-transparent text-[#8a7050] border-[#e5e1da] hover:border-[#c8a96e]"
-                        }`}
+          ${
+            role === r.value
+              ? "bg-[#c8a96e] text-[#2a1f0e] border-[#c8a96e]"
+              : "bg-transparent text-[#8a7050] border-[#e5e1da] hover:border-[#c8a96e]"
+          }`}
                     >
                       {r.label}
                     </button>
@@ -180,10 +177,8 @@ const Register: React.FC = () => {
                 </Link>
               </p>
             </div>
-
           </div>
         </div>
-
       </div>
     </div>
   );

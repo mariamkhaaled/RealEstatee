@@ -130,11 +130,11 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({ email, onBack }) => {
       <div className="max-w-md w-full bg-card rounded-2xl shadow-custom border p-10">
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="w-16 h-16 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-6 border border-blue-100">
-            <Mail className="text-[#002347]" size={32} strokeWidth={1.5} />
+          <div className="w-16 h-16 bg-gradient-to-br from-[#f7ecd2] to-[#fff9ef] rounded-xl flex items-center justify-center mx-auto mb-6 border border-[#f0e6c6]">
+            <Mail className="text-[#c8a96e]" size={32} strokeWidth={1.5} />
           </div>
 
-          <h2 className="text-3xl font-bold text-black mb-3">
+          <h2 className="text-3xl font-bold text-[#1a1814] mb-3">
             Verify Your Email
           </h2>
           <p className="text-gray-500 text-sm leading-relaxed">
@@ -177,7 +177,7 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({ email, onBack }) => {
               ${
                 resendTimer > 0 || !canResend
                   ? "text-gray-400 cursor-not-allowed"
-                  : "text-[#002347] hover:text-[#001a35] hover:underline cursor-pointer"
+                  : "text-[#2a1f0e] hover:text-[#1a1206] hover:underline cursor-pointer"
               }
             `}
           >
@@ -201,7 +201,8 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({ email, onBack }) => {
             }
             navigate("/login");
           }}
-          className="w-full flex items-center justify-center gap-2 text-[#002347] hover:text-[#001a35] hover:bg-blue-50 py-3 rounded-lg transition-all duration-200 text-sm font-medium mt-6"
+          className="w-full flex items-center justify-center gap-2 text-[#2a1f0e] py-3 rounded-lg transition-all duration-200 text-sm font-medium mt-6"
+          style={{ background: "linear-gradient(135deg,#c8a96e,#e8d4a8)" }}
         >
           <ArrowLeft size={16} />
           {onBack ? "Back to Registration" : "Back to Login"}
