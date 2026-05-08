@@ -1,7 +1,7 @@
 const express = require('express');
 const propertyController = require('../controllers/propertyController');
 const upload = require('../middleware/upload');
-
+const { verifyToken } = require("../middleware/auth.middleware");
 const router = express.Router();
 // Add updateListingStatus to your imports at the top
 const { updateListingStatus } = require('../controllers/propertyController');
@@ -10,6 +10,8 @@ const { updateListingStatus } = require('../controllers/propertyController');
 router.patch('/listing-status/:listingId', updateListingStatus);
 
 
+
+router.get("/my", verifyToken, propertyController.getMyProperties);
 router.get('/', propertyController.getAllProperties);
 router.post('/', upload.array('images', 10), propertyController.createProperty);
 router.get('/owner/:ownerId', propertyController.getOwnerProperties);

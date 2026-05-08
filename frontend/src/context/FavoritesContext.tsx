@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 
 interface FavoritesContextType {
   favoriteIds: Set<string>;
+  favoritesCount: number;
   addFavorite: (propertyId: string) => void;
   removeFavorite: (propertyId: string) => void;
   clearFavorites: () => void;
@@ -103,9 +104,10 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       console.error('Error adding pending favorite:', error);
     }
   }, [pendingFavoriteId, addFavorite]);
-
+const favoritesCount = favoriteIds.size;
   const value: FavoritesContextType = {
     favoriteIds,
+    favoritesCount, 
     addFavorite,
     removeFavorite,
     clearFavorites,

@@ -12,7 +12,23 @@ exports.getAllProperties = async (req, res, next) => {
         next(err);
     }
 };
+exports.getMyProperties = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
 
+    const [rows] = await db.execute(
+      "SELECT * FROM properties WHERE owner_id = ?",
+      [userId]
+    );
+
+    res.status(200).json({
+      status: "success",
+      listings: rows,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 exports.createProperty = async (req, res, next) => {
     try {
         const uploadedImages = (req.files || []).map(

@@ -53,7 +53,9 @@ const Profile: React.FC = () => {
     getPhotoUrl(user?.photo || null),
   );
 
-  const { clearFavorites } = useFavorites();
+const [listingsCount, setListingsCount] = useState(0);
+const [loadingListings, setLoadingListings] = useState(true);
+  const { clearFavorites, favoritesCount } = useFavorites();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -89,6 +91,30 @@ const Profile: React.FC = () => {
     fetchProfile();
   }, []);
 
+useEffect(() => {
+  const fetchListings = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch("http://localhost:5000/api/properties/my", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      setListingsCount(data.listings?.length || 0);
+      setLoadingListings(false);
+
+    } catch (err) {
+      console.error(err);
+      setLoadingListings(false);
+    }
+  };
+
+  fetchListings();
+}, []);
   if (!user) {
     return (
       <div style={styles.page}>
@@ -222,9 +248,9 @@ const Profile: React.FC = () => {
 
           <div style={styles.statsGrid}>
             {[
-              { label: "Favorites", value: 24, icon: Heart },
+              { label: "Favorites", value: favoritesCount, icon: Heart },
               { label: "Viewed", value: 12, icon: Eye },
-              { label: "Listings", value: 3, icon: Home },
+              { label: "Listings", value: listingsCount, icon: Home },
             ].map((s) => (
               <div key={s.label} style={styles.statCard}>
                 <s.icon size={18} color="#c8a96e" />
