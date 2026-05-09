@@ -36,16 +36,26 @@ interface Property {
   images: string[];
 }
 
+interface RecentUser {
+  full_name: string;
+  role: string;
+  created_at: string;
+}
+
 const AdminDashboard: React.FC = () => {
   const user = JSON.parse(localStorage.getItem('user') || 'null');
   const [pendingListings, setPendingListings] = useState<Property[]>([]);
   const [recentListings, setRecentListings] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<{
+    totalUsers: number;
+    activeOwners: number;
+    recentUsers: RecentUser[];
+  }>({
     totalUsers: 0,
     activeOwners: 0,
-    recentUsers: [] as any[]
+    recentUsers: []
   });
 
   // 🔐 Security Check
@@ -277,59 +287,49 @@ const AdminDashboard: React.FC = () => {
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-              {/* Revenue */}
+              {/* Total Users */}
               <div className="lux-card lux-card-hover rounded-3xl p-7 flex flex-col justify-between min-h-[180px]">
 
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="lux-tag lux-muted mb-3">
-                      Total Revenue
+                      Total Users
                     </p>
 
                     <h3 className="lux-title text-4xl font-light num ">
-                      $783K
+                      {stats.totalUsers}
                     </h3>
                   </div>
-
-                  
                 </div>
 
                 <div className="flex items-end justify-between mt-8">
                   <div>
-                    <p className="text-sm text-emerald-600 font-medium">
-                      +28% Growth
-                    </p>
-                    <p className="text-xs lux-muted mt-1">
-                      Compared to last week
+                    <p className="text-sm lux-muted mt-1">
+                      All registered accounts
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Costs */}
+              {/* Active Owners */}
               <div className="lux-card lux-card-hover rounded-3xl p-7 flex flex-col justify-between min-h-[180px]">
 
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="lux-tag lux-muted mb-3">
-                      Maintenance Cost
+                      Active Owners
                     </p>
 
                     <h3 className="lux-title text-4xl font-light num">
-                      $582K
+                      {stats.activeOwners}
                     </h3>
                   </div>
-
-                  
                 </div>
 
                 <div className="flex items-end justify-between mt-8">
                   <div>
-                    <p className="text-sm text-emerald-600 font-medium">
-                      +15% Growth
-                    </p>
-                    <p className="text-xs lux-muted mt-1">
-                      Compared to last week
+                    <p className="text-sm lux-muted mt-1">
+                      Owners with active accounts
                     </p>
                   </div>
                 </div>
@@ -378,6 +378,70 @@ const AdminDashboard: React.FC = () => {
                 </svg>
               </div>
             </div> */}
+
+            {/* Recent Users */}
+            <div className="lux-card rounded-3xl p-7">
+
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <p className="lux-tag lux-gold mb-2">
+                    Users
+                  </p>
+
+                  <h3 className="lux-title text-3xl font-light">
+                    Recent Registered Users
+                  </h3>
+                </div>
+
+                <span className="text-sm lux-muted">
+                  Showing latest 5
+                </span>
+              </div>
+
+              <div className="divide-y divide-[#f5f0e8]">
+                {stats.recentUsers.length > 0 ? (
+                  stats.recentUsers.map((newUser, idx) => {
+                    const roleLabel = newUser.role.charAt(0).toUpperCase() + newUser.role.slice(1);
+                    const roleClasses =
+                      newUser.role === 'admin'
+                        ? 'bg-[#f7edd9] text-[#8b6f3b] border border-[#e8d4a8]'
+                        : newUser.role === 'owner'
+                        ? 'bg-[#eef6f1] text-[#2f6d4f] border border-[#c7decf]'
+                        : 'bg-[#eaf3ff] text-[#3b6ba7] border border-[#c7d8f1]';
+
+                    return (
+                      <div
+                        key={`${newUser.full_name}-${idx}`}
+                        className="flex items-center gap-4 py-4"
+                      >
+                        <img
+                          src={`https://ui-avatars.com/api/?name=${encodeURIComponent(newUser.full_name)}&background=f5f2ed&color=1a1814`}
+                          className="w-10 h-10 rounded-full border border-[#e8e0d4] flex-shrink-0"
+                          alt={newUser.full_name}
+                        />
+
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-[#1a1814] truncate">
+                            {newUser.full_name}
+                          </p>
+                          <p className="text-xs lux-muted mt-0.5">
+                            {new Date(newUser.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </p>
+                        </div>
+
+                        <span className={`text-[10px] font-semibold uppercase px-3 py-1 rounded-full flex-shrink-0 ${roleClasses}`}>
+                          {roleLabel}
+                        </span>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="text-sm lux-muted py-4">
+                    No recent users to display.
+                  </p>
+                )}
+              </div>
+            </div>
 
             {/* Pending Listings */}
             <div className="lux-card rounded-3xl overflow-hidden">
