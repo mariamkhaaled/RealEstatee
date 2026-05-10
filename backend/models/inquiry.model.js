@@ -24,16 +24,11 @@ exports.getInquiriesForOwner = async (ownerId) => {
       i.listing_id,
       i.customer_id,
       i.name,
-      i.email,
-      i.phone,
       i.message,
       i.status,
       i.created_at,
       p.title AS property_title,
       p.owner_id,
-      l.price,
-      l.status AS listing_status,
-      l.purpose,
       m.content AS last_message_content,
       m.created_at AS last_message_date,
       u_sender.full_name AS last_message_sender_name
@@ -63,18 +58,12 @@ exports.getInquiriesForCustomer = async (customerId) => {
       i.listing_id,
       i.customer_id,
       i.name,
-      i.email,
-      i.phone,
       i.message,
       i.status,
       i.created_at,
       p.title AS property_title,
       p.owner_id,
       u.full_name AS owner_name,
-      u.email AS owner_email,
-      l.price,
-      l.status AS listing_status,
-      l.purpose,
       m.content AS last_message_content,
       m.created_at AS last_message_date,
       u_sender.full_name AS last_message_sender_name
@@ -105,16 +94,10 @@ exports.getAllInquiries = async () => {
       i.listing_id,
       i.customer_id,
       i.name,
-      i.email,
-      i.phone,
-      i.message,
       i.status,
       i.created_at,
       p.title AS property_title,
-      p.owner_id,
-      l.price,
-      l.status AS listing_status,
-      l.purpose
+      p.owner_id
     FROM inquiries i
     INNER JOIN listings l ON l.listing_id = i.listing_id
     INNER JOIN properties p ON p.property_id = l.property_id
@@ -140,10 +123,7 @@ exports.getInquiryById = async (inquiryId) => {
       p.title AS property_title,
       p.owner_id,
       u.full_name AS owner_name,
-      u.email AS owner_email,
-      l.price,
-      l.status AS listing_status,
-      l.purpose
+      u.email AS owner_email
     FROM inquiries i
     INNER JOIN listings l ON l.listing_id = i.listing_id
     INNER JOIN properties p ON p.property_id = l.property_id
@@ -159,16 +139,9 @@ exports.getInquiryById = async (inquiryId) => {
 exports.getListingForInquiry = async (listingId) => {
   const sql = `
     SELECT
-      l.listing_id,
-      l.status AS listing_status,
-      p.property_id,
-      p.title AS property_title,
-      p.owner_id,
-      u.full_name AS owner_name,
-      u.email AS owner_email
+      p.owner_id
     FROM listings l
     INNER JOIN properties p ON p.property_id = l.property_id
-    INNER JOIN users u ON u.user_id = p.owner_id
     WHERE l.listing_id = ?
     LIMIT 1
   `;
@@ -183,8 +156,7 @@ exports.getActiveInquiryByListingAndCustomer = async (
 ) => {
   const sql = `
     SELECT
-      inquiry_id,
-      status
+      inquiry_id
     FROM inquiries
     WHERE listing_id = ?
       AND customer_id = ?
