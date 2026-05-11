@@ -61,7 +61,7 @@ const Navbar: React.FC = () => {
     setUser(null);
     window.dispatchEvent(new Event("user-updated"));
     clearFavorites();
-    navigate("/login");
+    navigate("/");
   };
 
   useEffect(() => {
